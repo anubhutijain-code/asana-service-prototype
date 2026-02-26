@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import ModeSidebar from './components/ModeSidebar';
 import ServiceSecondaryNav from './components/ServiceSecondaryNav';
@@ -15,18 +16,56 @@ import CreateQueueWizard from './components/CreateQueueWizard';
 // ModeSidebar    = w-16 = 4rem    = 64px
 // SecondaryNav   = w-[182px]
 
+// ── URL → active state mapping ────────────────────────────────────────────────
+function getRouteState(pathname) {
+  if (pathname === '/')             return { mode: 'work',    serviceNav: null,          workItem: 'Home' };
+  if (pathname === '/inbox')        return { mode: 'service', serviceNav: 'Inbox',        workItem: null   };
+  if (pathname === '/tickets')      return { mode: 'service', serviceNav: 'IT Tickets',   workItem: null   };
+  if (pathname === '/hr-tickets')   return { mode: 'service', serviceNav: 'HR Tickets',   workItem: null   };
+  if (pathname === '/automations')  return { mode: 'service', serviceNav: 'Automations',  workItem: null   };
+  if (pathname === '/create-queue') return { mode: 'service', serviceNav: 'Create Queue', workItem: null   };
+  return { mode: 'service', serviceNav: null, workItem: null };
+}
+
+// ── Service nav label → URL ───────────────────────────────────────────────────
+const SERVICE_NAV_URL = {
+  'Inbox':        '/inbox',
+  'IT Tickets':   '/tickets',
+  'HR Tickets':   '/hr-tickets',
+  'Automations':  '/automations',
+  'Create Queue': '/create-queue',
+};
+
 export default function AsanaService() {
-  const [activeMode, setActiveMode] = useState('service');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { mode: activeMode, serviceNav: activeServiceNav, workItem: workActiveItem } =
+    getRouteState(location.pathname);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeServiceNav, setActiveServiceNav] = useState('Inbox');
-  const [workActiveItem, setWorkActiveItem] = useState('Home');
   const [routedHRTickets, setRoutedHRTickets] = useState([]);
-  const [linkedHRTickets, setLinkedHRTickets] = useState({}); // { [itTicketId]: hrTicketObj }
+  const [linkedHRTickets, setLinkedHRTickets] = useState({});
   const [deepLinkITTicketId, setDeepLinkITTicketId] = useState(null);
   const [deepLinkHRTicketId, setDeepLinkHRTicketId] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchPillRect, setSearchPillRect] = useState(null);
   const searchPillRef = useRef(null);
+
+  function handleSelectMode(mode) {
+    if (mode === 'work') navigate('/');
+    else if (mode === 'service') navigate('/inbox');
+    // other modes: no route yet
+  }
+
+  function handleSelectServiceNav(label) {
+    const url = SERVICE_NAV_URL[label];
+    if (url) navigate(url);
+  }
+
+  function handleSelectWorkNav(label) {
+    if (label === 'Home') navigate('/');
+    // other work labels: no route yet
+  }
 
   function handleOpenSearch() {
     if (searchPillRef.current) {
@@ -50,7 +89,6 @@ export default function AsanaService() {
     setLinkedHRTickets(prev => ({ ...prev, [itTicketId]: hrTicket }));
   }
 
-  // Called on every HR status change (not just Resolved)
   function handleHRCaseStatusChange(hrId, itTicketId, status) {
     setRoutedHRTickets(prev => prev.map(t => t.id === hrId ? { ...t, status } : t));
     if (itTicketId) {
@@ -63,29 +101,26 @@ export default function AsanaService() {
   }
 
   function handleGoToLinkedITTicket(itTicketId) {
-    setActiveServiceNav('IT Tickets');
+    navigate('/tickets');
     setDeepLinkITTicketId(itTicketId);
   }
 
   function handleGoToLinkedHRTicket(hrTicketId) {
-    setActiveServiceNav('HR Tickets');
+    navigate('/hr-tickets');
     setDeepLinkHRTicketId(hrTicketId);
   }
 
   function handleSearchSelectIT(id) {
-    setActiveMode('service');
-    setActiveServiceNav('IT Tickets');
+    navigate('/tickets');
     setDeepLinkITTicketId(id);
     handleCloseSearch();
   }
 
   function handleSearchSelectHR(id) {
-    setActiveMode('service');
-    setActiveServiceNav('HR Tickets');
+    navigate('/hr-tickets');
     setDeepLinkHRTicketId(id);
     handleCloseSearch();
   }
-
 
   const secondaryVisible = sidebarOpen && (activeMode === 'service' || activeMode === 'work');
   const mainLeft = sidebarOpen ? (secondaryVisible ? 64 + 182 : 64) : 0;
@@ -113,7 +148,7 @@ export default function AsanaService() {
       {/* ── Mode sidebar ────────────────────────────── left-0, below top bar */}
       {sidebarOpen && (
         <div className="absolute top-11 left-0 w-16 bottom-0 z-40">
-          <ModeSidebar active={activeMode} onSelect={setActiveMode} />
+          <ModeSidebar active={activeMode} onSelect={handleSelectMode} />
         </div>
       )}
 
@@ -131,13 +166,13 @@ export default function AsanaService() {
           {activeMode === 'service' && (
             <ServiceSecondaryNav
               activeItem={activeServiceNav}
-              onSelect={setActiveServiceNav}
+              onSelect={handleSelectServiceNav}
             />
           )}
           {activeMode === 'work' && (
             <WorkSecondaryNav
               activeItem={workActiveItem}
-              onSelect={setWorkActiveItem}
+              onSelect={handleSelectWorkNav}
             />
           )}
         </div>
@@ -148,13 +183,15 @@ export default function AsanaService() {
         className="absolute top-11 bottom-0 right-0 overflow-hidden"
         style={{ left: mainLeft }}
       >
-        {activeMode === 'work' && workActiveItem === 'Home'
-          ? <HomeView onOpenServiceMode={() => { setActiveMode('service'); setActiveServiceNav('IT Tickets'); }} />
-          : (activeMode === 'service' && activeServiceNav === 'Inbox') ||
-         (activeMode === 'work'    && workActiveItem    === 'Inbox')
-          ? <InboxView defaultTab={activeMode === 'service' ? 'Service' : 'Activity'} />
-          : activeMode === 'service' && activeServiceNav === 'IT Tickets'
-          ? <TicketsDashboard
+        <Routes>
+          <Route path="/" element={
+            <HomeView onOpenServiceMode={() => navigate('/tickets')} />
+          } />
+          <Route path="/inbox" element={
+            <InboxView defaultTab="Service" />
+          } />
+          <Route path="/tickets" element={
+            <TicketsDashboard
               onRouteToHR={handleAddHRTicket}
               onCreateHRTicket={handleAddHRTicket}
               deepLinkTicketId={deepLinkITTicketId}
@@ -163,26 +200,26 @@ export default function AsanaService() {
               onLinkHRTicket={handleLinkHRTicket}
               onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
             />
-          : activeMode === 'service' && activeServiceNav === 'Automations'
-          ? <AutomationsView />
-          : activeMode === 'service' && activeServiceNav === 'Create Queue'
-          ? <CreateQueueWizard onDone={() => setActiveServiceNav('IT Tickets')} />
-          : activeMode === 'service' && activeServiceNav === 'HR Tickets'
-          ? <HRTicketsDashboard
+          } />
+          <Route path="/hr-tickets" element={
+            <HRTicketsDashboard
               extraTickets={routedHRTickets}
               onHRCaseStatusChange={handleHRCaseStatusChange}
               onGoToLinkedITTicket={handleGoToLinkedITTicket}
               deepLinkTicketId={deepLinkHRTicketId}
               onDeepLinkHandled={() => setDeepLinkHRTicketId(null)}
             />
-          : (
+          } />
+          <Route path="/automations" element={<AutomationsView />} />
+          <Route path="/create-queue" element={
+            <CreateQueueWizard onDone={() => navigate('/tickets')} />
+          } />
+          <Route path="*" element={
             <div className="p-8">
-              <p className="text-sm text-[#9ea0a2] capitalize">
-                {activeMode}{activeServiceNav ? ` › ${activeServiceNav}` : ''} — content coming soon.
-              </p>
+              <p className="text-sm text-[#9ea0a2]">Content coming soon.</p>
             </div>
-          )
-        }
+          } />
+        </Routes>
       </div>
 
       {/* ── Search modal ─────────────────────────────────────── above all, z-300 */}
