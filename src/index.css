@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* position:fixed + inset:0 locks the root to the viewport unconditionally —
+   unlike height:100% it doesn't rely on scroll-chaining through html/body,
+   so iOS Safari rubber-band scroll can't push nav elements off-screen. */
+#root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
