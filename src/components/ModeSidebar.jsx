@@ -71,11 +71,11 @@ function InboxIcon({ className }) {
 // ── Nav data ───────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: 'work',     label: 'Work',     Icon: CheckCircleIcon, badge: null },
-  { id: 'plan',     label: 'Plan',     Icon: PlanIcon,        badge: null },
-  { id: 'workflow', label: 'Workflow', Icon: WorkflowIcon,    badge: null },
-  { id: 'company',  label: 'Company',  Icon: CompanyIcon,     badge: null },
   { id: 'service',  label: 'Service',  Icon: ServiceIcon,     badge: 3    },
+  { id: 'work',     label: 'Work',     Icon: CheckCircleIcon, badge: null },
+  { id: 'plan',     label: 'Strategy', Icon: PlanIcon,        badge: null },
+  { id: 'workflow', label: 'Workflow', Icon: WorkflowIcon,    badge: null },
+  { id: 'company',  label: 'People',   Icon: CompanyIcon,     badge: null },
 ];
 
 // ── NavItem ────────────────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
         'group w-full flex flex-col items-center justify-center gap-1 py-2 px-1.5',
         'cursor-pointer border-0 bg-transparent',
         'transition-colors duration-150',
-        active ? 'text-[#371717]' : 'text-[#8c8c8c] hover:text-[#371717]',
+        active ? 'text-text' : 'text-icon hover:text-text',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
       ].join(' ')}
     >
@@ -100,13 +100,13 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
       <div
         className={[
           'relative flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors duration-150',
-          active ? 'bg-[#ebebea]' : 'group-hover:bg-[#ebebea]',
+          active ? 'bg-[var(--background-active)]' : 'group-hover:bg-[var(--background-hover)]',
         ].join(' ')}
       >
         <Icon className="w-4 h-4 fill-current shrink-0" />
         {badge != null && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5
-                           bg-[#ff584a] text-white text-[9px] font-bold leading-none
+                           bg-creation text-white text-[9px] font-bold leading-none
                            rounded-full flex items-center justify-center">
             {badge}
           </span>
@@ -122,7 +122,7 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
 export default function ModeSidebar({ active, onSelect }) {
   return (
     <aside
-      className="flex flex-col w-16 h-full bg-[#f5f5f4] shrink-0"
+      className="flex flex-col w-16 h-full bg-background-strong shrink-0"
       aria-label="Mode navigation"
     >
       <nav className="flex flex-col gap-0.5 flex-1 pt-2 px-1.5 overflow-y-auto">
@@ -145,10 +145,10 @@ export default function ModeSidebar({ active, onSelect }) {
           type="button"
           aria-label="Create new"
           className="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-                     bg-[#ff584a] text-white fill-white border-0
-                     hover:bg-[#f13b27] active:bg-[#e52e19]
+                     bg-creation text-white fill-white border-0
+                     hover:bg-creation-hover active:bg-[#e52e19]
                      shadow-sm transition-colors duration-150 cursor-pointer
-                     focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff584a] focus-visible:ring-offset-1"
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-creation focus-visible:ring-offset-1"
         >
           <PlusIcon className="w-3.5 h-3.5 fill-current" />
         </button>
@@ -158,8 +158,8 @@ export default function ModeSidebar({ active, onSelect }) {
           type="button"
           aria-label="Inbox"
           className="w-7 h-7 rounded-md flex items-center justify-center shrink-0
-                     text-[#8c8c8c] fill-[#8c8c8c] border-0 bg-transparent
-                     hover:text-[#1d1f21] hover:fill-[#1d1f21]
+                     text-icon fill-current border-0 bg-transparent
+                     hover:text-text
                      transition-colors duration-150 cursor-pointer
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >

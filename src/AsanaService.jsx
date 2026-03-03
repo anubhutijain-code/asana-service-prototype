@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
+import { useNavigate, useLocation, useParams, Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import ModeSidebar from './components/ModeSidebar';
 import ServiceSecondaryNav from './components/ServiceSecondaryNav';
@@ -11,29 +11,84 @@ import SearchModal from './components/SearchModal';
 import AutomationsView from './components/AutomationsView';
 import HomeView from './components/HomeView';
 import CreateQueueWizard from './components/CreateQueueWizard';
+import AssetsView from './components/AssetsView';
+import KnowledgeBaseView from './components/KnowledgeBaseView';
+import DashboardView from './components/DashboardView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
 // ModeSidebar    = w-16 = 4rem    = 64px
 // SecondaryNav   = w-[182px]
 
+function EmptyModeView({ mode }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center">
+      {mode && (
+        <p className="text-sm font-medium text-[#6D6E6F]">{mode}</p>
+      )}
+      <p className="text-xs text-[#9ea0a2] mt-1">Content coming soon.</p>
+    </div>
+  );
+}
+
 // ── URL → active state mapping ────────────────────────────────────────────────
 function getRouteState(pathname) {
-  if (pathname === '/')             return { mode: 'work',    serviceNav: null,          workItem: 'Home' };
-  if (pathname === '/inbox')        return { mode: 'service', serviceNav: 'Inbox',        workItem: null   };
-  if (pathname === '/tickets')      return { mode: 'service', serviceNav: 'IT Tickets',   workItem: null   };
-  if (pathname === '/hr-tickets')   return { mode: 'service', serviceNav: 'HR Tickets',   workItem: null   };
-  if (pathname === '/automations')  return { mode: 'service', serviceNav: 'Automations',  workItem: null   };
-  if (pathname === '/create-queue') return { mode: 'service', serviceNav: 'Create Queue', workItem: null   };
+  if (pathname === '/')             return { mode: 'work',     serviceNav: null,          workItem: 'Home'  };
+  if (pathname === '/work/inbox')   return { mode: 'work',     serviceNav: null,          workItem: 'Inbox' };
+  if (pathname === '/strategy')     return { mode: 'plan',     serviceNav: null,          workItem: null    };
+  if (pathname === '/workflow')     return { mode: 'workflow', serviceNav: null,          workItem: null    };
+  if (pathname === '/people')       return { mode: 'company',  serviceNav: null,          workItem: null    };
+  if (pathname === '/inbox')        return { mode: 'service',  serviceNav: 'Inbox',        workItem: null    };
+  if (pathname === '/tickets' || pathname.startsWith('/tickets/'))
+                                    return { mode: 'service',  serviceNav: 'IT Tickets',   workItem: null    };
+  if (pathname === '/hr-tickets' || pathname.startsWith('/hr-tickets/'))
+                                    return { mode: 'service',  serviceNav: 'HR Tickets',   workItem: null    };
+  if (pathname === '/automations')  return { mode: 'service',  serviceNav: 'Automations',  workItem: null    };
+  if (pathname === '/assets')       return { mode: 'service',  serviceNav: 'Assets',       workItem: null    };
+  if (pathname === '/dashboard')    return { mode: 'service',  serviceNav: 'Dashboard',    workItem: null    };
+  if (pathname === '/create-queue') return { mode: 'service',  serviceNav: 'Create Queue', workItem: null    };
+  if (pathname === '/knowledge-base' || pathname.startsWith('/knowledge-base/'))
+    return { mode: 'service', serviceNav: 'Knowledge base', workItem: null };
   return { mode: 'service', serviceNav: null, workItem: null };
+}
+
+// ── Wrapper: mounts TicketsDashboard at /tickets/:ticketId ────────────────────
+function TicketsRouteWrapper(props) {
+  const { ticketId } = useParams();
+  const navigate = useNavigate();
+  return (
+    <TicketsDashboard
+      {...props}
+      deepLinkTicketId={ticketId ?? null}
+      onDeepLinkHandled={() => {}}
+      onURLBack={() => navigate('/tickets')}
+    />
+  );
+}
+
+// ── Wrapper: mounts HRTicketsDashboard at /hr-tickets/:ticketId ───────────────
+function HRTicketsRouteWrapper(props) {
+  const { ticketId } = useParams();
+  const navigate = useNavigate();
+  return (
+    <HRTicketsDashboard
+      {...props}
+      deepLinkTicketId={ticketId ?? null}
+      onDeepLinkHandled={() => {}}
+      onURLBack={() => navigate('/hr-tickets')}
+    />
+  );
 }
 
 // ── Service nav label → URL ───────────────────────────────────────────────────
 const SERVICE_NAV_URL = {
-  'Inbox':        '/inbox',
-  'IT Tickets':   '/tickets',
-  'HR Tickets':   '/hr-tickets',
-  'Automations':  '/automations',
-  'Create Queue': '/create-queue',
+  'Inbox':           '/inbox',
+  'IT Tickets':      '/tickets',
+  'HR Tickets':      '/hr-tickets',
+  'Automations':     '/automations',
+  'Assets':          '/assets',
+  'Create Queue':    '/create-queue',
+  'Knowledge base':  '/knowledge-base',
+  'Dashboard':       '/dashboard',
 };
 
 export default function AsanaService() {
@@ -43,28 +98,34 @@ export default function AsanaService() {
     getRouteState(location.pathname);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [kbExpanded, setKbExpanded] = useState(false);
   const [routedHRTickets, setRoutedHRTickets] = useState([]);
   const [linkedHRTickets, setLinkedHRTickets] = useState({});
-  const [deepLinkITTicketId, setDeepLinkITTicketId] = useState(null);
-  const [deepLinkHRTicketId, setDeepLinkHRTicketId] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchPillRect, setSearchPillRect] = useState(null);
   const searchPillRef = useRef(null);
 
   function handleSelectMode(mode) {
-    if (mode === 'work') navigate('/');
-    else if (mode === 'service') navigate('/inbox');
-    // other modes: no route yet
+    if (mode === 'work')     navigate('/');
+    else if (mode === 'service')  navigate('/inbox');
+    else if (mode === 'plan')     navigate('/strategy');
+    else if (mode === 'workflow') navigate('/workflow');
+    else if (mode === 'company')  navigate('/people');
   }
 
+  const activeKBProject = location.pathname.startsWith('/knowledge-base/')
+    ? location.pathname.replace('/knowledge-base/', '')
+    : null;
+
   function handleSelectServiceNav(label) {
+    if (label === 'Knowledge base') setKbExpanded(true);
     const url = SERVICE_NAV_URL[label];
     if (url) navigate(url);
   }
 
   function handleSelectWorkNav(label) {
-    if (label === 'Home') navigate('/');
-    // other work labels: no route yet
+    if (label === 'Home')  navigate('/');
+    if (label === 'Inbox') navigate('/work/inbox');
   }
 
   function handleOpenSearch() {
@@ -101,13 +162,11 @@ export default function AsanaService() {
   }
 
   function handleGoToLinkedITTicket(itTicketId) {
-    navigate('/tickets');
-    setDeepLinkITTicketId(itTicketId);
+    navigate(`/tickets/${itTicketId}`);
   }
 
   function handleGoToLinkedHRTicket(hrTicketId) {
-    navigate('/hr-tickets');
-    setDeepLinkHRTicketId(hrTicketId);
+    navigate(`/hr-tickets/${hrTicketId}`);
   }
 
   function handleSearchSelectIT(id) {
@@ -130,7 +189,7 @@ export default function AsanaService() {
     <div className="fixed inset-0 overflow-hidden bg-white">
 
       {/* ── Top bar ─────────────────────────────────────────────── z-50 */}
-      <div className="absolute inset-x-0 top-0 h-11 z-50">
+      <div className="absolute inset-x-0 top-0 h-12 z-50">
         <NavBar
           onToggleSidebar={() => setSidebarOpen(o => !o)}
           onOpenSearch={handleOpenSearch}
@@ -142,12 +201,12 @@ export default function AsanaService() {
       {/* ── Separator below NavBar — skips the mode sidebar zone ───────────── */}
       <div
         className="absolute pointer-events-none z-[55]"
-        style={{ top: 44, left: mainLeft, right: 0, height: 1, background: '#e0e1e3' }}
+        style={{ top: 48, left: mainLeft, right: 0, height: 1, background: '#e0e1e3' }}
       />
 
       {/* ── Mode sidebar ────────────────────────────── left-0, below top bar */}
       {sidebarOpen && (
-        <div className="absolute top-11 left-0 w-16 bottom-0 z-40">
+        <div className="absolute top-12 left-0 w-16 bottom-0 z-40">
           <ModeSidebar active={activeMode} onSelect={handleSelectMode} />
         </div>
       )}
@@ -156,17 +215,21 @@ export default function AsanaService() {
       {secondaryVisible && sidebarOpen && (
         <div
           className="absolute pointer-events-none z-[39]"
-          style={{ top: 44, left: 64, width: 12, height: 12, background: '#f5f5f4' }}
+          style={{ top: 48, left: 64, width: 12, height: 12, background: '#e8e9ea' }}
         />
       )}
 
       {/* ── Secondary nav ──────────────── left-16, service or work mode */}
       {secondaryVisible && (
-        <div className="absolute top-11 left-16 w-[182px] bottom-0 z-40">
+        <div className="absolute top-12 left-16 w-[182px] bottom-0 z-40">
           {activeMode === 'service' && (
             <ServiceSecondaryNav
               activeItem={activeServiceNav}
               onSelect={handleSelectServiceNav}
+              expandedKB={kbExpanded || activeServiceNav === 'Knowledge base'}
+              onToggleKB={() => setKbExpanded(v => !v)}
+              activeKBProject={activeKBProject}
+              onSelectKBProject={(id) => navigate(`/knowledge-base/${id}`)}
             />
           )}
           {activeMode === 'work' && (
@@ -180,7 +243,7 @@ export default function AsanaService() {
 
       {/* ── Main content ─────────── fills remaining space, adjusts with sidebars */}
       <div
-        className="absolute top-11 bottom-0 right-0 overflow-hidden"
+        className="absolute top-12 bottom-0 right-0 overflow-hidden"
         style={{ left: mainLeft }}
       >
         <Routes>
@@ -190,12 +253,22 @@ export default function AsanaService() {
           <Route path="/inbox" element={
             <InboxView defaultTab="Service" />
           } />
+          <Route path="/work/inbox" element={
+            <InboxView defaultTab="Activity" />
+          } />
           <Route path="/tickets" element={
             <TicketsDashboard
               onRouteToHR={handleAddHRTicket}
               onCreateHRTicket={handleAddHRTicket}
-              deepLinkTicketId={deepLinkITTicketId}
-              onDeepLinkHandled={() => setDeepLinkITTicketId(null)}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          <Route path="/tickets/:ticketId" element={
+            <TicketsRouteWrapper
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
               linkedHRTickets={linkedHRTickets}
               onLinkHRTicket={handleLinkHRTicket}
               onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
@@ -206,19 +279,27 @@ export default function AsanaService() {
               extraTickets={routedHRTickets}
               onHRCaseStatusChange={handleHRCaseStatusChange}
               onGoToLinkedITTicket={handleGoToLinkedITTicket}
-              deepLinkTicketId={deepLinkHRTicketId}
-              onDeepLinkHandled={() => setDeepLinkHRTicketId(null)}
+            />
+          } />
+          <Route path="/hr-tickets/:ticketId" element={
+            <HRTicketsRouteWrapper
+              extraTickets={routedHRTickets}
+              onHRCaseStatusChange={handleHRCaseStatusChange}
+              onGoToLinkedITTicket={handleGoToLinkedITTicket}
             />
           } />
           <Route path="/automations" element={<AutomationsView />} />
+          <Route path="/assets" element={<AssetsView />} />
+          <Route path="/knowledge-base/:projectId" element={<KnowledgeBaseView />} />
+          <Route path="/knowledge-base" element={<KnowledgeBaseView />} />
           <Route path="/create-queue" element={
             <CreateQueueWizard onDone={() => navigate('/tickets')} />
           } />
-          <Route path="*" element={
-            <div className="p-8">
-              <p className="text-sm text-[#9ea0a2]">Content coming soon.</p>
-            </div>
-          } />
+          <Route path="/dashboard" element={<DashboardView />} />
+          <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
+          <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
+          <Route path="/people" element={<EmptyModeView mode="People" />} />
+          <Route path="*" element={<EmptyModeView mode="" />} />
         </Routes>
       </div>
 

@@ -168,8 +168,8 @@ const OOB_WORKFLOWS = [
 
 const INPUT_STYLE = {
   width: '100%', height: 42, padding: '0 13px',
-  border: '1.5px solid #EDEAE9', borderRadius: 8,
-  fontSize: 14, color: '#1E1F21', background: 'white',
+  border: '1.5px solid var(--border)', borderRadius: 8,
+  fontSize: 14, color: 'var(--text)', background: 'var(--background-weak)',
   outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
   transition: 'border-color 0.15s',
 };
@@ -177,7 +177,7 @@ const INPUT_STYLE = {
 const LABEL_STYLE = {
   display: 'block', marginBottom: 7,
   fontFamily: '"SF Pro Text", -apple-system, sans-serif',
-  fontSize: 12, fontWeight: 500, color: '#6D6E6F',
+  fontSize: 12, fontWeight: 500, color: 'var(--text-weak)',
   lineHeight: '18px', fontFeatureSettings: "'liga' off, 'clig' off",
 };
 
@@ -185,7 +185,7 @@ function Label({ children, required }) {
   return (
     <label style={LABEL_STYLE}>
       {children}
-      {required && <span style={{ color: '#c92f54', marginLeft: 3 }}>*</span>}
+      {required && <span style={{ color: 'var(--danger-text)', marginLeft: 3 }}>*</span>}
     </label>
   );
 }
@@ -209,7 +209,7 @@ function ToggleSwitch({ checked, onChange, disabled }) {
       onClick={() => !disabled && onChange(!checked)}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none',
-        background: checked ? '#3F6AC4' : '#D1D5DB',
+        background: checked ? 'var(--selected-background-strong)' : 'var(--border)',
         position: 'relative', cursor: disabled ? 'default' : 'pointer',
         transition: 'background 0.2s', flexShrink: 0, padding: 0,
       }}
@@ -266,30 +266,30 @@ function Step1({ form, onChange }) {
 
 const APP_NAME_STYLE = {
   fontFamily: '"SF Pro Text", -apple-system, sans-serif',
-  fontSize: 14, fontWeight: 500, color: '#1E1F21',
+  fontSize: 14, fontWeight: 500, color: 'var(--text)',
   lineHeight: '22px', letterSpacing: '-0.15px',
   fontFeatureSettings: "'liga' off, 'clig' off",
 };
 
 const INTAKE_DESC_STYLE = {
   fontFamily: '"SF Pro Text", -apple-system, sans-serif',
-  fontSize: 14, fontWeight: 400, color: '#1D1F21',
+  fontSize: 14, fontWeight: 400, color: 'var(--text)',
   lineHeight: '22px', letterSpacing: '-0.15px',
   margin: 0, fontFeatureSettings: "'liga' off, 'clig' off",
 };
 
 const CONNECT_BTN = {
   height: 32, padding: '0 14px', flexShrink: 0,
-  border: '1px solid #EDEAE9', borderRadius: 6,
+  border: '1px solid var(--border)', borderRadius: 6,
   fontFamily: '"SF Pro Text", -apple-system, sans-serif',
-  fontSize: 12, fontWeight: 400, color: '#1E1F21',
-  background: 'white', cursor: 'pointer',
+  fontSize: 12, fontWeight: 400, color: 'var(--text)',
+  background: 'var(--background-weak)', cursor: 'pointer',
   fontFeatureSettings: "'liga' off, 'clig' off",
 };
 
 const CARD_BASE = {
-  border: '1px solid #EDEAE9', borderRadius: 8,
-  padding: '18px 20px', background: 'white',
+  border: '1px solid var(--border)', borderRadius: 8,
+  padding: '18px 20px', background: 'var(--background-weak)',
 };
 
 function IntakeCard({ icon, name, description, fieldLabel, fieldPlaceholder, fieldType = 'text', value, onValue, connectingMsg }) {
@@ -309,7 +309,7 @@ function IntakeCard({ icon, name, description, fieldLabel, fieldPlaceholder, fie
           <button
             type="button"
             onClick={() => setOpen(false)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ea0a2', padding: 4, lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-disabled)', padding: 4, lineHeight: 1 }}
             aria-label="Collapse"
           >
             <svg viewBox="0 0 14 14" width="12" height="12" fill="none">
@@ -331,7 +331,7 @@ function IntakeCard({ icon, name, description, fieldLabel, fieldPlaceholder, fie
               placeholder={fieldPlaceholder}
               value={value}
               onChange={e => onValue(e.target.value)}
-              style={{ ...INPUT_STYLE, borderColor: value ? '#3F6AC4' : '#EDEAE9' }}
+              style={{ ...INPUT_STYLE, borderColor: value ? 'var(--selected-background-strong)' : 'var(--border)' }}
             />
             {value && connectingMsg && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
@@ -339,7 +339,7 @@ function IntakeCard({ icon, name, description, fieldLabel, fieldPlaceholder, fie
                   <circle cx="8" cy="8" r="6.5" stroke="#9ea0a2" strokeWidth="1.2"/>
                   <path d="M5 8.5l2 2 4-4" stroke="#9ea0a2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span style={{ fontFamily: '"SF Pro Text", -apple-system, sans-serif', fontSize: 12, fontWeight: 400, color: '#9ea0a2' }}>{connectingMsg}</span>
+                <span style={{ fontFamily: '"SF Pro Text", -apple-system, sans-serif', fontSize: 12, fontWeight: 400, color: 'var(--text-disabled)' }}>{connectingMsg}</span>
               </div>
             )}
           </div>
@@ -423,7 +423,7 @@ function Step3({ form, onChange }) {
       <div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
           <Label>Custom Fields</Label>
-          <span style={{ fontSize: 12, color: '#9ea0a2' }}>Included fields are always on.</span>
+          <span style={{ fontSize: 12, color: 'var(--text-disabled)' }}>Included fields are always on.</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {allFields.map(f => {
@@ -438,11 +438,11 @@ function Step3({ form, onChange }) {
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   height: 32, padding: '0 12px',
                   borderRadius: 16,
-                  border: `1.5px solid ${isOn ? '#3F6AC4' : '#EDEAE9'}`,
-                  background: isOn ? '#EEF2FC' : 'white',
+                  border: `1.5px solid ${isOn ? 'var(--selected-background-strong)' : 'var(--border)'}`,
+                  background: isOn ? 'var(--selected-background)' : 'var(--background-weak)',
                   cursor: f.required ? 'default' : 'pointer',
                   fontSize: 13, fontWeight: 500,
-                  color: isOn ? '#3F6AC4' : '#6D6E6F',
+                  color: isOn ? 'var(--selected-text)' : 'var(--text-weak)',
                   fontFamily: 'inherit',
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
@@ -452,8 +452,8 @@ function Step3({ form, onChange }) {
                 <span style={{
                   width: 14, height: 14, borderRadius: 3, flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isOn ? '#3F6AC4' : 'transparent',
-                  border: `1.5px solid ${isOn ? '#3F6AC4' : '#C5C7C9'}`,
+                  background: isOn ? 'var(--selected-background-strong)' : 'transparent',
+                  border: `1.5px solid ${isOn ? 'var(--selected-background-strong)' : 'var(--border-strong)'}`,
                   transition: 'all 0.15s',
                 }}>
                   {isOn && (
@@ -473,8 +473,8 @@ function Step3({ form, onChange }) {
               display: 'inline-flex', alignItems: 'center', gap: 6,
               height: 32, padding: '0 10px 0 12px',
               borderRadius: 16,
-              border: '1.5px dashed #3F6AC4',
-              background: '#EEF2FC',
+              border: '1.5px dashed var(--selected-background-strong)',
+              background: 'var(--selected-background)',
             }}>
               <input
                 autoFocus
@@ -485,16 +485,16 @@ function Step3({ form, onChange }) {
                 onKeyDown={e => { if (e.key === 'Enter') commitNewField(); if (e.key === 'Escape') { setAddingField(false); setNewFieldName(''); } }}
                 style={{
                   border: 'none', outline: 'none', fontSize: 13, fontWeight: 500,
-                  color: '#1E1F21', fontFamily: 'inherit', background: 'transparent',
+                  color: 'var(--text)', fontFamily: 'inherit', background: 'transparent',
                   width: 100,
                 }}
               />
               <button type="button" onClick={commitNewField}
-                style={{ fontSize: 11, fontWeight: 600, color: '#3F6AC4', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}>
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}>
                 ↵
               </button>
               <button type="button" onClick={() => { setAddingField(false); setNewFieldName(''); }}
-                style={{ fontSize: 16, color: '#9ea0a2', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}>
+                style={{ fontSize: 16, color: 'var(--text-disabled)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}>
                 ×
               </button>
             </div>
@@ -506,14 +506,14 @@ function Step3({ form, onChange }) {
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 height: 32, padding: '0 12px',
                 borderRadius: 16,
-                border: '1.5px dashed #D1D5DB',
-                background: 'white', cursor: 'pointer',
-                fontSize: 13, fontWeight: 500, color: '#9ea0a2',
+                border: '1.5px dashed var(--border)',
+                background: 'var(--background-weak)', cursor: 'pointer',
+                fontSize: 13, fontWeight: 500, color: 'var(--text-disabled)',
                 fontFamily: 'inherit',
                 transition: 'border-color 0.15s, color 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#9ea0a2'; e.currentTarget.style.color = '#6D6E6F'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#D1D5DB'; e.currentTarget.style.color = '#9ea0a2'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-disabled)'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-disabled)'; }}
             >
               <svg viewBox="0 0 12 12" width="11" height="11" fill="none">
                 <path d="M6 1.5v9M1.5 6h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -534,8 +534,8 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
   const avatarSrc = AVATARS[workflow.avatar % AVATARS.length];
   return (
     <div style={{
-      background: 'white',
-      border: '1px solid #EDEAE9',
+      background: 'var(--background-weak)',
+      border: '1px solid var(--border)',
       borderRadius: 12,
       padding: 24,
       display: 'flex',
@@ -551,7 +551,7 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
           alt=""
           style={{ borderRadius: '50%', flexShrink: 0 }}
         />
-        <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: '#1E1F21', lineHeight: '22px', letterSpacing: '-0.2px' }}>
+        <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: 'var(--text)', lineHeight: '22px', letterSpacing: '-0.2px' }}>
           {workflow.title}
         </span>
         <ToggleSwitch checked={enabled} onChange={onToggle} />
@@ -559,7 +559,7 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
 
       {/* Description */}
       <p style={{
-        fontSize: 14, fontWeight: 400, color: '#6D6E6F',
+        fontSize: 14, fontWeight: 400, color: 'var(--text-weak)',
         lineHeight: '22px', margin: 0, letterSpacing: '-0.15px',
         display: '-webkit-box', WebkitLineClamp: 3,
         WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -571,16 +571,16 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
         <span style={{
           height: 28, padding: '0 10px',
-          border: '1px solid #E5E7EB', borderRadius: 14,
-          fontSize: 12, color: '#6D6E6F',
+          border: '1px solid var(--border)', borderRadius: 14,
+          fontSize: 12, color: 'var(--text-weak)',
           display: 'inline-flex', alignItems: 'center', flexShrink: 0,
         }}>
           {workflow.domain}
         </span>
         <span style={{
           height: 28, padding: '0 10px',
-          border: '1px solid #E5E7EB', borderRadius: 14,
-          fontSize: 12, color: '#6D6E6F',
+          border: '1px solid var(--border)', borderRadius: 14,
+          fontSize: 12, color: 'var(--text-weak)',
           display: 'inline-flex', alignItems: 'center', flexShrink: 0,
         }}>
           {workflow.subtitle}
@@ -612,24 +612,24 @@ function Step4({ workflows, onToggle }) {
         style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 8, minHeight: 180,
-          background: 'white',
-          border: '1.5px dashed #D1D5DB', borderRadius: 12,
+          background: 'var(--background-weak)',
+          border: '1.5px dashed var(--border)', borderRadius: 12,
           cursor: 'pointer',
           transition: 'border-color 0.15s',
         }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = '#9ea0a2'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-disabled)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
       >
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
-          background: '#F3F2F2',
+          background: 'var(--background-medium)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="#9ea0a2" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#9ea0a2' }}>Add workflow</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-disabled)' }}>Add workflow</span>
       </button>
     </div>
   );
@@ -646,7 +646,7 @@ function SuccessState({ queueName, onOpenQueue, onCreateAnother }) {
     }}>
       <div style={{
         width: 80, height: 80, borderRadius: '50%',
-        background: '#EDFAF2',
+        background: 'var(--success-background)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 28,
       }}>
@@ -655,11 +655,11 @@ function SuccessState({ queueName, onOpenQueue, onCreateAnother }) {
           <path d="M12 20l6 7 11-12" stroke="#5da283" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
-      <h2 style={{ fontSize: 26, fontWeight: 700, color: '#1E1F21', margin: '0 0 10px' }}>
+      <h2 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', margin: '0 0 10px' }}>
         Queue created!
       </h2>
-      <p style={{ fontSize: 15, color: '#6D6E6F', margin: '0 0 36px', lineHeight: '24px', maxWidth: 400 }}>
-        <strong style={{ color: '#1E1F21' }}>{queueName || 'Your queue'}</strong> is live. Agents in the assigned group can start triaging tickets right away.
+      <p style={{ fontSize: 15, color: 'var(--text-weak)', margin: '0 0 36px', lineHeight: '24px', maxWidth: 400 }}>
+        <strong style={{ color: 'var(--text)' }}>{queueName || 'Your queue'}</strong> is live. Agents in the assigned group can start triaging tickets right away.
       </p>
       <div style={{ display: 'flex', gap: 12 }}>
         <button
@@ -667,9 +667,9 @@ function SuccessState({ queueName, onOpenQueue, onCreateAnother }) {
           onClick={onCreateAnother}
           style={{
             height: 42, padding: '0 22px',
-            border: '1.5px solid #EDEAE9', borderRadius: 8,
-            fontSize: 14, fontWeight: 500, color: '#9ea0a2',
-            background: 'white', cursor: 'pointer', fontFamily: 'inherit',
+            border: '1.5px solid var(--border)', borderRadius: 8,
+            fontSize: 14, fontWeight: 500, color: 'var(--text-disabled)',
+            background: 'var(--background-weak)', cursor: 'pointer', fontFamily: 'inherit',
           }}
         >
           Create another
@@ -680,8 +680,8 @@ function SuccessState({ queueName, onOpenQueue, onCreateAnother }) {
           style={{
             height: 42, padding: '0 22px',
             border: 'none', borderRadius: 8,
-            fontSize: 14, fontWeight: 600, color: 'white',
-            background: '#3F6AC4', cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: 14, fontWeight: 600, color: 'var(--selected-text-strong)',
+            background: 'var(--selected-background-strong)', cursor: 'pointer', fontFamily: 'inherit',
           }}
         >
           Open queue →
@@ -746,7 +746,7 @@ export default function CreateQueueWizard({ onDone }) {
   const meta       = STEP_META[step];
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'white' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--background-weak)' }}>
 
       {submitted ? (
         <SuccessState
@@ -766,11 +766,11 @@ export default function CreateQueueWizard({ onDone }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'transparent', border: 'none',
               cursor: 'pointer', borderRadius: 6,
-              color: '#9ea0a2',
+              color: 'var(--text-disabled)',
               transition: 'background 0.12s, color 0.12s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#F5F5F4'; e.currentTarget.style.color = '#1E1F21'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9ea0a2'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}
             aria-label="Close"
           >
             <svg viewBox="0 0 14 14" width="14" height="14" fill="none">
@@ -783,7 +783,7 @@ export default function CreateQueueWizard({ onDone }) {
 
             <h1 style={{
               fontFamily: '"SF Pro Display", -apple-system, sans-serif',
-              fontSize: 32, fontWeight: 400, color: '#1E1F21',
+              fontSize: 32, fontWeight: 400, color: 'var(--text)',
               margin: '0 0 6px', lineHeight: '40px', letterSpacing: '0.38px',
               fontFeatureSettings: "'liga' off, 'clig' off",
             }}>
@@ -791,7 +791,7 @@ export default function CreateQueueWizard({ onDone }) {
             </h1>
             <p style={{
               fontFamily: '"SF Pro Text", -apple-system, sans-serif',
-              fontSize: 16, fontWeight: 400, color: '#6D6E6F',
+              fontSize: 16, fontWeight: 400, color: 'var(--text-weak)',
               margin: '0 0 36px', lineHeight: '24px', letterSpacing: '-0.32px',
               fontFeatureSettings: "'liga' off, 'clig' off",
             }}>
@@ -815,7 +815,7 @@ export default function CreateQueueWizard({ onDone }) {
                     height: 36, padding: '0 22px',
                     border: 'none', borderRadius: 8,
                     fontSize: 14, fontWeight: 600, color: 'white',
-                    background: valid ? '#3F6AC4' : '#D1D5DB',
+                    background: valid ? 'var(--selected-background-strong)' : 'var(--border)',
                     cursor: valid ? 'pointer' : 'default',
                     transition: 'background 0.15s',
                     fontFamily: 'inherit',
@@ -830,7 +830,7 @@ export default function CreateQueueWizard({ onDone }) {
                     style={{
                       height: 36, padding: '0 4px',
                       border: 'none', borderRadius: 8,
-                      fontSize: 14, fontWeight: 400, color: '#9ea0a2',
+                      fontSize: 14, fontWeight: 400, color: 'var(--text-disabled)',
                       background: 'transparent', cursor: 'pointer', fontFamily: 'inherit',
                     }}
                   >

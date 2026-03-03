@@ -101,7 +101,7 @@ const RECENTS = [
   { label: 'Content Calendar',    icon: <SquircleIcon color="#F0A830" className="w-4 h-4 shrink-0" /> },
   { label: 'End-of-Year Camp...',  icon: <SquircleIcon color="#58C6C6" className="w-4 h-4 shrink-0" /> },
   { label: 'Web Bugs & Fixes',    icon: <SquircleIcon color="#4573D2" className="w-4 h-4 shrink-0" /> },
-  { label: 'FY25 Campaigns',      icon: <PortfolioFillIcon className="w-4 h-4 shrink-0 text-[#6D6E6F]" /> },
+  { label: 'FY25 Campaigns',      icon: <PortfolioFillIcon className="w-4 h-4 shrink-0 text-icon" /> },
 ];
 
 // ── WorkSecondaryNav ───────────────────────────────────────────────────────────
@@ -109,7 +109,8 @@ const RECENTS = [
 export default function WorkSecondaryNav({ activeItem, onSelect }) {
   return (
     <aside
-      className="flex flex-col w-[182px] h-full bg-white border-r border-[#e0e1e3] shrink-0"
+      className="flex flex-col w-[182px] h-full bg-background-medium border-r border-border shrink-0"
+      style={{ borderTopLeftRadius: 10, overflow: 'hidden' }}
       aria-label="Work navigation"
     >
       <nav className="flex-1 overflow-y-auto py-2">
@@ -117,7 +118,7 @@ export default function WorkSecondaryNav({ activeItem, onSelect }) {
         {/* ── Main sections ──────────────────────────────────────────────── */}
         {MAIN_NAV.map(({ section, items }, si) => (
           <div key={section}>
-            {si > 0 && <hr className="my-1 border-[#e0e1e3]" />}
+            {si > 0 && <hr className="my-1 border-border" />}
             {items.map(({ label, Icon }) => (
               <div key={label} className="px-2 py-1">
                 <button
@@ -125,13 +126,13 @@ export default function WorkSecondaryNav({ activeItem, onSelect }) {
                   onClick={() => onSelect(label)}
                   aria-current={activeItem === label ? 'page' : undefined}
                   className={[
-                    'w-full flex items-center gap-2.5 px-2 h-6',
+                    'w-full flex items-center gap-2.5 px-2 h-8',
                     'text-left text-[14px] leading-5 whitespace-nowrap overflow-hidden cursor-pointer border-0',
-                    'rounded-[6px] transition-colors duration-100',
+                    'rounded-[8px] transition-colors duration-100',
                     activeItem === label
-                      ? 'bg-[#EFEDED] text-[#1E1F21] font-medium'
-                      : 'bg-transparent text-[#4a4a4a]',
-                    'hover:bg-[#EFEDED] hover:text-[#1E1F21]',
+                      ? 'bg-[var(--background-active)] text-text font-medium'
+                      : 'bg-transparent text-text-weak',
+                    'hover:bg-[var(--background-hover)] hover:text-text',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
                   ].join(' ')}
                 >
@@ -144,15 +145,15 @@ export default function WorkSecondaryNav({ activeItem, onSelect }) {
         ))}
 
         {/* ── Recents ────────────────────────────────────────────────────── */}
-        <hr className="my-1 border-[#e0e1e3]" />
+        <hr className="my-1 border-border" />
 
         {/* Recents header */}
         <div className="flex items-center justify-between px-4 pt-2 pb-1">
-          <span className="text-[12px] font-medium text-[#9EA0A2]">Recents</span>
+          <span className="text-[12px] font-medium text-text-disabled">Recents</span>
           <button
             type="button"
             aria-label="Add recent"
-            className="text-[#9EA0A2] hover:text-[#4a4a4a] transition-colors cursor-pointer border-0 bg-transparent p-0"
+            className="text-text-disabled hover:text-text-weak transition-colors cursor-pointer border-0 bg-transparent p-0"
           >
             <PlusIcon className="w-3 h-3" />
           </button>
@@ -166,13 +167,13 @@ export default function WorkSecondaryNav({ activeItem, onSelect }) {
               onClick={() => onSelect(label)}
               aria-current={activeItem === label ? 'page' : undefined}
               className={[
-                'w-full flex items-center gap-2.5 px-2 h-6',
+                'w-full flex items-center gap-2.5 px-2 h-8',
                 'text-left text-[14px] cursor-pointer border-0',
-                'rounded-[6px] transition-colors duration-100',
+                'rounded-[8px] transition-colors duration-100',
                 activeItem === label
-                  ? 'bg-[#EFEDED] text-[#1E1F21] font-medium'
-                  : 'bg-transparent text-[#4a4a4a]',
-                'hover:bg-[#EFEDED] hover:text-[#1E1F21]',
+                  ? 'bg-[var(--background-active)] text-text font-medium'
+                  : 'bg-transparent text-text-weak',
+                'hover:bg-[var(--background-hover)] hover:text-text',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
               ].join(' ')}
             >

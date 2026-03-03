@@ -33,8 +33,8 @@ function TrendArrow({ color, down }) {
 // ── Trend color tokens ─────────────────────────────────────────────────────────
 // Matches SVG: icon uses lighter tint, text uses darker shade for same sentiment.
 const TREND = {
-  good: { icon: '#58A182', text: '#0D7F56' },
-  bad:  { icon: '#E8AC44', text: '#865a1c' },
+  good: { icon: 'var(--success-background-strong)', text: 'var(--success-text)' },
+  bad:  { icon: 'var(--warning-background-strong)', text: 'var(--warning-text)' },
 };
 
 // ── StatCard ───────────────────────────────────────────────────────────────────
@@ -43,24 +43,24 @@ export default function StatCard({ label, value, trend, trendGood }) {
   const { icon: iconColor, text: textColor } = TREND[trendGood ? 'good' : 'bad'];
 
   return (
-    <div className="flex-1 min-w-0 bg-white border border-[#EDEAE9] rounded-lg p-5
-                    flex flex-col justify-between shadow-sm min-h-[134px]">
+    <div className="flex-1 min-w-0 bg-background-weak border border-border rounded-lg p-5
+                    flex flex-col justify-between min-h-[134px]">
 
       {/* ── Top group: label + more, then value ───────────────────────────── */}
       <div>
         <div className="flex items-start justify-between gap-2">
-          <span className="text-xs leading-snug text-[#6D6E6F]">{label}</span>
+          <span className="text-xs leading-snug text-text-weak">{label}</span>
           <button
             type="button"
             aria-label="More options"
-            className="text-[#9ea0a2] hover:text-[#626364] transition-colors shrink-0
+            className="text-text-disabled hover:text-text-weak transition-colors shrink-0
                        border-0 bg-transparent cursor-pointer p-0 -mt-0.5"
           >
             <MoreIcon />
           </button>
         </div>
 
-        <p className="mt-3 text-2xl font-semibold leading-none text-[#1E1F21]">
+        <p className="mt-3 text-2xl font-semibold leading-none text-text">
           {value}
         </p>
       </div>

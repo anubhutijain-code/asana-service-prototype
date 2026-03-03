@@ -135,7 +135,7 @@ function Toggle({ checked, onChange }) {
       onClick={() => onChange(!checked)}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none',
-        background: checked ? '#3F6AC4' : '#D1D5DB',
+        background: checked ? 'var(--selected-background-strong)' : 'var(--border)',
         position: 'relative', cursor: 'pointer',
         transition: 'background 0.2s', flexShrink: 0, padding: 0,
       }}
@@ -158,8 +158,8 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
 
   return (
     <div style={{
-      background: 'white',
-      border: '1px solid #EDEAE9',
+      background: 'var(--background-weak)',
+      border: '1px solid var(--border)',
       borderRadius: 12,
       padding: 24,
       display: 'flex',
@@ -175,7 +175,7 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
           alt=""
           style={{ borderRadius: '50%', flexShrink: 0 }}
         />
-        <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: '#1E1F21', lineHeight: '22px', letterSpacing: '-0.2px' }}>
+        <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: 'var(--text)', lineHeight: '22px', letterSpacing: '-0.2px' }}>
           {workflow.title}
         </span>
         <Toggle checked={enabled} onChange={onToggle} />
@@ -183,7 +183,7 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
 
       {/* Description */}
       <p style={{
-        fontSize: 14, fontWeight: 400, color: '#6D6E6F',
+        fontSize: 14, fontWeight: 400, color: 'var(--text-weak)',
         lineHeight: '22px', margin: 0, letterSpacing: '-0.15px',
         display: '-webkit-box', WebkitLineClamp: 3,
         WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -195,8 +195,8 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
         <span style={{
           height: 28, padding: '0 10px',
-          border: '1px solid #E5E7EB', borderRadius: 14,
-          fontSize: 12, color: '#6D6E6F',
+          border: '1px solid var(--border)', borderRadius: 14,
+          fontSize: 12, color: 'var(--text-weak)',
           display: 'inline-flex', alignItems: 'center', flexShrink: 0,
           maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
@@ -204,8 +204,8 @@ function WorkflowCard({ workflow, enabled, onToggle }) {
         </span>
         <span style={{
           height: 28, padding: '0 10px',
-          border: '1px solid #E5E7EB', borderRadius: 14,
-          fontSize: 12, color: '#6D6E6F',
+          border: '1px solid var(--border)', borderRadius: 14,
+          fontSize: 12, color: 'var(--text-weak)',
           display: 'inline-flex', alignItems: 'center', flexShrink: 0,
           maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
@@ -254,8 +254,8 @@ export default function AutomationsView() {
 
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1E1F21', margin: '0 0 6px' }}>Automations</h1>
-        <p style={{ fontSize: 13, color: '#6D6E6F', margin: 0 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>Automations</h1>
+        <p style={{ fontSize: 13, color: 'var(--text-weak)', margin: 0 }}>
           Enable pre-built workflows to automate your service queue. Agents can toggle automations for their queues.
         </p>
       </div>
@@ -268,8 +268,8 @@ export default function AutomationsView() {
               key={f}
               as="button"
               label={f}
-              bg={activeFilter === f ? '#1E1F21' : '#F3F2F2'}
-              color={activeFilter === f ? '#FFFFFF' : '#6D6E6F'}
+              bg={activeFilter === f ? 'var(--text)' : 'var(--background-medium)'}
+              color={activeFilter === f ? 'var(--background-weak)' : 'var(--text-weak)'}
               onClick={() => setActiveFilter(f)}
             />
           ))}
@@ -277,7 +277,7 @@ export default function AutomationsView() {
 
         <div style={{ position: 'relative', width: 240 }}>
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true"
-            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ea0a2', pointerEvents: 'none' }}>
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-disabled)', pointerEvents: 'none' }}>
             <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
             <path d="M10.5 10.5L13 13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
@@ -288,8 +288,8 @@ export default function AutomationsView() {
             onChange={e => setSearch(e.target.value)}
             style={{
               width: '100%', height: 30, padding: '0 12px 0 32px',
-              border: '1px solid #EDEAE9', borderRadius: 6,
-              fontSize: 13, color: '#1E1F21', background: 'white',
+              border: '1px solid var(--border)', borderRadius: 6,
+              fontSize: 13, color: 'var(--text)', background: 'var(--background-weak)',
               outline: 'none', boxSizing: 'border-box',
             }}
           />
@@ -301,8 +301,8 @@ export default function AutomationsView() {
         {sections.map(section => (
           <div key={section.key}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <span style={{ fontSize: 16, fontWeight: 600, color: '#1E1F21' }}>{section.label}</span>
-              <span style={{ fontSize: 13, color: '#9ea0a2' }}>{section.workflows.length}</span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>{section.label}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-disabled)' }}>{section.workflows.length}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
               {section.workflows.map(w => (
@@ -318,7 +318,7 @@ export default function AutomationsView() {
         ))}
 
         {sections.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#9ea0a2', fontSize: 14 }}>
+          <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-disabled)', fontSize: 14 }}>
             No automations match your search.
           </div>
         )}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TicketDetailHeader from './TicketDetailHeader';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
@@ -6,6 +7,7 @@ import RightPanelOverlay from './RightPanelOverlay';
 import ApprovalTaskView from './ApprovalTaskView';
 import CreateHRTicketModal from './CreateHRTicketModal';
 import RouteToHRModal from './RouteToHRModal';
+import WorkflowStepsPanel from './WorkflowStepsPanel';
 
 // ─── Payroll ticket chat content (TICKET-68) ──────────────────────────────────
 
@@ -27,7 +29,10 @@ const PAYROLL_INTERNAL = [
   { type: 'outbound', isAi: false, text: "Yeah agreed, this needs to go to HR / Payroll. Anjelica's already chased once — let's route it and send her a note so she knows it's in the right hands.", senderLabel: 'You', time: 'just now' },
 ];
 
-export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCreateHRTicket, hrLinkedTicket, onGoToLinkedITTicket, onGoToLinkedHRTicket, onHRStatusChange, onITStatusChange }) {
+export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCreateHRTicket, onAddLinkedHRTicket, hrLinkedTicket, onGoToLinkedITTicket, onGoToLinkedHRTicket, onHRStatusChange, onITStatusChange }) {
+  const navigate = useNavigate();
+  const [workflowOpen, setWorkflowOpen] = useState(!!ticket.steps?.length);
+  const [workflowLinkedTicket, setWorkflowLinkedTicket] = useState(null);
   const [approvalState, setApprovalState] = useState(null);
   const [chatEvents, setChatEvents] = useState([]);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -107,6 +112,60 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
     setPendingHRCreate(true);
   }
 
+  // Navigate to the right queue when a workflow linked ticket is clicked
+  function handleWorkflowLinkedTicketClick(linkedTicket) {
+    if (linkedTicket.id?.startsWith('HR-')) {
+      navigate(`/hr-tickets/${linkedTicket.id}`);
+    } else {
+      setWorkflowLinkedTicket(linkedTicket);
+    }
+  }
+
+  // Auto-triggered when a linked step activates — build and register the HR ticket
+  function handleWorkflowStepCreateTask(stepId, step) {
+    const stub = step?.linkedTicket;
+    if (!stub?.id?.startsWith('HR-')) return;
+    const hrTicket = {
+      id: stub.id,
+      date: 'Today',
+      name: stub.name,
+      issueType: ticket.category ?? 'Verification',
+      priority: ticket.priority,
+      status: 'Not started',
+      updated: 'just now',
+      sla: '1d',
+      slaType: 'normal',
+      assignee: null,
+      employee: ticket.requester,
+      requester: ticket.requester,
+      category: ticket.category,
+      aiSummary: `${stub.name}. Linked from IT ticket ${ticket.id}.`,
+      initPublic: [],
+      initInternal: [
+        { type: 'inbound', name: 'IT Agent', time: 'just now',
+          text: `Verification request from IT queue (${ticket.id}).\n\n${step.body ?? step.label}` },
+      ],
+      initTranscript: [],
+      linkedFromId: ticket.id,
+    };
+    onAddLinkedHRTicket?.(hrTicket);
+  }
+
+  function handleWorkflowStepComplete(stepId, step) {
+    if (step?.team !== 'Communications Agent') return;
+    const firstName = ticket.requester?.name?.split(' ')[0] ?? 'there';
+    setChatEvents(prev => [...prev,
+      {
+        type: 'outbound', isAi: true, senderLabel: 'Communications Agent', time: 'just now',
+        text: `Hi ${firstName}! Great news — your Salesforce access has been updated to reflect your new Finance role. You now have full access to the pipeline and revenue reports. Your request ${ticket.id} is now resolved. Let us know if you need anything else!`,
+      },
+      { type: 'system', text: 'Ticket resolved by Communications Agent' },
+    ]);
+    setLocalStatus('Resolved');
+    onITStatusChange?.('Resolved');
+    setTimeout(() => onBack?.(), 2000);
+  }
+
   function handleConfirmRouteToHR(notes) {
     const firstName = ticket.requester?.name?.split(' ')[0] ?? 'there';
     const routingSystemMsg = { type: 'system', text: 'Ticket routed to HR queue — view only' };
@@ -134,6 +193,9 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         onRouteToHR={() => setShowRouteModal(true)}
         onCreateTicketHR={() => setHrCreateOpen(true)}
         readOnly={routedToHR}
+        hasWorkflow={!!ticket.steps?.length}
+        workflowOpen={workflowOpen}
+        onToggleWorkflow={() => setWorkflowOpen(v => !v)}
       />
 
       {/* Banner: ticket routed to HR — IT ticket is now view-only */}
@@ -177,7 +239,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         </div>
       )}
 
-      {/* Body: chat (flex-1) + info sidebar (responsive, capped at 432px) */}
+      {/* Body: chat (flex-1) + optional workflow panel (280px) + info sidebar */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 min-w-0 overflow-hidden">
           <TicketChatPanel
@@ -190,6 +252,21 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             initTranscript={chatInitTranscript}
           />
         </div>
+        {ticket.steps?.length > 0 && workflowOpen && (
+          <div style={{
+            width: 340, flexShrink: 0,
+            borderLeft: '1px solid #EDEAE9',
+            borderRight: '1px solid #EDEAE9',
+            overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          }}>
+            <WorkflowStepsPanel
+              initialSteps={ticket.steps}
+              onLinkedTicketClick={handleWorkflowLinkedTicketClick}
+              onStepCreateTask={handleWorkflowStepCreateTask}
+              onStepComplete={handleWorkflowStepComplete}
+            />
+          </div>
+        )}
         <div style={{ width: '30%', maxWidth: 600, minWidth: 300, flexShrink: 0 }}>
           <TicketInfoSidebar
             ticket={ticket}
@@ -218,7 +295,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         </div>
       </div>
 
-      {/* Approval task panel overlay */}
+      {/* Approval task panel overlay (sidebar-triggered) */}
       <RightPanelOverlay open={panelOpen} onClose={() => setPanelOpen(false)} width="min(660px, 72%)">
         <ApprovalTaskView
           approvalState={approvalState ?? 'pending'}
@@ -226,6 +303,19 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
           onReject={() => setApprovalState('rejected')}
           onUndo={() => setApprovalState('pending')}
           onClose={() => setPanelOpen(false)}
+        />
+      </RightPanelOverlay>
+
+      {/* Workflow step — IT-linked ticket overlay (HR tickets navigate directly) */}
+      <RightPanelOverlay open={!!workflowLinkedTicket} onClose={() => setWorkflowLinkedTicket(null)} width="min(580px, 65%)">
+        <ApprovalTaskView
+          title={workflowLinkedTicket?.name ?? ''}
+          ticketId={workflowLinkedTicket?.id ?? ''}
+          approvalState="pending"
+          onApprove={() => setWorkflowLinkedTicket(null)}
+          onReject={() => setWorkflowLinkedTicket(null)}
+          onUndo={() => {}}
+          onClose={() => setWorkflowLinkedTicket(null)}
         />
       </RightPanelOverlay>
 

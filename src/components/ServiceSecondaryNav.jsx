@@ -2,6 +2,8 @@
 // Flat nav: shared items (Inbox, Projects, Dashboard) + per-queue ticket items
 // (IT Tickets, HR Tickets) + shared config items (KB, Automations, Settings).
 
+import { KB_PROJECTS } from '../data/knowledgeBase';
+
 // ── Icons (fill="currentColor") ───────────────────────────────────────────────
 
 function InboxIcon({ className }) {
@@ -15,7 +17,7 @@ function InboxIcon({ className }) {
 function TicketsIcon({ className }) {
   return (
     <svg viewBox="0 0 12 12" className={className} fill="currentColor" aria-hidden="true">
-      <path d="M7.99875 5.59478C8.03538 5.62917 8.06472 5.67058 8.08504 5.71654C8.10535 5.7625 8.11622 5.81207 8.117 5.86232C8.11778 5.91256 8.10845 5.96244 8.08958 6.00901C8.0707 6.05558 8.04266 6.09788 8.00712 6.1334C7.97157 6.16892 7.92925 6.19693 7.88267 6.21577C7.83609 6.23462 7.7862 6.24391 7.73596 6.24309C7.68571 6.24227 7.63615 6.23137 7.5902 6.21102C7.54426 6.19068 7.50287 6.1613 7.4685 6.12465L7.18725 5.8434C7.12172 5.7722 7.08625 5.67843 7.08825 5.58168C7.09026 5.48493 7.12958 5.39271 7.19801 5.32428C7.26643 5.25586 7.35866 5.21653 7.4554 5.21453C7.55215 5.21252 7.64593 5.24799 7.71713 5.31353L7.99875 5.59478ZM6.40575 4.00178C6.33455 3.93624 6.24077 3.90077 6.14403 3.90278C6.04728 3.90478 5.95506 3.94411 5.88663 4.01253C5.81821 4.08096 5.77888 4.17318 5.77688 4.26993C5.77487 4.36668 5.81034 4.46045 5.87588 4.53165L6.15713 4.8129C6.19187 4.84785 6.23318 4.87558 6.27868 4.8945C6.32418 4.91342 6.37297 4.92316 6.42225 4.92316C6.47153 4.92316 6.52032 4.91342 6.56582 4.8945C6.61132 4.87558 6.65263 4.84785 6.68738 4.8129C6.75756 4.74259 6.79698 4.64731 6.79698 4.54796C6.79698 4.44862 6.75756 4.35333 6.68738 4.28303L6.40575 4.00178ZM11.7773 5.3349L5.33475 11.7774C5.18925 11.9237 4.99688 11.9964 4.80525 11.9964C4.70683 11.9966 4.60935 11.9773 4.51841 11.9396C4.42747 11.902 4.34488 11.8467 4.27538 11.777L3.35288 10.8545C3.30015 10.8018 3.26432 10.7346 3.24996 10.6615C3.2356 10.5884 3.24336 10.5126 3.27225 10.4439C3.37428 10.2039 3.40216 9.9389 3.3523 9.68294C3.30245 9.42698 3.17714 9.1918 2.9925 9.00765C2.80844 8.82276 2.57318 8.69728 2.3171 8.64742C2.06102 8.59755 1.79587 8.62559 1.55588 8.7279C1.48722 8.75676 1.41153 8.7645 1.33846 8.75014C1.26538 8.73578 1.19825 8.69997 1.14563 8.64728L0.223126 7.72478C0.082637 7.58415 0.00372314 7.3935 0.00372314 7.19471C0.00372314 6.99593 0.082637 6.80528 0.223126 6.66465L6.66563 0.223276C6.80619 0.0828106 6.99678 0.00390625 7.1955 0.00390625C7.39422 0.00390625 7.58481 0.0828106 7.72538 0.223276L8.64788 1.14578C8.7006 1.19846 8.73643 1.26566 8.75079 1.3388C8.76515 1.41194 8.75739 1.48769 8.7285 1.5564C8.62639 1.79643 8.59847 2.06153 8.64832 2.31756C8.69818 2.5736 8.82354 2.80885 9.00825 2.99303C9.19238 3.17769 9.42759 3.30299 9.68357 3.35278C9.93955 3.40257 10.2046 3.37458 10.4445 3.2724C10.5132 3.24331 10.589 3.23544 10.6622 3.24981C10.7353 3.26418 10.8026 3.30013 10.8551 3.35303L11.7776 4.27553C11.9181 4.41616 11.997 4.60681 11.997 4.80559C11.997 5.00437 11.9181 5.19502 11.7776 5.33565L11.7773 5.3349ZM11.2474 4.80503L10.491 4.04865C10.1391 4.14852 9.76689 4.1524 9.41298 4.05988C9.05908 3.96737 8.73638 3.78183 8.47838 3.52253C8.21914 3.26439 8.03366 2.94163 7.94115 2.58768C7.84864 2.23374 7.85247 1.86149 7.95225 1.50953L7.19625 0.753151L5.17688 2.77253L5.51625 3.1119C5.55288 3.1463 5.58222 3.18771 5.60254 3.23367C5.62285 3.27963 5.63372 3.3292 5.6345 3.37944C5.63528 3.42968 5.62595 3.47957 5.60708 3.52614C5.5882 3.5727 5.56016 3.615 5.52462 3.65052C5.48907 3.68604 5.44675 3.71405 5.40017 3.7329C5.35359 3.75174 5.3037 3.76103 5.25346 3.76021C5.20321 3.7594 5.15365 3.74849 5.1077 3.72815C5.06176 3.7078 5.02037 3.67843 4.986 3.64178L4.64663 3.3024L0.753376 7.19528L1.50975 7.95165C1.86165 7.85178 2.23386 7.84791 2.58777 7.94042C2.94167 8.03294 3.26437 8.21847 3.52238 8.47778C3.78161 8.73591 3.96709 9.05867 4.0596 9.41262C4.15211 9.76657 4.14828 10.1388 4.0485 10.4908L4.8045 11.2472L8.69775 7.35428L8.35838 7.0149C8.29284 6.9437 8.25737 6.84993 8.25938 6.75318C8.26138 6.65643 8.30071 6.56421 8.36913 6.49578C8.43756 6.42736 8.52978 6.38803 8.62653 6.38603C8.72328 6.38402 8.81705 6.41949 8.88825 6.48503L9.22763 6.8244L11.2466 4.8054L11.2474 4.80503Z" />
+      <path d="M7.99875 5.5938C8.03538 5.6282 8.06472 5.66961 8.08504 5.71556C8.10535 5.76152 8.11622 5.8111 8.117 5.86134C8.11778 5.91158 8.10845 5.96147 8.08958 6.00804C8.0707 6.0546 8.04266 6.0969 8.00712 6.13242C7.97157 6.16794 7.92925 6.19595 7.88267 6.2148C7.83609 6.23364 7.7862 6.24293 7.73596 6.24211C7.68571 6.2413 7.63615 6.23039 7.5902 6.21005C7.54426 6.1897 7.50287 6.16033 7.4685 6.12367L7.18725 5.84242C7.12172 5.77122 7.08625 5.67745 7.08825 5.5807C7.09026 5.48396 7.12958 5.39173 7.19801 5.32331C7.26643 5.25488 7.35866 5.21556 7.4554 5.21355C7.55215 5.21155 7.64593 5.24702 7.71713 5.31255L7.99875 5.5938ZM6.40575 4.0008C6.33455 3.93527 6.24077 3.8998 6.14403 3.9018C6.04728 3.90381 5.95506 3.94313 5.88663 4.01156C5.81821 4.07998 5.77888 4.17221 5.77688 4.26895C5.77487 4.3657 5.81034 4.45948 5.87588 4.53067L6.15713 4.81192C6.19187 4.84687 6.23318 4.8746 6.27868 4.89352C6.32418 4.91245 6.37297 4.92219 6.42225 4.92219C6.47153 4.92219 6.52032 4.91245 6.56582 4.89352C6.61132 4.8746 6.65263 4.84687 6.68738 4.81192C6.75756 4.74162 6.79698 4.64633 6.79698 4.54699C6.79698 4.44764 6.75756 4.35236 6.68738 4.28205L6.40575 4.0008ZM11.7773 5.33392L5.33475 11.7764C5.18925 11.9227 4.99688 11.9954 4.80525 11.9954C4.70683 11.9956 4.60935 11.9763 4.51841 11.9386C4.42747 11.901 4.34488 11.8457 4.27538 11.776L3.35288 10.8535C3.30015 10.8009 3.26432 10.7337 3.24996 10.6605C3.2356 10.5874 3.24336 10.5116 3.27225 10.4429C3.37428 10.2029 3.40216 9.93792 3.3523 9.68196C3.30245 9.426 3.17714 9.19082 2.9925 9.00667C2.80844 8.82178 2.57318 8.69631 2.3171 8.64644C2.06102 8.59658 1.79587 8.62461 1.55588 8.72692C1.48722 8.75578 1.41153 8.76353 1.33846 8.74917C1.26538 8.73481 1.19825 8.69899 1.14563 8.6463L0.223126 7.7238C0.082637 7.58317 0.00372314 7.39252 0.00372314 7.19374C0.00372314 6.99496 0.082637 6.80431 0.223126 6.66368L6.66563 0.2223C6.80619 0.0818341 6.99678 0.00292969 7.1955 0.00292969C7.39422 0.00292969 7.58481 0.0818341 7.72538 0.2223L8.64788 1.1448C8.7006 1.19748 8.73643 1.26468 8.75079 1.33782C8.76515 1.41096 8.75739 1.48672 8.7285 1.55542C8.62639 1.79545 8.59847 2.06055 8.64832 2.31659C8.69818 2.57262 8.82354 2.80787 9.00825 2.99205C9.19238 3.17671 9.42759 3.30201 9.68357 3.3518C9.93955 3.4016 10.2046 3.3736 10.4445 3.27142C10.5132 3.24233 10.589 3.23446 10.6622 3.24883C10.7353 3.2632 10.8026 3.29915 10.8551 3.35205L11.7776 4.27455C11.9181 4.41518 11.997 4.60583 11.997 4.80461C11.997 5.00339 11.9181 5.19404 11.7776 5.33467L11.7773 5.33392ZM11.2474 4.80405L10.491 4.04767C10.1391 4.14754 9.76689 4.15142 9.41298 4.0589C9.05908 3.96639 8.73638 3.78085 8.47838 3.52155C8.21914 3.26342 8.03366 2.94065 7.94115 2.58671C7.84864 2.23276 7.85247 1.86052 7.95225 1.50855L7.19625 0.752175L5.17688 2.77155L5.51625 3.11092C5.55288 3.14532 5.58222 3.18673 5.60254 3.23269C5.62285 3.27865 5.63372 3.32822 5.6345 3.37846C5.63528 3.42871 5.62595 3.47859 5.60708 3.52516C5.5882 3.57173 5.56016 3.61403 5.52462 3.64955C5.48907 3.68506 5.44675 3.71308 5.40017 3.73192C5.35359 3.75076 5.3037 3.76005 5.25346 3.75924C5.20321 3.75842 5.15365 3.74752 5.1077 3.72717C5.06176 3.70683 5.02037 3.67745 4.986 3.6408L4.64663 3.30142L0.753376 7.1943L1.50975 7.95068C1.86165 7.85081 2.23386 7.84693 2.58777 7.93945C2.94167 8.03196 3.26437 8.2175 3.52238 8.4768C3.78161 8.73493 3.96709 9.0577 4.0596 9.41164C4.15211 9.76559 4.14828 10.1378 4.0485 10.4898L4.8045 11.2462L8.69775 7.3533L8.35838 7.01393C8.29284 6.94273 8.25737 6.84895 8.25938 6.7522C8.26138 6.65546 8.30071 6.56323 8.36913 6.49481C8.43756 6.42638 8.52978 6.38706 8.62653 6.38505C8.72328 6.38305 8.81705 6.41852 8.88825 6.48405L9.22763 6.82343L11.2466 4.80442L11.2474 4.80405Z" />
     </svg>
   );
 }
@@ -60,6 +62,41 @@ function SettingsIcon({ className }) {
   );
 }
 
+function AssetsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 12 12" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M10.5 1H1.5C0.671 1 0 1.671 0 2.5V8C0 8.829 0.671 9.5 1.5 9.5H4.5V10H3.5C3.224 10 3 10.224 3 10.5S3.224 11 3.5 11H8.5C8.776 11 9 10.776 9 10.5S8.776 10 8.5 10H7.5V9.5H10.5C11.329 9.5 12 8.829 12 8V2.5C12 1.671 11.329 1 10.5 1ZM6.5 10H5.5V9.5H6.5V10ZM11 8C11 8.276 10.776 8.5 10.5 8.5H1.5C1.224 8.5 1 8.276 1 8V2.5C1 2.224 1.224 2 1.5 2H10.5C10.776 2 11 2.224 11 2.5V8Z" />
+    </svg>
+  );
+}
+
+// ── Chevron for expandable items ───────────────────────────────────────────────
+
+function ChevronRightIcon({ expanded }) {
+  return (
+    <svg
+      viewBox="0 0 12 12"
+      width="10"
+      height="10"
+      fill="currentColor"
+      aria-hidden="true"
+      style={{ transition: 'transform 0.15s', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}
+    >
+      <path d="M4.5 2.5L7.5 6l-3 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+}
+
+// ── Diamond icon for KB sub-items ──────────────────────────────────────────────
+
+function DiamondIcon({ className }) {
+  return (
+    <svg viewBox="0 0 10 10" className={className} fill="currentColor" aria-hidden="true" width="8" height="8">
+      <path d="M5 1L9 5L5 9L1 5L5 1Z" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 // ── Bottom-button icons ────────────────────────────────────────────────────────
 
 function MegaphoneIcon() {
@@ -72,8 +109,6 @@ function MegaphoneIcon() {
 
 
 // ── Nav data ───────────────────────────────────────────────────────────────────
-// Sections are separated by dividers. Queue-specific ticket items sit together
-// between the shared top items and the shared utility items.
 
 const NAV_SECTIONS = [
   [
@@ -84,59 +119,133 @@ const NAV_SECTIONS = [
     { label: 'HR Tickets', Icon: TicketsIcon, badge: 1 },
   ],
   [
-    { label: 'Projects',  Icon: ProjectsIcon  },
     { label: 'Dashboard', Icon: DashboardIcon },
+    { label: 'Assets',    Icon: AssetsIcon, badge: 5 },
   ],
-  [
-    { label: 'Knowledge base', Icon: LightBulbIcon  },
-    { label: 'Automations',    Icon: AutomationIcon },
-    { label: 'Settings',       Icon: SettingsIcon   },
-  ],
+  // Section 4 handled separately (Knowledge base is expandable)
+];
+
+const BOTTOM_SECTION = [
+  { label: 'Automations', Icon: AutomationIcon },
+  { label: 'Settings',    Icon: SettingsIcon   },
 ];
 
 // ── NavItem ────────────────────────────────────────────────────────────────────
 
 function NavItem({ label, Icon, badge, active, onClick }) {
   return (
-    <div className="px-2 py-1">
+    <div className="px-2 py-[2px]">
     <button
       type="button"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={[
-        'w-full flex items-center gap-2.5 px-2 h-6',
+        'w-full flex items-center gap-2.5 px-2 h-8',
         'text-left text-[14px] leading-5 whitespace-nowrap overflow-hidden cursor-pointer border-0',
-        'rounded-[6px] transition-colors duration-100',
+        'rounded-[8px] transition-colors duration-100',
         active
-          ? 'bg-[#EFEDED] text-[#1E1F21] font-medium'
-          : 'bg-transparent text-[#4a4a4a]',
-        'hover:bg-[#EFEDED] hover:text-[#1E1F21]',
+          ? 'bg-[var(--background-active)] text-text font-medium'
+          : 'bg-transparent text-text-weak',
+        'hover:bg-[var(--background-hover)] hover:text-text',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
       ].join(' ')}
     >
       <Icon className="w-4 h-4 shrink-0 fill-current" />
       <span className="flex-1 truncate">{label}</span>
       {badge != null && (
-        <span className="text-[11px] font-medium text-[#9ea0a2] tabular-nums">{badge}</span>
+        <span className="text-[11px] font-medium text-text-disabled tabular-nums">{badge}</span>
       )}
     </button>
     </div>
   );
 }
 
+// ── ExpandableNavItem ──────────────────────────────────────────────────────────
+
+function ExpandableNavItem({ label, Icon, badge, active, expanded, onToggle, children }) {
+  return (
+    <div>
+      <div className="px-2 py-[2px]">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={expanded}
+          className={[
+            'w-full flex items-center gap-2.5 px-2 h-8',
+            'text-left text-[14px] leading-5 whitespace-nowrap overflow-hidden cursor-pointer border-0',
+            'rounded-[8px] transition-colors duration-100',
+            active
+              ? 'bg-[var(--background-active)] text-text font-medium'
+              : 'bg-transparent text-text-weak',
+            'hover:bg-[var(--background-hover)] hover:text-text',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
+          ].join(' ')}
+        >
+          <Icon className="w-4 h-4 shrink-0 fill-current" />
+          <span className="flex-1 truncate">{label}</span>
+          {badge != null && (
+            <span className="text-[11px] font-medium text-text-disabled tabular-nums mr-1">{badge}</span>
+          )}
+          <ChevronRightIcon expanded={expanded} />
+        </button>
+      </div>
+      {expanded && (
+        <div>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── KBSubItem ─────────────────────────────────────────────────────────────────
+
+function KBSubItem({ label, active, onClick }) {
+  return (
+    <div className="px-2 py-[2px]">
+      <button
+        type="button"
+        onClick={onClick}
+        aria-current={active ? 'page' : undefined}
+        className={[
+          'w-full flex items-center gap-2 h-8',
+          'text-left text-[13px] leading-5 whitespace-nowrap overflow-hidden cursor-pointer border-0',
+          'rounded-[8px] transition-colors duration-100',
+          active
+            ? 'bg-[var(--background-active)] text-text font-medium'
+            : 'bg-transparent text-text-weak',
+          'hover:bg-[var(--background-hover)] hover:text-text',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
+        ].join(' ')}
+        style={{ paddingLeft: 28 }}
+      >
+        <DiamondIcon className="shrink-0" />
+        <span className="flex-1 truncate">{label}</span>
+      </button>
+    </div>
+  );
+}
+
 // ── ServiceSecondaryNav ────────────────────────────────────────────────────────
 
-export default function ServiceSecondaryNav({ activeItem, onSelect }) {
+export default function ServiceSecondaryNav({
+  activeItem,
+  onSelect,
+  expandedKB,
+  onToggleKB,
+  activeKBProject,
+  onSelectKBProject,
+}) {
   return (
     <aside
-      className="flex flex-col w-[182px] h-full bg-white shrink-0"
-      style={{ borderTopLeftRadius: 12, border: '1px solid #e0e1e3', overflow: 'hidden' }}
+      className="flex flex-col w-[182px] h-full bg-background-medium shrink-0"
+      style={{ borderTopLeftRadius: 10, borderRight: '1px solid var(--border)', overflow: 'hidden' }}
       aria-label="Service navigation"
     >
       <nav className="flex-1 overflow-y-auto py-2">
         {NAV_SECTIONS.map((items, si) => (
           <div key={si}>
-            {si > 0 && <hr className="my-1 border-[#e0e1e3]" />}
+            {si > 0 && <hr className="my-1 border-border" />}
             {items.map(({ label, Icon, badge }) => (
               <NavItem
                 key={label}
@@ -149,20 +258,43 @@ export default function ServiceSecondaryNav({ activeItem, onSelect }) {
             ))}
           </div>
         ))}
+
+        {/* Section 4: Knowledge base (expandable) + Automations + Settings */}
+        <hr className="my-1 border-border" />
+        <ExpandableNavItem
+          label="Knowledge base"
+          Icon={LightBulbIcon}
+          active={activeItem === 'Knowledge base'}
+          expanded={expandedKB}
+          onToggle={onToggleKB}
+        >
+          {KB_PROJECTS.map(proj => (
+            <KBSubItem
+              key={proj.id}
+              label={proj.name}
+              active={activeKBProject === proj.id}
+              onClick={() => onSelectKBProject(proj.id)}
+            />
+          ))}
+        </ExpandableNavItem>
+        {BOTTOM_SECTION.map(({ label, Icon }) => (
+          <NavItem
+            key={label}
+            label={label}
+            Icon={Icon}
+            active={activeItem === label}
+            onClick={() => onSelect(label)}
+          />
+        ))}
       </nav>
 
-      <div className="p-3 border-t border-[#e0e1e3] flex flex-col gap-2">
+      <div className="p-3 border-t border-border flex flex-col gap-2">
         <button
           type="button"
           onClick={() => onSelect('Create Queue')}
-          style={{
-            fontFamily: '"SF Pro Text", -apple-system, sans-serif',
-            fontSize: 12, fontWeight: 400, lineHeight: '18px',
-            color: '#1D1F21', fontFeatureSettings: "'liga' off, 'clig' off",
-          }}
           className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg
-                     bg-white border border-[#EDEAE9]
-                     hover:bg-[#f5f5f4] hover:border-[#c8c9cb] transition-colors duration-150 cursor-pointer"
+                     bg-background-weak border border-border text-text text-xs font-normal
+                     hover:bg-background-medium hover:border-border-strong transition-colors duration-150 cursor-pointer"
         >
           <svg viewBox="0 0 12 12" width="11" height="11" fill="none" aria-hidden="true">
             <path d="M6 1v10M1 6h10" stroke="#1E1F21" strokeWidth="1.8" strokeLinecap="round"/>
@@ -172,8 +304,8 @@ export default function ServiceSecondaryNav({ activeItem, onSelect }) {
         <button
           type="button"
           className="flex items-center gap-1.5 w-full px-2 py-1
-                     text-[12px] font-medium text-[#9ea0a2]
-                     hover:text-[#6D6E6F] transition-colors duration-150 cursor-pointer
+                     text-[12px] font-medium text-text-disabled
+                     hover:text-text-weak transition-colors duration-150 cursor-pointer
                      border-0 bg-transparent"
         >
           <MegaphoneIcon />

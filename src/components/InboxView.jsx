@@ -406,10 +406,10 @@ function NotifRow({ avatarProps, actor, count, verb, itemIcon, title, preview, t
       className="group flex items-center px-8 cursor-pointer transition-colors"
       style={{
         minHeight: '40px',
-        borderBottom: '1px solid #EDEAE9',
-        background: active ? '#EBF0FB' : undefined,
+        borderBottom: '1px solid var(--border)',
+        background: active ? 'var(--selected-background)' : undefined,
       }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F9F8F8'; }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--background-hover)'; }}
       onMouseLeave={e => { if (!active) e.currentTarget.style.background = ''; }}
       onClick={onClick}
     >
@@ -418,15 +418,15 @@ function NotifRow({ avatarProps, actor, count, verb, itemIcon, title, preview, t
       <div className="flex items-center gap-2 shrink-0 pr-6" style={{ width: '38%' }}>
         {grouped && (
           <svg viewBox="0 0 10 10" width="10" height="10" fill="none"
-               className="shrink-0 text-[#9EA0A2]" aria-hidden="true">
+               className="shrink-0 text-text-disabled" aria-hidden="true">
             <path d="M3 2l4 3-4 3" stroke="currentColor" strokeWidth="1.3"
                   strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
         <Avatar {...avatarProps} />
-        <p className="truncate" style={{ fontSize: '14px', color: '#6D6E6F', lineHeight: '1.35' }}>
-          <span style={{ fontWeight: 400, color: '#1E1F21' }}>{actor}</span>
-          {count && <span style={{ color: '#9EA0A2' }}> {count}</span>}
+        <p className="truncate" style={{ fontSize: '14px', color: 'var(--text-weak)', lineHeight: '1.35' }}>
+          <span style={{ fontWeight: 400, color: 'var(--text)' }}>{actor}</span>
+          {count && <span style={{ color: 'var(--text-disabled)' }}> {count}</span>}
           {verb  && <span> {verb}</span>}
         </p>
       </div>
@@ -434,11 +434,11 @@ function NotifRow({ avatarProps, actor, count, verb, itemIcon, title, preview, t
       {/* ── Middle: type icon + title + preview ─────────── flex */}
       <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
         <span className="shrink-0">{itemIcon}</span>
-        <span className="shrink-0 truncate" style={{ fontSize: '14px', fontWeight: 500, color: '#1E1F21', maxWidth: '55%' }}>
+        <span className="shrink-0 truncate" style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)', maxWidth: '55%' }}>
           {title}
         </span>
         {preview && (
-          <span className="truncate" style={{ fontSize: '14px', color: '#9EA0A2' }}>
+          <span className="truncate" style={{ fontSize: '14px', color: 'var(--text-disabled)' }}>
             {preview}
           </span>
         )}
@@ -446,11 +446,11 @@ function NotifRow({ avatarProps, actor, count, verb, itemIcon, title, preview, t
 
       {/* ── Right: time + unread dot ─────────────────────── fixed */}
       <div className="flex items-center gap-2 shrink-0 ml-4">
-        <span className="tabular-nums whitespace-nowrap" style={{ fontSize: '14px', color: '#9EA0A2' }}>
+        <span className="tabular-nums whitespace-nowrap" style={{ fontSize: '14px', color: 'var(--text-disabled)' }}>
           {time}
         </span>
         <div className="w-2 h-2 flex items-center justify-center">
-          {unread && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3F6AC4' }} />}
+          {unread && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--selected-background-strong)' }} />}
         </div>
       </div>
 
@@ -464,7 +464,7 @@ function Section({ label, items, activeId, onNotifClick }) {
   return (
     <div>
       <div className="px-8 pt-4 pb-2">
-        <span style={{ fontSize: '12px', fontWeight: 500, color: '#9EA0A2' }}>{label}</span>
+        <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-disabled)' }}>{label}</span>
       </div>
       {items.map(n => (
         <NotifRow
@@ -494,26 +494,26 @@ export default function InboxView({ defaultTab = 'Activity' }) {
   }
 
   return (
-    <div className="flex h-full bg-white overflow-hidden">
+    <div className="flex h-full bg-background-weak overflow-hidden">
 
       {/* ── Left: inbox list ────────────────────────────────────────────────── */}
       <div
         className="flex flex-col h-full shrink-0 overflow-hidden"
         style={{
           width: panelOpen ? '42%' : '100%',
-          borderRight: panelOpen ? '1px solid #EDEAE9' : 'none',
+          borderRight: panelOpen ? '1px solid var(--border)' : 'none',
           transition: 'width 0.2s ease',
         }}
       >
         {/* Header */}
         <div className="shrink-0 px-8 pt-7">
 
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#1E1F21', marginBottom: '12px', lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text)', marginBottom: '12px', lineHeight: 1.2 }}>
             Inbox
           </h1>
 
           {/* Tab bar */}
-          <div className="flex items-end justify-between" style={{ borderBottom: '1px solid #EDEAE9' }}>
+          <div className="flex items-end justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
             <div className="flex items-end">
               {TABS.map(tab => (
                 <button
@@ -525,8 +525,8 @@ export default function InboxView({ defaultTab = 'Activity' }) {
                     padding: `0 12px 10px ${tab === TABS[0] ? '0' : '12px'}`,
                     fontSize: '14px',
                     fontWeight: activeTab === tab ? 600 : 400,
-                    color: activeTab === tab ? '#1E1F21' : '#6D6E6F',
-                    borderBottomColor: activeTab === tab ? '#1E1F21' : 'transparent',
+                    color: activeTab === tab ? 'var(--text)' : 'var(--text-weak)',
+                    borderBottomColor: activeTab === tab ? 'var(--text)' : 'transparent',
                     marginBottom: activeTab === tab ? '-1px' : '0',
                   }}
                 >
@@ -536,15 +536,15 @@ export default function InboxView({ defaultTab = 'Activity' }) {
               <button
                 type="button"
                 className="cursor-pointer border-0 bg-transparent transition-colors border-b-2 border-transparent"
-                style={{ padding: '0 8px 10px', fontSize: '14px', color: '#9EA0A2' }}
+                style={{ padding: '0 8px 10px', fontSize: '14px', color: 'var(--text-disabled)' }}
               >
                 +
               </button>
             </div>
             <button
               type="button"
-              className="cursor-pointer border-0 bg-transparent hover:text-[#1E1F21] transition-colors"
-              style={{ padding: '0 0 10px', fontSize: '13px', color: '#6D6E6F' }}
+              className="cursor-pointer border-0 bg-transparent hover:text-text transition-colors"
+              style={{ padding: '0 0 10px', fontSize: '13px', color: 'var(--text-weak)' }}
             >
               Manage notifications
             </button>
@@ -552,26 +552,26 @@ export default function InboxView({ defaultTab = 'Activity' }) {
 
           {/* Toolbar */}
           <div className="flex items-center justify-between py-2.5">
-            <div className="flex items-center gap-5" style={{ color: '#6D6E6F' }}>
+            <div className="flex items-center gap-5" style={{ color: 'var(--text-weak)' }}>
               <button type="button"
-                      className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent hover:text-[#1E1F21] transition-colors"
+                      className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent hover:text-text transition-colors"
                       style={{ fontSize: '14px' }}>
                 <FilterIcon /> Filter
               </button>
               <button type="button"
-                      className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent hover:text-[#1E1F21] transition-colors"
+                      className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent hover:text-text transition-colors"
                       style={{ fontSize: '14px' }}>
                 <SortIcon /> Sort: Relevance
               </button>
               <button type="button"
-                      className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent hover:text-[#1E1F21] transition-colors"
+                      className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent hover:text-text transition-colors"
                       style={{ fontSize: '14px' }}>
                 <DensityIcon /> Density: Compact
               </button>
             </div>
             <button type="button"
-                    className="cursor-pointer border-0 bg-transparent hover:text-[#1E1F21] transition-colors p-1 rounded"
-                    style={{ color: '#6D6E6F' }}>
+                    className="cursor-pointer border-0 bg-transparent hover:text-text transition-colors p-1 rounded"
+                    style={{ color: 'var(--text-weak)' }}>
               <DotsHIcon />
             </button>
           </div>
@@ -581,7 +581,7 @@ export default function InboxView({ defaultTab = 'Activity' }) {
         {/* Notification list */}
         <div
           className="flex-1 min-h-0 overflow-auto"
-          style={{ borderTop: '1px solid #EDEAE9', overscrollBehavior: 'none' }}
+          style={{ borderTop: '1px solid var(--border)', overscrollBehavior: 'none' }}
         >
           {activeTab === 'Activity' && (
             Object.entries(ACTIVITY_NOTIFICATIONS).map(([label, items]) => (
@@ -595,7 +595,7 @@ export default function InboxView({ defaultTab = 'Activity' }) {
           )}
           {(activeTab === 'Bookmarks' || activeTab === 'Archive') && (
             <div className="flex items-center justify-center h-full">
-              <p style={{ fontSize: '14px', color: '#9EA0A2' }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-disabled)' }}>
                 {activeTab} — coming soon
               </p>
             </div>

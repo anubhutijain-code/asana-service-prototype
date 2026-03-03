@@ -1,0 +1,65 @@
+/* ─── Design Tokens — Light Theme ─────────────────────────────────────────── */
+/* Ported from Asana-Prototype-Builder/src/components/ui/foundations/themes/light.css */
+
+:root {
+  /* Text */
+  --text:          #1d1f21;
+  --text-weak:     #626364;
+  --text-disabled: #a9abad;
+
+  /* Icon */
+  --icon:       #757677;
+  --icon-hover: #1d1f21;
+
+  /* Border */
+  --border:        #e0e1e3;
+  --border-strong: #c4c6c8;
+
+  /* Background */
+  --background-weak:   #ffffff;
+  --background-medium: #f2f3f4;
+  --background-strong: #e8e9ea;
+  --background-hover:  rgba(37, 39, 40, 0.03);
+  --background-active: rgba(37, 39, 40, 0.06);
+
+  /* Selected / Primary blue */
+  --selected-background-strong:       #4273d1;
+  --selected-background-strong-hover: #335fb5;
+  --selected-text-strong:             #ffffff;
+  --selected-background:              #e9f1fe;
+  --selected-text:                    #335fb5;
+
+  /* Danger */
+  --danger-text:             #b4304c;
+  --danger-background:       #ffeff0;
+  --danger-background-strong: #d43d5d;
+
+  /* Success */
+  --success-text:             #14865e;
+  --success-background:       #e9faf1;
+  --success-background-strong: #5da182;
+
+  /* Warning */
+  --warning-text:             #865a1c;
+  --warning-background:       #fef6ee;
+  --warning-background-strong: #ecbd85;
+
+  /* Shadows */
+  --shadow-sm: 0px 1px 4px rgba(117, 118, 119, 0.08);
+  --shadow-md: 0px 2px 8px rgba(117, 118, 119, 0.12);
+  --shadow-lg: 0px 4px 16px rgba(117, 118, 119, 0.16);
+  --elevation-sm: 0px 1px 2px rgba(117, 118, 119, 0.10), 0px 1px 4px rgba(117, 118, 119, 0.08);
+  --elevation-md: 0px 2px 4px rgba(117, 118, 119, 0.10), 0px 2px 8px rgba(117, 118, 119, 0.12);
+  --elevation-lg: 0px 4px 8px rgba(117, 118, 119, 0.10), 0px 4px 16px rgba(117, 118, 119, 0.16);
+
+  /* Creation (red action button) */
+  --creation-background:       #ff584a;
+  --creation-background-hover: #f13b27;
+
+  /* Motion */
+  --duration-enter-sm:  200ms;
+  --duration-enter-md:  250ms;
+  --duration-exit-sm:   150ms;
+  --ease-enter:         cubic-bezier(0.05, 0.4, 0.2, 1);
+  --ease-exit:          cubic-bezier(0.3, 0, 1, 0.5);
+}

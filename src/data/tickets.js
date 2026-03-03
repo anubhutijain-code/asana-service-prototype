@@ -1,13 +1,14 @@
 // ─── Tickets dashboard data ────────────────────────────────────────────────────
 
 export const STATS = [
-  { label: 'Total Tickets',           value: '17',     trend: '12% from last week',    trendGood: true  },
-  { label: 'Auto resolved tickets',   value: '19',     trend: '8% efficiency gain',     trendGood: true  },
-  { label: 'Average resolution time', value: '3m 45s', trend: '15% slower than target', trendGood: false },
-  { label: 'SLA compliance',          value: '98%',    trend: '2% above target',        trendGood: true  },
+  { label: 'Total tickets',                    value: '51',  trend: '+4 from last week',      trendGood: true  },
+  { label: 'AI-deflected tickets',             value: '14',  trend: '27% of total',           trendGood: true  },
+  { label: 'AI deflection rate',               value: '99%', trend: '3% above last month',    trendGood: true  },
+  { label: 'MTTA (Mean Time to Acknowledge)',  value: '4s',  trend: '18% faster than target', trendGood: true  },
+  { label: 'SLA compliance',                   value: '67%', trend: '3% below target',        trendGood: false },
 ];
 
-export const TABS = ['My Tickets', 'All Tickets', 'Open Tickets', 'SLA Urgent', 'Resolved'];
+export const TABS = ['My Tickets', 'All Tickets', 'Unassigned', 'Open Tickets', 'SLA Urgent', 'Resolved'];
 
 export const PEOPLE = {
   steve:  { name: 'Steve Smith',   initials: 'SS', bg: '6d8aad', fg: 'ffffff' },
@@ -23,6 +24,68 @@ export const PEOPLE = {
 export const CURRENT_USER = PEOPLE.steve;
 
 export const TICKETS = [
+  {
+    id: 'TICKET-95',
+    name: 'Salesforce Access Update — Department Transfer (Sarah Lee)',
+    status: 'In Progress',
+    priority: 'Critical',
+    category: 'Access Management',
+    subcategory: 'Role Update',
+    date: 'Today',
+    hasImage: false,
+    updated: 'just now',
+    sla: '45m remaining',
+    slaPercent: 80,
+    slaType: 'warning',
+    requester: { name: 'Sarah Lee', email: 'sarah.lee@company.com', bg: '4573D2', fg: 'ffffff', initials: 'SL' },
+    assignee: PEOPLE.steve,
+    team: 'Service Desk',
+    aiTag: 'AI Classified · 98%',
+    initPublic: [
+      { type: 'inbound', name: 'Sarah Lee', time: '8 min ago', bg: '4573D2', fg: 'ffffff', initials: 'SL',
+        text: "Hi, I transferred to the Finance team last week but my Salesforce still shows my old Marketing role. I can't see the Finance pipeline reports I need — my manager is waiting on this." },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Bot', time: '7 min ago',
+        text: "Hi Sarah! I've logged this as TICKET-95 (Critical) and kicked off parallel tasks — HR is confirming your transfer and your manager has been sent an approval request. We'll update your access as soon as both are confirmed." },
+    ],
+    initInternal: [],
+    initTranscript: [],
+    steps: [
+      {
+        id: 's1', type: 'agent',
+        label: 'Intake & Task Distribution', team: 'IT Agent',
+        status: 'active',
+        body: 'Classified as Access Management → Salesforce role update post department transfer. Kicked off parallel HR verification and manager approval tasks.',
+      },
+      {
+        id: 's2', type: 'linked',
+        label: 'HR Employment Verification', team: 'HR',
+        status: 'pending',
+        parallelGroup: 'approval-check',
+        linkedTicket: { id: 'HR-112', name: 'Confirm department transfer: Sarah Lee (Marketing → Finance)', status: 'Open' },
+      },
+      {
+        id: 's3', type: 'linked',
+        label: 'Manager Approval', team: 'Manager',
+        status: 'pending',
+        parallelGroup: 'approval-check',
+        // CWM task — no IT ticket ID
+        linkedTicket: { name: 'Manager approval: Salesforce access update for Sarah Lee', status: 'Open' },
+      },
+      {
+        id: 's4', type: 'agent',
+        label: 'Provision Updated Access', team: 'AI Provisioning Agent',
+        status: 'pending',
+        assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+        body: "AI agent updating Sarah's Salesforce profile to Finance role template with pipeline and revenue report permissions.",
+      },
+      {
+        id: 's5', type: 'agent',
+        label: 'Notify & Resolve', team: 'Communications Agent',
+        status: 'pending',
+        assignee: { type: 'ai', name: 'Communications Agent' },
+      },
+    ],
+  },
   {
     id: 'TICKET-69', date: 'Feb 24, 2026', name: 'Wrong Microsoft 365 License After Department Transfer',
     hasImage: false, priority: 'Medium', status: 'Investigating', updated: '2 hours ago',
@@ -146,6 +209,14 @@ export const KNOWLEDGE_ARTICLES = [
   { id: 'KB-005', title: 'macOS Update — IT Policy and Safe Upgrade Steps', category: 'Hardware', summary: 'IT policy on macOS updates and the recommended process for upgrading without data loss.' },
 ];
 
+export const WORK_TASKS = [
+  { id: 'TASK-201', name: 'Renew Adobe Creative Cloud licenses — Q2 2026', project: 'Software Asset Management', assignee: 'Steve Mills', status: 'In Progress', due: 'Mar 15' },
+  { id: 'TASK-202', name: 'Audit software license usage across Engineering', project: 'Software Asset Management', assignee: 'Priya Nair', status: 'Not started', due: 'Mar 28' },
+  { id: 'TASK-203', name: 'Review Microsoft 365 license allocation — over-provisioned seats', project: 'IT Cost Optimisation', assignee: 'Steve Mills', status: 'In Progress', due: 'Apr 2' },
+  { id: 'TASK-204', name: 'Track license expiry dates for Figma, Miro, and Notion', project: 'Software Asset Management', assignee: 'Liam Torres', status: 'Not started', due: 'Apr 10' },
+  { id: 'TASK-205', name: 'Reclaim unused Salesforce licenses from inactive accounts', project: 'IT Cost Optimisation', assignee: 'Priya Nair', status: 'Completed', due: 'Feb 28' },
+];
+
 export function filterHRTickets(tickets, tab, query) {
   let result = tickets;
   switch (tab) {
@@ -179,6 +250,9 @@ export function filterTickets(tickets, tab, query) {
   switch (tab) {
     case 'My Tickets':
       result = result.filter(t => t.assignee === CURRENT_USER);
+      break;
+    case 'Unassigned':
+      result = result.filter(t => !t.assignee);
       break;
     case 'Open Tickets':
       result = result.filter(t => OPEN_STATUSES.has(t.status));

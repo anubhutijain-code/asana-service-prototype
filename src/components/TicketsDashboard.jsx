@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Pill from './Pill';
 import StatCard from './StatCard';
+import Avatar from './ui/Avatar';
 import { STATS, TABS, TICKETS, filterTickets, HR_TICKETS } from '../data/tickets';
 import TicketDetailView from './TicketDetailView';
 
@@ -126,12 +127,12 @@ const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const SFT  = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const SFM  = '"SF Mono", ui-monospace, "Cascadia Code", monospace';
 
-const typoTicketNo = { fontFamily: SFM, fontSize: '12px', fontWeight: 500, lineHeight: '22px', color: '#AFABAC', ...LIGA };
-const typoName     = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: '#1E1F21', ...LIGA };
-const typoPriority = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: '#6D6E6F', ...LIGA };
-const typoStatus   = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: '#1E1F21', ...LIGA };
-const typoUpdated  = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: '#6D6E6F', ...LIGA };
-const typoPerson   = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: '#1E1F21', ...LIGA };
+const typoTicketNo = { fontFamily: SFM, fontSize: '12px', fontWeight: 500, lineHeight: '22px', color: 'var(--text-disabled)', ...LIGA };
+const typoName     = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: 'var(--text)', ...LIGA };
+const typoPriority = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
+const typoStatus   = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text)', ...LIGA };
+const typoUpdated  = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
+const typoPerson   = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: 'var(--text)', ...LIGA };
 
 // ─── Priority pill (no icon — colored text on colored background) ─────────────
 
@@ -155,7 +156,7 @@ function StatusCell({ status }) {
 
 // ─── SLA cell ─────────────────────────────────────────────────────────────────
 
-const SLA_TEXT_COLOR = { normal: '#6D6E6F', warning: '#6D6E6F', overdue: '#C92F54' };
+const SLA_TEXT_COLOR = { normal: 'var(--text-weak)', warning: 'var(--text-weak)', overdue: 'var(--danger-text)' };
 
 function SlaCell({ sla, slaType }) {
   return (
@@ -173,19 +174,15 @@ const AVATAR = { width: 24, height: 24, flexShrink: 0, borderRadius: '50%' };
 function PersonCell({ person }) {
   if (!person) {
     return (
-      <span className="flex items-center gap-2" style={{ ...typoPerson, color: '#9ea0a2' }}>
-        <span style={{ ...AVATAR, border: '1px dashed #c0c0c0', background: '#f5f5f4' }} />
+      <span className="flex items-center gap-2" style={{ ...typoPerson, color: 'var(--text-disabled)' }}>
+        <span style={{ width: 24, height: 24, flexShrink: 0, borderRadius: '50%', border: '1px dashed var(--border-strong)', background: 'var(--background-medium)' }} />
         Unassigned
       </span>
     );
   }
   return (
     <span className="flex items-center gap-2 truncate" style={typoPerson}>
-      <img
-        src={`https://placehold.co/24x24/${person.bg}/${person.fg}?text=${person.initials}`}
-        alt={person.name}
-        style={{ ...AVATAR, objectFit: 'cover' }}
-      />
+      <Avatar name={person.name} size={24} bg={person.bg ? `#${person.bg}` : undefined} />
       <span className="truncate">{person.name}</span>
     </span>
   );
@@ -196,19 +193,19 @@ function PersonCell({ person }) {
 // Frozen cols: sticky left-0 (120px) · sticky left-[120px] (300px)
 // No drop shadows. Rows have border-t/r/l only; header has rounded-t-lg.
 
-const COL  = 'text-xs font-medium text-[#626364] px-4 py-3 text-left whitespace-nowrap';
+const COL  = 'text-xs font-medium text-text-weak px-4 py-3 text-left whitespace-nowrap';
 const CELL = 'px-4';
 // Cell divider applied via inline style so it's guaranteed in all browsers/Tailwind versions
-const divStyle = { borderRight: '1px solid #EDEAE9' };
+const divStyle = { borderRight: '1px solid var(--border)' };
 
 function TableHeader() {
   return (
     <div
-      className="flex items-center w-full bg-[#f9f9f9] sticky top-0 z-[2]"
-      style={{ border: '1px solid #EDEAE9', borderRadius: '8px 8px 0 0' }}
+      className="flex items-center w-full bg-background-medium sticky top-0 z-[2]"
+      style={{ border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}
     >
-      <div className={`${COL} sticky left-0       bg-[#f9f9f9] z-[3] w-[120px] shrink-0`} style={divStyle}>Ticket number</div>
-      <div className={`${COL} sticky left-[120px] bg-[#f9f9f9] z-[3] w-[300px] shrink-0`} style={divStyle}>Name</div>
+      <div className={`${COL} sticky left-0       bg-background-medium z-[3] w-[120px] shrink-0`} style={divStyle}>Ticket number</div>
+      <div className={`${COL} sticky left-[120px] bg-background-medium z-[3] w-[300px] shrink-0`} style={divStyle}>Name</div>
       <div className={`${COL} w-[130px] shrink-0`} style={divStyle}>Priority</div>
       <div className={`${COL} w-[175px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[155px] shrink-0`} style={divStyle}>Last updated</div>
@@ -223,23 +220,23 @@ function TableRow({ ticket, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="group flex items-stretch w-full h-[64px] bg-white hover:bg-[#fafafa] transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid #EDEAE9', borderLeft: '1px solid #EDEAE9' }}
+      className="group flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
+      style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}
     >
-      <div className={`${CELL} sticky left-0       z-[1] bg-white group-hover:bg-[#fafafa] w-[120px] shrink-0 flex items-center`}
+      <div className={`${CELL} sticky left-0       z-[1] bg-background-weak group-hover:bg-background-medium w-[120px] shrink-0 flex items-center`}
            style={{ ...divStyle, ...typoTicketNo }}>
         {ticket.id}
       </div>
-      <div className={`${CELL} sticky left-[120px] z-[1] bg-white group-hover:bg-[#fafafa] w-[300px] shrink-0 flex flex-col justify-center`}
+      <div className={`${CELL} sticky left-[120px] z-[1] bg-background-weak group-hover:bg-background-medium w-[300px] shrink-0 flex flex-col justify-center`}
            style={divStyle}>
         <div className="flex flex-col gap-0.5 w-full min-w-0" style={typoName}>
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="truncate">{ticket.name}</span>
             {ticket.hasImage && (
-              <span className="shrink-0 text-[#9ea0a2]"><ImageAttachmentIcon /></span>
+              <span className="shrink-0 text-text-disabled"><ImageAttachmentIcon /></span>
             )}
           </div>
-          <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#9ea0a2' }}>
+          <span className="flex items-center gap-1" style={{ fontSize: 12, color: 'var(--text-disabled)' }}>
             <CalendarIcon />
             {ticket.date}
           </span>
@@ -273,7 +270,7 @@ function TableRow({ ticket, onClick }) {
 // Only the table rows scroll, inside a single overflow:auto container.
 // That container is also the sticky context for the header and frozen cols.
 
-export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTicket = () => {}, deepLinkTicketId = null, onDeepLinkHandled = () => {}, linkedHRTickets = {}, onLinkHRTicket = () => {}, onGoToLinkedHRTicket }) {
+export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTicket = () => {}, deepLinkTicketId = null, onDeepLinkHandled = () => {}, onURLBack = null, linkedHRTickets = {}, onLinkHRTicket = () => {}, onGoToLinkedHRTicket }) {
   const [activeTab, setActiveTab] = useState('My Tickets');
   const [search, setSearch] = useState('');
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -440,7 +437,11 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
     return (
       <TicketDetailView
         ticket={selectedTicket}
-        onBack={() => setSelectedTicket(null)}
+        onBack={() => { setSelectedTicket(null); onURLBack?.(); }}
+        onAddLinkedHRTicket={(hrTicket) => {
+          onLinkHRTicket(selectedTicket.id, hrTicket);
+          onCreateHRTicket(hrTicket);
+        }}
         onRouteComplete={handleRouteComplete}
         onCreateHRTicket={handleCreateHRComplete}
         onITStatusChange={handleITStatusChange}
@@ -451,7 +452,7 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex flex-col h-full overflow-hidden bg-background-weak">
 
       {/* ── Stat cards — always visible ──────────────────────────────────── */}
       <div className="shrink-0 px-8 pt-8 pb-6">
@@ -463,10 +464,10 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
       {/* ── Ticket feed title + tabs + search — always visible ───────────── */}
       <div className="shrink-0 px-8">
 
-        <h2 className="text-2xl font-semibold text-[#1d1f21] mb-4">Ticket feed</h2>
+        <h2 className="text-2xl font-semibold text-text mb-4">Ticket feed</h2>
 
         {/* Tab bar */}
-        <div className="flex border-b border-[#e0e1e3] gap-6">
+        <div className="flex border-b border-border gap-6">
           {TABS.map(tab => {
             const count = filterTickets(queueTickets, tab, '').length;
             const isActive = activeTab === tab;
@@ -479,16 +480,16 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
                   'flex items-center gap-1.5 pb-2.5 text-sm cursor-pointer border-0 bg-transparent whitespace-nowrap',
                   'transition-colors duration-150',
                   isActive
-                    ? 'text-[#1d1f21] font-medium shadow-[inset_0_-2px_0_#757677]'
-                    : 'text-[#626364] hover:text-[#1d1f21]',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                    ? 'text-text font-medium shadow-[inset_0_-2px_0_var(--icon)]'
+                    : 'text-text-weak hover:text-text',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 ].join(' ')}
               >
                 {tab}
                 <span className={[
                   'inline-flex items-center justify-center min-w-[18px] h-[18px] px-1',
                   'rounded text-[11px] font-medium leading-none',
-                  isActive ? 'bg-[#ebebea] text-[#1d1f21]' : 'bg-[#f0f0ef] text-[#9ea0a2]',
+                  isActive ? 'bg-background-strong text-text' : 'bg-background-medium text-text-disabled',
                 ].join(' ')}>
                   {count}
                 </span>
@@ -508,30 +509,30 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
               placeholder="Search by name or ticket ID…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full h-8 pl-9 pr-3 text-sm border border-[#e0e1e3] rounded-md
-                         bg-white text-[#1d1f21] placeholder:text-[#9ea0a2]
-                         focus:outline-none focus:border-[#757677]
+              className="w-full h-8 pl-9 pr-3 text-sm border border-border rounded-md
+                         bg-background-weak text-text placeholder:text-text-disabled
+                         focus:outline-none focus:border-icon
                          transition-colors duration-150"
             />
           </div>
 
           <div className="flex items-center gap-1">
             <button type="button"
-              className="flex items-center gap-1.5 px-3 h-8 text-sm text-[#626364]
+              className="flex items-center gap-1.5 px-3 h-8 text-sm text-text-weak
                          border-0 bg-transparent rounded-md cursor-pointer
-                         hover:bg-[#f5f5f4] hover:text-[#1d1f21] transition-colors">
+                         hover:bg-background-medium hover:text-text transition-colors">
               <FilterIcon /> Filter
             </button>
             <button type="button"
-              className="flex items-center gap-1.5 px-3 h-8 text-sm text-[#626364]
+              className="flex items-center gap-1.5 px-3 h-8 text-sm text-text-weak
                          border-0 bg-transparent rounded-md cursor-pointer
-                         hover:bg-[#f5f5f4] hover:text-[#1d1f21] transition-colors">
+                         hover:bg-background-medium hover:text-text transition-colors">
               <SortIcon /> Sort
             </button>
             <button type="button" aria-label="More options"
-              className="w-8 h-8 flex items-center justify-center text-[#626364]
+              className="w-8 h-8 flex items-center justify-center text-text-weak
                          border-0 bg-transparent rounded-md cursor-pointer
-                         hover:bg-[#f5f5f4] hover:text-[#1d1f21] transition-colors">
+                         hover:bg-background-medium hover:text-text transition-colors">
               <MoreIcon />
             </button>
           </div>
@@ -563,8 +564,8 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
                 ))
               : (
                 <div
-                  className="flex items-center justify-center py-16 w-full text-sm text-[#9ea0a2]"
-                  style={{ borderBottom: '1px solid #EDEAE9', borderRight: '1px solid #EDEAE9', borderLeft: '1px solid #EDEAE9' }}
+                  className="flex items-center justify-center py-16 w-full text-sm text-text-disabled"
+                  style={{ borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}
                 >
                   No tickets match your search.
                 </div>

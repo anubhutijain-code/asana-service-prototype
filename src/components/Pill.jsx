@@ -32,7 +32,7 @@ export default function Pill({
     <Tag
       {...(Tag === 'button' ? { type: 'button' } : {})}
       {...rest}
-      className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded text-xs font-medium whitespace-nowrap"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
       style={{
         backgroundColor: bg,
         color,

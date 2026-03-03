@@ -1,4 +1,5 @@
 // NavBar — search input is now a click-to-open trigger (no local state needed)
+import { useNavigate } from 'react-router-dom';
 
 // ─── Inline SVGs from Figma assets ───────────────────────────────────────────
 // All paths taken verbatim from the provided SVG files.
@@ -106,8 +107,9 @@ function GhostBtn({ label, onClick, children }) {
 //   Right  — ? help icon + AI sparkle icon
 
 export default function NavBar({ onToggleSidebar, onOpenSearch, searchOpen = false, pillRef }) {
+  const navigate = useNavigate();
   return (
-    <header className="flex items-center h-11 bg-[#f5f5f4] shrink-0 px-4">
+    <header className="flex items-center h-12 bg-background-strong shrink-0 px-4">
 
       {/* ── Left: burger + logo ──────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 shrink-0">
@@ -122,10 +124,10 @@ export default function NavBar({ onToggleSidebar, onOpenSearch, searchOpen = fal
 
       {/* ── Centre: history nav + search ────────────────────────────────────── */}
       <div className="flex-1 min-w-0 flex items-center justify-center gap-2 overflow-hidden">
-        <GhostBtn label="Go back">
+        <GhostBtn label="Go back" onClick={() => navigate(-1)}>
           <ChevronLeftIcon />
         </GhostBtn>
-        <GhostBtn label="Go forward">
+        <GhostBtn label="Go forward" onClick={() => navigate(1)}>
           <ChevronRightIcon />
         </GhostBtn>
 
@@ -141,7 +143,7 @@ export default function NavBar({ onToggleSidebar, onOpenSearch, searchOpen = fal
           <span className="absolute top-1/2 left-3 -translate-y-1/2 pointer-events-none flex items-center">
             <SearchIcon />
           </span>
-          <div className="h-7 w-full rounded-full bg-white border border-[#e0e1e3] pl-8 pr-4 text-xs text-[#9ea0a2] flex items-center select-none">
+          <div className="h-7 w-full rounded-full bg-background-weak border border-border pl-8 pr-4 text-xs text-text-disabled flex items-center select-none">
             Ask or search
           </div>
         </div>
