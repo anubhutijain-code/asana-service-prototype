@@ -14,6 +14,7 @@ import CreateQueueWizard from './components/CreateQueueWizard';
 import AssetsView from './components/AssetsView';
 import KnowledgeBaseView from './components/KnowledgeBaseView';
 import DashboardView from './components/DashboardView';
+import SettingsView from './components/SettingsView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
 // ModeSidebar    = w-16 = 4rem    = 64px
@@ -48,6 +49,8 @@ function getRouteState(pathname) {
   if (pathname === '/create-queue') return { mode: 'service',  serviceNav: 'Create Queue', workItem: null    };
   if (pathname === '/knowledge-base' || pathname.startsWith('/knowledge-base/'))
     return { mode: 'service', serviceNav: 'Knowledge base', workItem: null };
+  if (pathname === '/settings')
+    return { mode: 'service', serviceNav: 'Settings', workItem: null };
   return { mode: 'service', serviceNav: null, workItem: null };
 }
 
@@ -89,6 +92,7 @@ const SERVICE_NAV_URL = {
   'Create Queue':    '/create-queue',
   'Knowledge base':  '/knowledge-base',
   'Dashboard':       '/dashboard',
+  'Settings':        '/settings',
 };
 
 export default function AsanaService() {
@@ -296,6 +300,7 @@ export default function AsanaService() {
             <CreateQueueWizard onDone={() => navigate('/tickets')} />
           } />
           <Route path="/dashboard" element={<DashboardView />} />
+          <Route path="/settings" element={<SettingsView />} />
           <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
           <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
           <Route path="/people" element={<EmptyModeView mode="People" />} />

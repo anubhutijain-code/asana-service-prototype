@@ -38,7 +38,7 @@ export const TICKETS = [
     slaPercent: 80,
     slaType: 'warning',
     requester: { name: 'Sarah Lee', email: 'sarah.lee@company.com', bg: '4573D2', fg: 'ffffff', initials: 'SL' },
-    assignee: PEOPLE.steve,
+    assignee: null,
     team: 'Service Desk',
     aiTag: 'AI Classified · 98%',
     initPublic: [

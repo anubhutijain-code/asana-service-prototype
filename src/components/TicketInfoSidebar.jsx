@@ -478,6 +478,27 @@ export default function TicketInfoSidebar({
                 minWidth: 200,
                 overflow: 'hidden',
               }}>
+                {localAssignee && (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full flex items-center gap-2 border-0 cursor-pointer"
+                      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: '#6D6E6F' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      onClick={() => {
+                        setLocalAssignee(null);
+                        setAssigneeDropdownOpen(false);
+                        onAssigneeChange(null);
+                      }}
+                    >
+                      <span style={{ width: 16, flexShrink: 0 }} />
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', border: '1.5px dashed #D1D5DB', flexShrink: 0 }} />
+                      <span>No assignee</span>
+                    </button>
+                    <div style={{ height: 1, background: '#EDEAE9', margin: '2px 0' }} />
+                  </>
+                )}
                 {TEAM_MEMBERS.map(member => (
                   <AssigneeOption
                     key={member.name}
