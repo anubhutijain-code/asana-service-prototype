@@ -346,7 +346,7 @@ export default function DashboardView() {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: 'var(--background-weak)' }}>
-      <div style={{ maxWidth: 1160, margin: '0 auto', padding: '32px 40px 64px' }}>
+      <div style={{ padding: '32px 32px 64px' }}>
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16 }}>
