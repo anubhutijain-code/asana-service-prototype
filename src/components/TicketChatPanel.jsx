@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Pill from './Pill';
+import { AI_INTENT, AI_KB_REFS, AI_SUGGESTED_REPLY, AI_CHAT_RESPONSES } from '../data/aiAssist';
+import { KB_ARTICLES } from '../data/knowledgeBase';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -19,9 +21,9 @@ function LockIcon({ color = 'currentColor' }) {
   );
 }
 
-function AiSparkleIcon({ color = 'currentColor' }) {
+function AiSparkleIcon({ color = 'currentColor', size = 12 }) {
   return (
-    <svg viewBox="0 0 12 12" width="12" height="12" fill={color} aria-hidden="true" style={{ flexShrink: 0 }}>
+    <svg viewBox="0 0 12 12" width={size} height={size} fill={color} aria-hidden="true" style={{ flexShrink: 0 }}>
       <path d="M8.8125 0H8.1875C8.1875 0.580161 7.95703 1.13656 7.5468 1.5468C7.13656 1.95703 6.58016 2.1875 6 2.1875V2.8125C6.58016 2.8125 7.13656 3.04297 7.5468 3.4532C7.95703 3.86344 8.1875 4.41984 8.1875 5H8.8125C8.8125 4.41984 9.04297 3.86344 9.4532 3.4532C9.86344 3.04297 10.4198 2.8125 11 2.8125V2.1875C10.4198 2.1875 9.86344 1.95703 9.4532 1.5468C9.04297 1.13656 8.8125 0.580161 8.8125 0ZM6.5 5.125C4.8335 5.125 3.875 4.1665 3.875 2.5H3.125C3.125 4.1665 2.1665 5.125 0.5 5.125V5.875C2.1665 5.875 3.125 6.8335 3.125 8.5H3.875C3.875 6.8335 4.8335 5.875 6.5 5.875V5.125ZM7.8125 7H7.1875C7.1875 7.28727 7.13092 7.57172 7.02099 7.83712C6.91105 8.10252 6.74992 8.34367 6.5468 8.5468C6.34367 8.74992 6.10252 8.91105 5.83712 9.02099C5.57172 9.13092 5.28727 9.1875 5 9.1875V9.8125C5.58016 9.8125 6.13656 10.043 6.5468 10.4532C6.95703 10.8634 7.1875 11.4198 7.1875 12H7.8125C7.8125 11.4198 8.04297 10.8634 8.4532 10.4532C8.86344 10.043 9.41984 9.8125 10 9.8125V9.1875C9.41984 9.1875 8.86344 8.95703 8.4532 8.5468C8.04297 8.13656 7.8125 7.58016 7.8125 7Z" />
     </svg>
   );
@@ -49,6 +51,24 @@ function TranscriptChevron({ open }) {
     <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor" aria-hidden="true"
       style={{ flexShrink: 0, transition: 'transform 0.15s', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
       <path d="M9.09175 3.92542L5.99875 6.52092L2.90575 3.92542C2.75338 3.79758 2.55647 3.73551 2.35834 3.75286C2.16021 3.77021 1.97708 3.86555 1.84925 4.01792C1.72141 4.17029 1.65934 4.36719 1.67669 4.56533C1.69404 4.76346 1.78938 4.94658 1.94175 5.07442L5.51675 8.07442C5.65172 8.1879 5.82241 8.25011 5.99875 8.25011C6.17509 8.25011 6.34577 8.1879 6.48075 8.07442L10.0557 5.07442C10.2047 4.94558 10.2971 4.7633 10.3128 4.56695C10.3285 4.37061 10.2663 4.17597 10.1397 4.02507C10.0131 3.87418 9.83224 3.77914 9.63615 3.76049C9.44007 3.74185 9.24452 3.80109 9.09175 3.92542Z" />
+    </svg>
+  );
+}
+
+// ─── AI Agent Panel icons ─────────────────────────────────────────────────────
+
+function DocIcon() {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0, color: '#6D6E6F' }}>
+      <path d="M7.5 0H2C1.4477 0 1 0.4477 1 1V11C1 11.5523 1.4477 12 2 12H10C10.5523 12 11 11.5523 11 11V3.5L7.5 0ZM7.5 1.207L9.793 3.5H7.5V1.207ZM10 11H2V1H6.5V4H10V11ZM3 5.5H9V6.5H3V5.5ZM3 7.5H9V8.5H3V7.5ZM3 9.5H7V10.5H3V9.5Z" />
+    </svg>
+  );
+}
+
+function SendUpIcon({ active }) {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" fill={active ? 'white' : '#9ea0a2'} aria-hidden="true">
+      <path d="M6 1L6 11M6 1L2 5M6 1L10 5" stroke={active ? 'white' : '#9ea0a2'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
@@ -202,8 +222,6 @@ function renderMsg(msg, i) {
 }
 
 // ─── Compact log message (transcript only) ───────────────────────────────────
-// All messages left-aligned, no bubbles, muted colors. Avatar 24px.
-// Signals read-only archived context vs active conversation.
 
 function TranscriptMessage({ msg }) {
   if (msg.type === 'system') {
@@ -227,14 +245,11 @@ function TranscriptMessage({ msg }) {
 }
 
 // ─── Collapsible prior-chat transcript block ──────────────────────────────────
-// Header row matches the SystemEvent ─── text ─── style, but is a clickable
-// button. Expanding reveals the prior messages inline below the divider.
 
 function TranscriptBlock({ messages }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* ── Header row — same visual as SystemEvent but clickable ── */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -249,7 +264,6 @@ function TranscriptBlock({ messages }) {
         <div style={{ flex: 1, height: 1, background: '#EDEAE9' }} />
       </button>
 
-      {/* ── Expanded compact log ── */}
       {open && (
         <div style={{
           display: 'flex', flexDirection: 'column', gap: 14,
@@ -269,7 +283,6 @@ function MessageList({ messages, transcript, transcriptEventText }) {
   const prevLengthRef = useRef(messages.length);
 
   useEffect(() => {
-    // Only scroll to bottom when a NEW message is added (not on initial render)
     if (messages.length > prevLengthRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -345,14 +358,196 @@ function CommentBar({ value, onChange, onSend, onKeyDown, placeholder = 'Add a c
   );
 }
 
+// ─── AI Agent Panel ───────────────────────────────────────────────────────────
+
+function AIAgentPanel({ ticket }) {
+  const intentData = ticket?.id ? AI_INTENT[ticket.id] : null;
+  const category = ticket?.category ?? 'General';
+  const kbRefIds = AI_KB_REFS[category] ?? [];
+  const kbArticles = kbRefIds.map(id => KB_ARTICLES.find(a => a.id === id)).filter(Boolean);
+
+  const [aiMessages, setAiMessages] = useState([]);
+  const [askInput, setAskInput] = useState('');
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (aiMessages.length > 0) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [aiMessages.length]);
+
+  function handleAsk() {
+    const text = askInput.trim();
+    if (!text) return;
+    const lower = text.toLowerCase();
+    const match =
+      AI_CHAT_RESPONSES.find(r => r.keywords.length > 0 && r.keywords.some(k => lower.includes(k))) ??
+      AI_CHAT_RESPONSES.find(r => r.keywords.length === 0);
+    setAiMessages(prev => [
+      ...prev,
+      { role: 'user', text },
+      { role: 'ai', text: match.response },
+    ]);
+    setAskInput('');
+  }
+
+  function handleAskKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAsk();
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+
+      {/* Scrollable body */}
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto"
+        style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16, overscrollBehavior: 'none' }}
+      >
+
+        {/* ── Intent card (only when AI_INTENT entry exists) ── */}
+        {intentData && (
+          <div style={{ borderRadius: 8, border: '1px solid #E8F0FF', background: '#F7F9FF', padding: '12px 14px' }}>
+            <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
+              <AiSparkleIcon color="#4573D2" />
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#4573D2', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Intent</span>
+            </div>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#1E1F21', margin: '0 0 6px', lineHeight: '20px' }}>
+              {intentData.intent}
+            </p>
+            <div className="flex items-center gap-2 flex-wrap" style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: '#6D6E6F' }}>{intentData.confidence}% confidence</span>
+              {intentData.tags.map(tag => (
+                <span key={tag} style={{ fontSize: 11, padding: '1px 7px', borderRadius: 100, background: '#EEF4FF', color: '#4573D2', fontWeight: 500 }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span style={{ fontSize: 12, padding: '2px 9px', borderRadius: 100, background: '#FEF3C7', color: '#92400E', fontWeight: 500 }}>
+                {intentData.sentiment}
+              </span>
+              <span style={{ fontSize: 12, padding: '2px 9px', borderRadius: 100, background: '#FEE2E2', color: '#DC2626', fontWeight: 500 }}>
+                {intentData.urgency}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ── KB article suggestions ── */}
+        {kbArticles.length > 0 && (
+          <div>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#1E1F21', display: 'block', marginBottom: 8 }}>
+              Knowledge base
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {kbArticles.map(article => (
+                <div
+                  key={article.id}
+                  className="flex items-center gap-2"
+                  style={{ padding: '7px 10px', borderRadius: 6, background: '#F5F5F4', cursor: 'default' }}
+                >
+                  <DocIcon />
+                  <span style={{ flex: 1, fontSize: 13, color: '#1E1F21', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {article.title}
+                  </span>
+                  <span style={{ fontSize: 11, color: '#6D6E6F', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    {article.category}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Ask AI chat history ── */}
+        {aiMessages.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {aiMessages.map((msg, i) =>
+              msg.role === 'user' ? (
+                <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <div style={{
+                    maxWidth: '80%', background: '#F5F5F4', borderRadius: '10px 10px 2px 10px',
+                    padding: '8px 12px', fontSize: 13, color: '#1E1F21', lineHeight: '20px',
+                  }}>
+                    {msg.text}
+                  </div>
+                </div>
+              ) : (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%', background: '#EEF4FF',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, marginTop: 2,
+                  }}>
+                    <AiSparkleIcon color="#4573D2" />
+                  </div>
+                  <div style={{
+                    maxWidth: '85%', background: '#EEF4FF', borderRadius: '10px 10px 10px 2px',
+                    padding: '8px 12px', fontSize: 13, color: '#1E1F21', lineHeight: '20px',
+                  }}>
+                    {msg.text}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        )}
+
+        {/* Bottom spacer so last item isn't flush against input */}
+        <div style={{ height: 4, flexShrink: 0 }} />
+      </div>
+
+      {/* ── Ask AI input — pinned to bottom ── */}
+      <div className="shrink-0 px-4 py-3" style={{ borderTop: '1px solid #EDEAE9' }}>
+        <div
+          className="flex items-center gap-2"
+          style={{ height: 38, border: '1px solid #EDEAE9', borderRadius: 8, padding: '0 6px 0 12px', background: 'white' }}
+        >
+          <input
+            type="text"
+            placeholder="Ask anything about this ticket…"
+            value={askInput}
+            onChange={e => setAskInput(e.target.value)}
+            onKeyDown={handleAskKeyDown}
+            className="flex-1 border-0 bg-transparent outline-none"
+            style={{ fontSize: 13, color: '#1E1F21' }}
+          />
+          <button
+            type="button"
+            onClick={handleAsk}
+            aria-label="Send"
+            className="flex items-center justify-center cursor-pointer border-0 flex-shrink-0 transition-colors"
+            style={{
+              width: 26, height: 26, borderRadius: 6,
+              background: askInput.trim() ? '#4573D2' : '#F5F5F4',
+            }}
+          >
+            <SendUpIcon active={!!askInput.trim()} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── TicketChatPanel ──────────────────────────────────────────────────────────
 
-export default function TicketChatPanel({ externalEvents = [], commentOnly = false, notesMode = false, initPublic = [], initInternal = [], initTranscript = [], transcriptEventText }) {
+export default function TicketChatPanel({ ticket, externalEvents = [], commentOnly = false, notesMode = false, initPublic = [], initInternal = [], initTranscript = [], transcriptEventText }) {
   const [activeTab, setActiveTab] = useState('public');
   const [publicMessages,   setPublicMessages]   = useState(initPublic);
   const [internalMessages, setInternalMessages] = useState(initInternal);
   const [input, setInput] = useState('');
+  const [replySuggDismissed, setReplySuggDismissed] = useState(false);
   const prevExternalLenRef = useRef(0);
+
+  // Reset chip visibility when ticket changes
+  useEffect(() => {
+    setReplySuggDismissed(false);
+  }, [ticket?.id]);
 
   useEffect(() => {
     if (externalEvents.length > prevExternalLenRef.current) {
@@ -361,6 +556,9 @@ export default function TicketChatPanel({ externalEvents = [], commentOnly = fal
       prevExternalLenRef.current = externalEvents.length;
     }
   }, [externalEvents]);
+
+  const suggestedReply = ticket?.id ? AI_SUGGESTED_REPLY[ticket.id] : null;
+  const showSuggestedReply = !!suggestedReply && !replySuggDismissed && !commentOnly;
 
   function handleTabSelect(tab) {
     setInput('');
@@ -402,6 +600,48 @@ export default function TicketChatPanel({ externalEvents = [], commentOnly = fal
       {activeTab === 'public' && (
         <>
           <MessageList messages={publicMessages} transcript={initTranscript} transcriptEventText={transcriptEventText} />
+          {/* ── AI suggested reply — sits just above the compose bar ── */}
+          {showSuggestedReply && (
+            <div
+              className="shrink-0"
+              style={{ borderTop: '1px solid #E8F0FF', background: '#F7F9FF', padding: '10px 16px 12px' }}
+            >
+              <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                <div className="flex items-center gap-1.5">
+                  <AiSparkleIcon color="#4573D2" />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#4573D2', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Suggested reply</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplySuggDismissed(true)}
+                  aria-label="Dismiss suggestion"
+                  style={{ fontSize: 13, lineHeight: 1, color: '#9ea0a2', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#6D6E6F'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#9ea0a2'}
+                >
+                  ✕
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: '#1E1F21', lineHeight: '19px', margin: '0 0 10px' }}>
+                {suggestedReply}
+              </p>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setInput(suggestedReply)}
+                  style={{
+                    fontSize: 12, fontWeight: 500, color: '#4573D2',
+                    background: '#EEF4FF', border: 'none', borderRadius: 6,
+                    padding: '4px 10px', cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#DBEAFE'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#EEF4FF'}
+                >
+                  Use reply
+                </button>
+              </div>
+            </div>
+          )}
           {!commentOnly && <CommentBar value={input} onChange={setInput} onSend={handleSend} onKeyDown={handleKeyDown} />}
         </>
       )}
@@ -414,9 +654,7 @@ export default function TicketChatPanel({ externalEvents = [], commentOnly = fal
       )}
 
       {activeTab === 'ai' && (
-        <div className="flex-1 min-h-0 flex items-center justify-center">
-          <p style={{ fontSize: 14, color: '#9ea0a2' }}>AI Agent — coming soon</p>
-        </div>
+        <AIAgentPanel ticket={ticket} />
       )}
     </div>
   );

@@ -243,6 +243,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 min-w-0 overflow-hidden">
           <TicketChatPanel
+            ticket={ticket}
             externalEvents={chatEvents}
             commentOnly={routedToHR}
             notesMode={!!ticket.linkedFromId}
@@ -319,23 +320,19 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         />
       </RightPanelOverlay>
 
-      {/* Create HR ticket modal */}
-      {hrCreateOpen && (
-        <CreateHRTicketModal
-          ticket={ticket}
-          onClose={() => setHrCreateOpen(false)}
-          onCreate={handleHRTicketCreate}
-        />
-      )}
+      <CreateHRTicketModal
+        open={hrCreateOpen}
+        ticket={ticket}
+        onClose={() => setHrCreateOpen(false)}
+        onCreate={handleHRTicketCreate}
+      />
 
-      {/* Route to HR modal */}
-      {showRouteModal && (
-        <RouteToHRModal
-          ticket={ticket}
-          onClose={() => setShowRouteModal(false)}
-          onRoute={handleConfirmRouteToHR}
-        />
-      )}
+      <RouteToHRModal
+        open={showRouteModal}
+        ticket={ticket}
+        onClose={() => setShowRouteModal(false)}
+        onRoute={handleConfirmRouteToHR}
+      />
     </div>
   );
 }
