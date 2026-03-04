@@ -521,7 +521,7 @@ function getContextualRecents(contextMode) {
 
 export default function SearchModal({ onClose, contextMode, onSelectITTicket, onSelectHRTicket, pillRect }) {
   const [query, setQuery] = useState('');
-  const [activeContext, setActiveContext] = useState(null); // no pre-selection
+  const [activeContext, setActiveContext] = useState(contextMode ?? null);
   const [subFilter, setSubFilter] = useState(null);
   const [scopeOpen, setScopeOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);

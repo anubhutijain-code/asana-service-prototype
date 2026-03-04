@@ -71,7 +71,7 @@ function InboxIcon({ className }) {
 // ── Nav data ───────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: 'service',  label: 'Service',  Icon: ServiceIcon,     badge: 3    },
+  { id: 'service',  label: 'Service',  Icon: ServiceIcon,     badge: null },
   { id: 'work',     label: 'Work',     Icon: CheckCircleIcon, badge: null },
   { id: 'plan',     label: 'Strategy', Icon: PlanIcon,        badge: null },
   { id: 'workflow', label: 'Workflow', Icon: WorkflowIcon,    badge: null },
