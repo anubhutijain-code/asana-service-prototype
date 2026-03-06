@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Modal, { ModalButton } from './ui/Modal';
 
 function AiGradientIcon() {
   return (
@@ -14,152 +15,75 @@ function AiGradientIcon() {
   );
 }
 
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M3 3l10 10M13 3L3 13" />
-    </svg>
-  );
-}
-
-export default function RouteToHRModal({ ticket, onClose, onRoute }) {
+export default function RouteToHRModal({ open, ticket, onClose, onRoute }) {
   const [notes, setNotes] = useState('');
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit() {
     onRoute(notes);
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(0,0,0,0.35)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-      onClick={onClose}
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Route to HR"
+      subtitle={`Ref: ${ticket?.id}`}
+      size="sm"
+      footer={
+        <>
+          <ModalButton variant="secondary" onClick={onClose}>Cancel</ModalButton>
+          <ModalButton variant="primary" onClick={handleSubmit}>Route to HR</ModalButton>
+        </>
+      }
     >
-      <div
-        style={{
-          background: 'var(--background-weak)', borderRadius: 12, overflow: 'hidden',
-          width: 480, boxShadow: 'var(--elevation-lg)',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* ── Header ── */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
-          padding: '16px 20px', borderBottom: '1px solid var(--border)',
-        }}>
-          <div>
-            <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', lineHeight: '22px' }}>
-              Route to HR
-            </h2>
-            <p style={{ fontSize: 12, color: 'var(--text-disabled)', margin: 0 }}>
-              Ref: {ticket.id}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: 'none', borderRadius: 6, cursor: 'pointer',
-              background: 'transparent', color: 'var(--text-disabled)', flexShrink: 0,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        {/* ── Body ── */}
-        <form onSubmit={handleSubmit}>
-          <div style={{ padding: '20px' }}>
-
-            {/* Read-only context block */}
-            <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '14px 16px', marginBottom: 18, background: 'var(--background-medium)' }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 6px', lineHeight: '20px' }}>
-                {ticket.name}
+      {/* Read-only context block */}
+      <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '14px 16px', marginBottom: 18, background: 'var(--background-medium)' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 6px', lineHeight: '20px' }}>
+          {ticket?.name}
+        </p>
+        {ticket?.submitter && (
+          <p style={{ fontSize: 12, color: 'var(--text-weak)', margin: '0 0 2px' }}>
+            {ticket.submitter.name}
+            {ticket.submitter.email && <> · <span style={{ color: 'var(--selected-text)' }}>{ticket.submitter.email}</span></>}
+          </p>
+        )}
+        {(ticket?.submitter?.org || ticket?.submitter?.location) && (
+          <p style={{ fontSize: 12, color: 'var(--text-disabled)', margin: '0 0 10px' }}>
+            {[ticket.submitter.org, ticket.submitter.location].filter(Boolean).join(' · ')}
+          </p>
+        )}
+        {ticket?.aiSummary && (
+          <>
+            <div style={{ height: 1, background: 'var(--border)', margin: '10px 0' }} />
+            <div className="flex items-start gap-1.5">
+              <AiGradientIcon />
+              <p style={{ fontSize: 12, lineHeight: '18px', color: 'var(--text-weak)', margin: 0 }}>
+                {ticket.aiSummary}
               </p>
-              {ticket.submitter && (
-                <p style={{ fontSize: 12, color: 'var(--text-weak)', margin: '0 0 2px' }}>
-                  {ticket.submitter.name}
-                  {ticket.submitter.email && <> · <span style={{ color: 'var(--selected-text)' }}>{ticket.submitter.email}</span></>}
-                </p>
-              )}
-              {(ticket.submitter?.org || ticket.submitter?.location) && (
-                <p style={{ fontSize: 12, color: 'var(--text-disabled)', margin: '0 0 10px' }}>
-                  {[ticket.submitter.org, ticket.submitter.location].filter(Boolean).join(' · ')}
-                </p>
-              )}
-              {ticket.aiSummary && (
-                <>
-                  <div style={{ height: 1, background: 'var(--border)', margin: '10px 0' }} />
-                  <div className="flex items-start gap-1.5">
-                    <AiGradientIcon />
-                    <p style={{ fontSize: 12, lineHeight: '18px', color: 'var(--text-weak)', margin: 0 }}>
-                      {ticket.aiSummary}
-                    </p>
-                  </div>
-                </>
-              )}
             </div>
-
-            {/* Notes textarea */}
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 6 }}>
-              Notes for HR team <span style={{ color: 'var(--text-disabled)', fontWeight: 400 }}>(optional)</span>
-            </label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              placeholder="Add context the HR team should know..."
-              rows={4}
-              style={{
-                width: '100%',
-                boxSizing: 'border-box',
-                padding: '10px 12px',
-                fontSize: 13,
-                lineHeight: '20px',
-                color: 'var(--text)',
-                border: '1px solid var(--border-strong)',
-                borderRadius: 6,
-                resize: 'none',
-                outline: 'none',
-                fontFamily: 'inherit',
-                background: 'var(--background-weak)',
-              }}
-              onFocus={e => e.target.style.borderColor = 'var(--icon)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border-strong)'}
-            />
-          </div>
-
-          {/* ── Footer ── */}
-          <div style={{
-            display: 'flex', gap: 8, justifyContent: 'flex-end',
-            padding: '12px 20px', borderTop: '1px solid var(--border)',
-          }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{ height: 32, padding: '0 14px', fontSize: 13, fontWeight: 400, borderRadius: 6, border: '1px solid var(--border-strong)', background: 'var(--background-weak)', color: 'var(--text)', cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'var(--background-weak)'}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{ height: 32, padding: '0 14px', fontSize: 13, fontWeight: 500, borderRadius: 6, border: 'none', background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)', cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--selected-background-strong-hover)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'var(--selected-background-strong)'}
-            >
-              Route to HR
-            </button>
-          </div>
-        </form>
+          </>
+        )}
       </div>
-    </div>
+
+      {/* Notes textarea */}
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 6 }}>
+        Notes for HR team <span style={{ color: 'var(--text-disabled)', fontWeight: 400 }}>(optional)</span>
+      </label>
+      <textarea
+        value={notes}
+        onChange={e => setNotes(e.target.value)}
+        placeholder="Add context the HR team should know..."
+        rows={4}
+        style={{
+          width: '100%', boxSizing: 'border-box',
+          padding: '10px 12px', fontSize: 13, lineHeight: '20px',
+          color: 'var(--text)', border: '1px solid var(--border-strong)',
+          borderRadius: 6, resize: 'none', outline: 'none',
+          fontFamily: 'inherit', background: 'var(--background-weak)',
+        }}
+        onFocus={e => e.target.style.borderColor = 'var(--icon)'}
+        onBlur={e => e.target.style.borderColor = 'var(--border-strong)'}
+      />
+    </Modal>
   );
 }

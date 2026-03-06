@@ -120,7 +120,7 @@ export default function WorkSecondaryNav({ activeItem, onSelect }) {
           <div key={section}>
             {si > 0 && <hr className="my-1 border-border" />}
             {items.map(({ label, Icon }) => (
-              <div key={label} className="px-2 py-1">
+              <div key={label} className="px-2 py-[2px]">
                 <button
                   type="button"
                   onClick={() => onSelect(label)}
@@ -161,7 +161,7 @@ export default function WorkSecondaryNav({ activeItem, onSelect }) {
 
         {/* Recent items */}
         {RECENTS.map(({ label, icon }) => (
-          <div key={label} className="px-2 py-1">
+          <div key={label} className="px-2 py-[2px]">
             <button
               type="button"
               onClick={() => onSelect(label)}

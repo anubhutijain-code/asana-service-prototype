@@ -1,11 +1,11 @@
 // ─── ModeSidebar ──────────────────────────────────────────────────────────────
-// Left-most mode-switcher sidebar.
-// Icons extracted from images/Mode Sidebar.svg — viewBox coordinates match the
-// original SVG coordinate space; the SVG renderer clips/scales automatically.
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+
+const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 // ── Mode icons ────────────────────────────────────────────────────────────────
 
-// Work — circle with a checkmark tick inside
 function CheckCircleIcon({ className }) {
   return (
     <svg viewBox="30 14 16 16" className={className} aria-hidden="true" focusable="false">
@@ -14,7 +14,6 @@ function CheckCircleIcon({ className }) {
   );
 }
 
-// Plan — upward-pointing triangle (outline style)
 function PlanIcon({ className }) {
   return (
     <svg viewBox="30 74 16 15" className={className} aria-hidden="true" focusable="false">
@@ -23,7 +22,6 @@ function PlanIcon({ className }) {
   );
 }
 
-// Workflow — connected nodes with directional arrows
 function WorkflowIcon({ className }) {
   return (
     <svg viewBox="30 134 16 16" className={className} aria-hidden="true" focusable="false">
@@ -32,7 +30,6 @@ function WorkflowIcon({ className }) {
   );
 }
 
-// Company — two overlapping person silhouettes
 function CompanyIcon({ className }) {
   return (
     <svg viewBox="30 194 16 16" className={className} aria-hidden="true" focusable="false">
@@ -41,7 +38,6 @@ function CompanyIcon({ className }) {
   );
 }
 
-// Service — monitor / desktop screen with stand
 function ServiceIcon({ className }) {
   return (
     <svg viewBox="35 254 16 17" className={className} aria-hidden="true" focusable="false">
@@ -50,7 +46,6 @@ function ServiceIcon({ className }) {
   );
 }
 
-// Plus — cross/plus shape used inside the red create button
 function PlusIcon({ className }) {
   return (
     <svg viewBox="34 834 8 8" className={className} aria-hidden="true" focusable="false">
@@ -59,7 +54,6 @@ function PlusIcon({ className }) {
   );
 }
 
-// Inbox — envelope / mail icon
 function InboxIcon({ className }) {
   return (
     <svg viewBox="30 871 16 14" className={className} aria-hidden="true" focusable="false">
@@ -78,6 +72,13 @@ const NAV_ITEMS = [
   { id: 'company',  label: 'People',   Icon: CompanyIcon,     badge: null },
 ];
 
+const ROLES = [
+  { id: 'admin',  label: 'Admin'   },
+  { id: 'admin2', label: 'Admin 2' },
+  { id: 'agent',  label: 'Agent'   },
+  { id: 'agent3', label: 'Agent 3' },
+];
+
 // ── NavItem ────────────────────────────────────────────────────────────────────
 
 function NavItem({ id, label, Icon, badge, active, onClick }) {
@@ -88,7 +89,6 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
       aria-label={label}
       aria-current={active ? 'page' : undefined}
       className={[
-        // No background on the button — only the icon wrapper gets it
         'group w-full flex flex-col items-center justify-center gap-1 py-2 px-1.5',
         'cursor-pointer border-0 bg-transparent',
         'transition-colors duration-150',
@@ -96,13 +96,10 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
       ].join(' ')}
     >
-      {/* Icon wrapper — this is what gets the selected/hover background */}
-      <div
-        className={[
-          'relative flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors duration-150',
-          active ? 'bg-[var(--background-active)]' : 'group-hover:bg-[var(--background-hover)]',
-        ].join(' ')}
-      >
+      <div className={[
+        'relative flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors duration-150',
+        active ? 'bg-[var(--background-active)]' : 'group-hover:bg-[var(--background-hover)]',
+      ].join(' ')}>
         <Icon className="w-4 h-4 fill-current shrink-0" />
         {badge != null && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5
@@ -119,12 +116,44 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
 
 // ── ModeSidebar ────────────────────────────────────────────────────────────────
 
-export default function ModeSidebar({ active, onSelect }) {
+export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState(null);
+  const avatarRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    function handleClickOutside(e) {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target) &&
+        avatarRef.current && !avatarRef.current.contains(e.target)
+      ) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileOpen]);
+
+  function handleAvatarClick() {
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      setDropdownPos({
+        bottom: window.innerHeight - rect.bottom,
+        left: rect.right + 8,
+      });
+    }
+    setProfileOpen(o => !o);
+  }
+
+  function handleRoleSelect(r) {
+    onRoleChange?.(r);
+    setProfileOpen(false);
+  }
+
   return (
-    <aside
-      className="flex flex-col w-16 h-full bg-background-strong shrink-0"
-      aria-label="Mode navigation"
-    >
+    <aside className="flex flex-col w-16 h-full bg-background-strong shrink-0" aria-label="Mode navigation">
       <nav className="flex flex-col gap-0.5 flex-1 pt-2 px-1.5 overflow-y-auto">
         {NAV_ITEMS.map(({ id, label, Icon, badge }) => (
           <NavItem
@@ -168,8 +197,10 @@ export default function ModeSidebar({ active, onSelect }) {
 
         {/* Avatar */}
         <button
+          ref={avatarRef}
           type="button"
           aria-label="My profile"
+          onClick={handleAvatarClick}
           className="w-7 h-7 rounded-full overflow-hidden border-0
                      ring-1 ring-transparent hover:ring-[#c0c0c0]
                      transition-shadow duration-150 cursor-pointer
@@ -182,6 +213,83 @@ export default function ModeSidebar({ active, onSelect }) {
           />
         </button>
       </div>
+
+      {/* Profile dropdown — portalled to body to escape stacking context */}
+      {profileOpen && dropdownPos && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            bottom: dropdownPos.bottom,
+            left: dropdownPos.left,
+            zIndex: 9999,
+            width: 200,
+            background: 'white',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            overflow: 'hidden',
+            fontFamily: SFT,
+          }}
+        >
+          {/* User info */}
+          <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Anubhuti Jain</div>
+            <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginTop: 1 }}>anubhuti@company.com</div>
+          </div>
+
+          {/* Role options */}
+          <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+            {ROLES.map(({ id, label }) => {
+              const active = role === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleRoleSelect(id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    width: '100%', padding: '7px 14px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    fontSize: 13, fontFamily: SFT, textAlign: 'left',
+                    color: active ? 'var(--text)' : 'var(--text-weak)',
+                    fontWeight: active ? 500 : 400,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <span style={{
+                    width: 14, height: 14, borderRadius: '50%', flexShrink: 0,
+                    border: active ? '4px solid var(--selected-background-strong)' : '1.5px solid var(--border-strong)',
+                    background: 'white',
+                    display: 'inline-block',
+                    boxSizing: 'border-box',
+                  }} />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Sign out */}
+          <div style={{ padding: '4px 0' }}>
+            <button
+              type="button"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', padding: '7px 14px',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                fontSize: 13, fontFamily: SFT, color: 'var(--text-weak)', textAlign: 'left',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              Sign out
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </aside>
   );
 }

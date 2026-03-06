@@ -274,8 +274,7 @@ export default function AutomationsView() {
             />
           ))}
         </div>
-
-        <div style={{ position: 'relative', width: 240 }}>
+        <div style={{ position: 'relative' }}>
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true"
             style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-disabled)', pointerEvents: 'none' }}>
             <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.3"/>

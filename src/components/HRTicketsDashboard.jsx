@@ -1,9 +1,32 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Pill from './Pill';
 import StatCard from './StatCard';
 import Avatar from './ui/Avatar';
 import { HR_STATS, HR_TABS, HR_TICKETS, filterHRTickets } from '../data/tickets';
 import TicketDetailView from './TicketDetailView';
+import FilterPanel, { applyFilters } from './ui/FilterPanel';
+
+// ─── Filter config ────────────────────────────────────────────────────────────
+const HR_FILTER_FIELDS = [
+  { id: 'status',    label: 'Status',    type: 'select', options: ['Not started', 'In Progress', 'On hold', 'Investigating', 'Resolved'] },
+  { id: 'priority',  label: 'Priority',  type: 'select', options: ['Critical', 'High', 'Medium', 'Low'] },
+  { id: 'issueType', label: 'Issue type', type: 'select', options: ['Leave', 'Payroll', 'Benefits', 'Onboarding', 'Performance', 'Other'] },
+  { id: 'assignee',  label: 'Assignee',  type: 'text' },
+];
+
+const HR_QUICK_FILTERS = [
+  { id: 'open',     label: 'Open cases', rules: [{ field: 'status', op: 'is not', value: 'Resolved' }] },
+  { id: 'critical', label: 'Critical',   rules: [{ field: 'priority', op: 'is', value: 'Critical' }] },
+  { id: 'overdue',  label: 'Overdue',    rules: [{ field: 'status', op: 'is', value: 'On hold' }] },
+];
+
+const HR_ACCESSORS = {
+  status:    t => t.status,
+  priority:  t => t.priority,
+  issueType: t => t.issueType,
+  assignee:  t => t.assignee?.name ?? '',
+};
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -186,26 +209,26 @@ function PersonCell({ person }) {
 // Columns: Ticket # (120) · Name (280) · Issue Type (150) · Status (175) ·
 //          Last Updated (155) · Priority (130) · Employee (165) · Assigned to (flex)
 
-const COL  = 'text-xs font-medium text-text-weak px-4 py-3 text-left whitespace-nowrap';
-const CELL = 'px-4';
-const divStyle = { borderRight: '1px solid var(--border)' };
+const COL  = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
+const CELL = 'px-6';
+const divStyle = {};
 
 function TableHeader() {
   return (
     <div
-      className="flex items-center w-full bg-background-medium sticky top-0 z-[2]"
-      style={{ border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}
+      className="flex items-center w-full bg-white sticky top-0 z-[2]"
+      style={{ borderBottom: '1px solid var(--border)' }}
     >
-      <div className={`${COL} sticky left-0       bg-background-medium z-[3] w-[120px] shrink-0`} style={divStyle}>Case number</div>
-      <div className={`${COL} sticky left-[120px] bg-background-medium z-[3] w-[280px] shrink-0`} style={divStyle}>Name</div>
-      <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Issue type</div>
-      <div className={`${COL} w-[175px] shrink-0`} style={divStyle}>Status</div>
-      <div className={`${COL} w-[155px] shrink-0`} style={divStyle}>Last updated</div>
-      <div className={`${COL} w-[101px] shrink-0`} style={divStyle}>SLA</div>
-      <div className={`${COL} w-[130px] shrink-0`} style={divStyle}>Priority</div>
-      <div className={`${COL} w-[165px] shrink-0`} style={divStyle}>Employee</div>
-      <div className={`${COL} w-[165px] shrink-0`} style={divStyle}>Assigned to</div>
-      <div className={`${COL} flex-1 min-w-[165px]`} style={divStyle}>Requested by</div>
+      <div className={`${COL} sticky left-0       bg-white z-[3] w-[120px] shrink-0`}>Case number</div>
+      <div className={`${COL} sticky left-[120px] bg-white z-[3] w-[280px] shrink-0`}>Name</div>
+      <div className={`${COL} w-[150px] shrink-0`}>Issue type</div>
+      <div className={`${COL} w-[175px] shrink-0`}>Status</div>
+      <div className={`${COL} w-[155px] shrink-0`}>Last updated</div>
+      <div className={`${COL} w-[101px] shrink-0`}>SLA</div>
+      <div className={`${COL} w-[130px] shrink-0`}>Priority</div>
+      <div className={`${COL} w-[165px] shrink-0`}>Employee</div>
+      <div className={`${COL} w-[165px] shrink-0`}>Assigned to</div>
+      <div className={`${COL} flex-1 min-w-[165px]`}>Requested by</div>
     </div>
   );
 }
@@ -215,7 +238,7 @@ function TableRow({ ticket, onClick }) {
     <div
       onClick={onClick}
       className="group flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}
+      style={{ borderBottom: '1px solid var(--border)' }}
     >
       <div className={`${CELL} sticky left-0       z-[1] bg-background-weak group-hover:bg-background-medium w-[120px] shrink-0 flex items-center`}
            style={{ ...divStyle, ...typoTicketNo }}>
@@ -263,9 +286,11 @@ function TableRow({ ticket, onClick }) {
 
 // ─── HRTicketsDashboard ───────────────────────────────────────────────────────
 
-export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusChange, onGoToLinkedITTicket, deepLinkTicketId, onDeepLinkHandled, onURLBack = null }) {
-  const [activeTab, setActiveTab] = useState('All Cases');
+export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusChange, onGoToLinkedITTicket, deepLinkTicketId, onDeepLinkHandled, onURLBack = null, initialTab = 'All Cases' }) {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [hrStatusOverrides, setHrStatusOverrides] = useState({});
 
@@ -280,7 +305,7 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
     onDeepLinkHandled?.();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deepLinkTicketId]);
-  const rows = filterHRTickets(allTickets, activeTab, search);
+  const rows = applyFilters(filterHRTickets(allTickets, activeTab, search), filters, HR_ACCESSORS);
 
   function handleHRStatusChange(newStatus) {
     if (!selectedTicket) return;
@@ -367,12 +392,12 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
           </div>
 
           <div className="flex items-center gap-1">
-            <button type="button"
-              className="flex items-center gap-1.5 px-3 h-8 text-sm text-text-weak
-                         border-0 bg-transparent rounded-md cursor-pointer
-                         hover:bg-background-medium hover:text-text transition-colors">
-              <FilterIcon /> Filter
-            </button>
+            <FilterPanel
+              fields={HR_FILTER_FIELDS}
+              quickFilters={HR_QUICK_FILTERS}
+              filters={filters}
+              onChange={setFilters}
+            />
             <button type="button"
               className="flex items-center gap-1.5 px-3 h-8 text-sm text-text-weak
                          border-0 bg-transparent rounded-md cursor-pointer
@@ -399,7 +424,7 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
           <div style={{ minWidth: '100%', width: 'max-content' }}>
             <TableHeader />
             {rows.length > 0
-              ? rows.map((t, i) => <TableRow key={t.id + i} ticket={t} onClick={() => setSelectedTicket(t)} />)
+              ? rows.map((t, i) => <TableRow key={t.id + i} ticket={t} onClick={() => navigate(`/hr-tickets/${t.id}`)} />)
               : (
                 <div
                   className="flex items-center justify-center py-16 w-full text-sm text-text-disabled"

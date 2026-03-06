@@ -163,7 +163,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
     ]);
     setLocalStatus('Resolved');
     onITStatusChange?.('Resolved');
-    setTimeout(() => onBack?.(), 2000);
+    setTimeout(() => onBack?.(), 30000);
   }
 
   function handleConfirmRouteToHR(notes) {
@@ -308,7 +308,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
       </RightPanelOverlay>
 
       {/* Workflow step — IT-linked ticket overlay (HR tickets navigate directly) */}
-      <RightPanelOverlay open={!!workflowLinkedTicket} onClose={() => setWorkflowLinkedTicket(null)} width="min(580px, 65%)">
+      <RightPanelOverlay open={!!workflowLinkedTicket} onClose={() => setWorkflowLinkedTicket(null)} width="min(660px, 72%)">
         <ApprovalTaskView
           title={workflowLinkedTicket?.name ?? ''}
           ticketId={workflowLinkedTicket?.id ?? ''}

@@ -114,6 +114,56 @@ export const QUEUE_OPTIONS = [
   { id: 'hr',  label: 'HR Tickets' },
 ];
 
+// 8-week date labels (working days, Jan 13 – Mar 7)
+const WDAYS = [
+  'Jan 13','Jan 14','Jan 15','Jan 16','Jan 17',
+  'Jan 20','Jan 21','Jan 22','Jan 23','Jan 24',
+  'Jan 27','Jan 28','Jan 29','Jan 30','Jan 31',
+  'Feb 3','Feb 4','Feb 5','Feb 6','Feb 7',
+  'Feb 10','Feb 11','Feb 12','Feb 13','Feb 14',
+  'Feb 17','Feb 18','Feb 19','Feb 20','Feb 21',
+  'Feb 24','Feb 25','Feb 26','Feb 27','Feb 28',
+  'Mar 3','Mar 4','Mar 5','Mar 6','Mar 7',
+];
+
+export const TEAM_DATA = {
+  todayIndex: 32,  // index into WDAYS = Mar 5 (today)
+  dates: WDAYS,
+  summary: { totalOpen: 142, avgCsat: 4.2, slaBreaches: 7, resolvedThisWeek: 141 },
+  agents: [
+    {
+      id: 'a1', name: 'Marcus Rivera', initials: 'MR', color: '#D43D5D',
+      daily: [22,24,25,23,26, 28,30,28,26,24, 26,28,36,38,30, 26,28,26,28,30, 28,36,38,40,36, 28,26,24,28,30, 28,30,28,36,38, 36,30,28,26,24],
+      csat: 3.9, avgResolution: '4.2 hrs', resolvedThisWeek: 22, slaHealth: 72,
+    },
+    {
+      id: 'a2', name: 'Jamie Chen', initials: 'JC', color: '#4273D1',
+      daily: [18,16,15,14,12, 14,15,13,14,13, 16,14,12,11,13, 12,14,13,12,11, 10,35,13,11,10, 12,13,14,13,12, 14,14,14,13,12, 11,12,13,14,14],
+      csat: 4.8, avgResolution: '1.4 hrs', resolvedThisWeek: 31, slaHealth: 96,
+    },
+    {
+      id: 'a3', name: 'Priya Nair', initials: 'PN', color: '#5DA182',
+      daily: [20,21,22,20,22, 23,24,22,24,25, 24,26,25,26,27, 26,28,36,28,26, 27,29,28,29,29, 28,30,29,28,29, 29,36,28,29,29, 28,27,28,28,29],
+      csat: 4.3, avgResolution: '2.8 hrs', resolvedThisWeek: 27, slaHealth: 84,
+    },
+    {
+      id: 'a4', name: 'Devon Walsh', initials: 'DW', color: '#7C5EA8',
+      daily: [0,0,0,0,0, 0,0,0,0,0, 2,3,4,5,5, 5,6,5,6,6, 6,7,6,7,7, 6,7,7,6,6, 6,6,6,6,6, 5,6,6,6,6],
+      csat: 4.6, avgResolution: '1.1 hrs', resolvedThisWeek: 18, slaHealth: 100,
+    },
+    {
+      id: 'a5', name: 'Sana Okafor', initials: 'SO', color: '#7C5EA8',
+      daily: [18,19,20,19,21, 20,22,21,22,21, 22,23,22,23,22, 22,24,23,22,23, 22,36,22,23,22, 21,22,22,23,22, 22,22,22,22,22, 21,22,21,22,22],
+      csat: 4.1, avgResolution: '3.1 hrs', resolvedThisWeek: 24, slaHealth: 91,
+    },
+    {
+      id: 'a6', name: 'Tom Reyes', initials: 'TR', color: '#ECBD85',
+      daily: [14,15,16,16,18, 18,20,21,22,22, 23,24,24,25,26, 26,27,28,28,29, 29,30,31,30,31, 31,36,32,30,28, 30,30,36,38,30, 28,36,30,28,26],
+      csat: 3.7, avgResolution: '5.0 hrs', resolvedThisWeek: 19, slaHealth: 79,
+    },
+  ],
+};
+
 // Hex values of Asana design tokens (used in SVG fill attributes)
 const BLUE   = '#4273D1'; // --selected-background-strong
 const GREEN  = '#5DA182'; // --success-background-strong

@@ -226,9 +226,10 @@ function CreateTaskBtn({ label, onClick }) {
 
 function AssigneeAvatar({ person }) {
   if (person.type === 'ai') {
+    const avatar = person.name === 'Communications Agent' ? 'Teammate-2.svg' : 'Teammate-1.svg';
     return (
       <img
-        src={`${BASE_URL}avatars/Teammate1.svg`}
+        src={`${BASE_URL}avatars/${avatar}`}
         width={16} height={16}
         style={{ borderRadius: '50%', flexShrink: 0 }}
         alt="AI agent"
@@ -465,8 +466,10 @@ export default function WorkflowStepsPanel({ initialSteps, onLinkedTicketClick, 
   const [steps, setSteps] = useState(initialSteps);
   // IDs of non-active cards the user has manually expanded
   const [expandedIds, setExpandedIds] = useState(new Set());
-  // IDs of linked steps where "Create task" was clicked
-  const [taskCreatedIds, setTaskCreatedIds] = useState(new Set());
+  // IDs of linked steps where task has been created (auto-populate for already-active linked steps)
+  const [taskCreatedIds, setTaskCreatedIds] = useState(
+    () => new Set(initialSteps.filter(s => s.status === 'active' && s.type === 'linked').map(s => s.id))
+  );
 
   const completedCount = steps.filter(s => s.status === 'completed').length;
   const progress = completedCount / steps.length * 100;

@@ -1,8 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Avatar from './ui/Avatar';
 import RightPanelOverlay from './RightPanelOverlay';
-import { KB_PROJECTS, KB_ARTICLES, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import FilterPanel, { applyFilters } from './ui/FilterPanel';
+
+// ─── Filter config ────────────────────────────────────────────────────────────
+const KB_FILTER_FIELDS = [
+  { id: 'status',   label: 'Status',   type: 'select', options: ['Published', 'Draft', 'Archived', 'Unpublished'] },
+  { id: 'source',   label: 'Source',   type: 'select', options: ['confluence', 'slab', 'notion', 'internal'] },
+  { id: 'category', label: 'Category', type: 'text' },
+  { id: 'author',   label: 'Author',   type: 'text' },
+];
+
+const KB_QUICK_FILTERS = [
+  { id: 'published', label: 'Published', rules: [{ field: 'status', op: 'is', value: 'Published' }] },
+  { id: 'draft',     label: 'Draft',     rules: [{ field: 'status', op: 'is', value: 'Draft' }] },
+  { id: 'internal',  label: 'Internal',  rules: [{ field: 'source', op: 'is', value: 'internal' }] },
+];
+
+const KB_ACCESSORS = {
+  status:   a => a.status,
+  source:   a => a.source ?? 'internal',
+  category: a => a.category,
+  author:   a => a.author,
+};
 
 // ─── Shared typography ─────────────────────────────────────────────────────────
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -480,19 +502,217 @@ function TableRow({ article }) {
   );
 }
 
+// ─── Learnings view ────────────────────────────────────────────────────────────
+
+
+const LEARNING_STATUS_BADGE = {
+  new:       { bg: 'var(--selected-background)', color: 'var(--selected-text)' },
+  reviewed:  { bg: 'var(--success-background)',  color: 'var(--success-text)'  },
+  dismissed: { bg: 'var(--background-medium)',   color: 'var(--text-disabled)' },
+};
+
+function BulbIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 2a4 4 0 0 1 2.5 7.1c-.3.3-.5.7-.5 1.1V11H6v-.8c0-.4-.2-.8-.5-1.1A4 4 0 0 1 8 2z"/>
+      <path d="M6 13h4M7 15h2"/>
+    </svg>
+  );
+}
+
+function LearningCard({ learning, linkedArticle, onAction }) {
+  const badge = LEARNING_STATUS_BADGE[learning.status];
+  const ticketCount = learning.sourceTickets.length;
+  const isUpdate = learning.type === 'update-article';
+
+  return (
+    <div style={{
+      background: 'var(--background-weak)',
+      border: '1px solid var(--border)',
+      borderRadius: 10,
+      padding: '16px 18px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+    }}>
+      {/* Top row: type tag + category + status + date */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT,
+          background: isUpdate ? 'var(--warning-background)' : 'var(--background-medium)',
+          color: isUpdate ? 'var(--warning-text)' : 'var(--text-disabled)',
+          flexShrink: 0,
+        }}>
+          {isUpdate
+            ? <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1 6A5 5 0 1 1 3.5 10.3M1 9.5V6.5h3"/></svg>
+            : <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
+          }
+          {isUpdate ? 'Update existing' : 'New article'}
+        </span>
+        <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, padding: '2px 7px', borderRadius: 4, background: 'var(--background-medium)' }}>
+          {learning.category}
+        </span>
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', padding: '2px 8px',
+          borderRadius: 4, fontSize: 11, fontWeight: 600, fontFamily: SFT,
+          background: badge.bg, color: badge.color, textTransform: 'capitalize',
+        }}>
+          {learning.status}
+        </span>
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>
+          Detected {formatDate(learning.detectedAt.slice(0, 10))}
+        </span>
+      </div>
+
+      {/* Gap description */}
+      <div>
+        <p style={{ fontFamily: SFT, fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: '0 0 4px', lineHeight: '20px' }}>
+          {learning.gap}
+        </p>
+        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>
+          AI suggests: <span style={{ fontStyle: 'italic' }}>"{learning.suggestion}"</span>
+        </p>
+      </div>
+
+      {/* Linked article (update type only) */}
+      {isUpdate && linkedArticle && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="1" y="1" width="10" height="10" rx="1.5"/><path d="M3 4h6M3 6.5h6M3 9h4"/>
+          </svg>
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0 }}>Updates</span>
+          <span style={{
+            fontFamily: SFT, fontSize: 11, fontWeight: 500, color: 'var(--text-weak)',
+            background: 'var(--background-medium)', borderRadius: 4, padding: '1px 7px',
+            whiteSpace: 'nowrap', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer',
+          }}>
+            {linkedArticle.title}
+          </span>
+        </div>
+      )}
+
+      {/* Source tickets */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round">
+          <rect x="1" y="1" width="12" height="12" rx="2"/><path d="M4 7h6M4 4.5h6M4 9.5h4"/>
+        </svg>
+        <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From</span>
+        {learning.sourceTickets.slice(0, 2).map(t => (
+          <span key={t.id} style={{
+            fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)',
+            background: 'var(--selected-background)', borderRadius: 4, padding: '1px 6px',
+            cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>
+            {t.id}
+          </span>
+        ))}
+        {ticketCount > 2 && (
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>+{ticketCount - 2} more</span>
+        )}
+      </div>
+
+      {/* Actions */}
+      {learning.status !== 'dismissed' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
+          <button
+            type="button"
+            onClick={() => onAction(learning.id, 'create')}
+            style={{
+              height: 30, padding: '0 12px', fontSize: 12, fontFamily: SFT, fontWeight: 500,
+              borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer',
+              background: 'var(--background-weak)', color: 'var(--text)',
+              display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; }}
+          >
+            {isUpdate
+              ? <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 6A5 5 0 1 1 3.5 10.3M1 9.5V6.5h3"/></svg>
+              : <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M6 1v10M1 6h10"/></svg>
+            }
+            {isUpdate ? 'Update article' : 'Create article'}
+          </button>
+          {learning.status === 'new' && (
+            <button
+              type="button"
+              onClick={() => onAction(learning.id, 'dismiss')}
+              style={{
+                height: 30, padding: '0 4px', fontSize: 12, fontFamily: SFT, fontWeight: 400,
+                border: 'none', cursor: 'pointer', background: 'transparent',
+                color: 'var(--text-disabled)', transition: 'color 0.1s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-weak)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-disabled)'; }}
+            >
+              Dismiss
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LearningsTab({ projectId, allArticles }) {
+  const allLearnings = KB_LEARNINGS.filter(l => l.projectId === projectId);
+  const articleMap = Object.fromEntries(allArticles.map(a => [a.id, a]));
+  const [statuses, setStatuses] = useState(() => {
+    const s = {};
+    allLearnings.forEach(l => { s[l.id] = l.status; });
+    return s;
+  });
+
+  function handleAction(id, action) {
+    if (action === 'dismiss') {
+      setStatuses(prev => ({ ...prev, [id]: 'dismissed' }));
+    } else if (action === 'create') {
+      setStatuses(prev => ({ ...prev, [id]: 'reviewed' }));
+    }
+  }
+
+  if (allLearnings.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 240, gap: 10, color: 'var(--text-disabled)' }}>
+        <BulbIcon />
+        <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No learnings yet — they appear as AI detects knowledge gaps from tickets.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {allLearnings.map(l => (
+          <LearningCard
+            key={l.id}
+            learning={{ ...l, status: statuses[l.id] ?? l.status }}
+            linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
+            onAction={handleAction}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── KnowledgeBaseView ─────────────────────────────────────────────────────────
 
 export default function KnowledgeBaseView() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState([]);
   const [manageOpen, setManageOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('articles');
 
   const project = KB_PROJECTS.find(p => p.id === projectId);
   const allArticles = KB_ARTICLES.filter(a => a.projectId === projectId);
-  const articles = search
+  const learningsCount = KB_LEARNINGS.filter(l => l.projectId === projectId && l.status === 'new').length;
+  const searchFiltered = search
     ? allArticles.filter(a => a.title.toLowerCase().includes(search.toLowerCase()))
     : allArticles;
+  const articles = applyFilters(searchFiltered, filters, KB_ACCESSORS);
 
   if (!projectId) {
     return (
@@ -516,11 +736,16 @@ export default function KnowledgeBaseView() {
     );
   }
 
+  const TABS = [
+    { id: 'articles',  label: 'Articles',  count: allArticles.length },
+    { id: 'learnings', label: 'Learnings', count: learningsCount, dot: learningsCount > 0 },
+  ];
+
   return (
     <div className="relative flex flex-col h-full overflow-hidden bg-background-weak">
 
       {/* ── Header ── */}
-      <div className="shrink-0 px-8 pt-7 pb-4">
+      <div className="shrink-0 px-8 pt-7 pb-0">
         <div style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-weak)'} onClick={() => navigate('/knowledge-base')}>
             Knowledge Bases
@@ -529,14 +754,16 @@ export default function KnowledgeBaseView() {
           <span style={{ color: 'var(--text)' }}>{project.name}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 12 }}>
           <div>
             <h1 style={{ fontFamily: SFT, fontSize: 20, fontWeight: 600, color: 'var(--text)', margin: '0 0 4px', lineHeight: '28px' }}>
               {project.name}
             </h1>
-            <p style={{ ...typoMeta, margin: '0 0 10px' }}>
+            <p style={{ ...typoMeta, margin: 0 }}>
               {project.team} · {allArticles.length} article{allArticles.length !== 1 ? 's' : ''}
             </p>
+          </div>
+          <div style={{ flexShrink: 0, paddingTop: 2 }}>
             <IntegrationBadge
               source={project.source}
               onManage={() => setManageOpen(true)}
@@ -544,90 +771,123 @@ export default function KnowledgeBaseView() {
             />
           </div>
         </div>
-      </div>
 
-      {/* ── Toolbar ── */}
-      <div className="shrink-0 px-8 pb-4">
-        <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            style={{
-              height: 32, padding: '0 14px', fontSize: 13, fontWeight: 500, fontFamily: SFT,
-              borderRadius: 6, border: 'none', cursor: 'pointer',
-              background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}
-          >
-            <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 1v10M1 6h10" />
-            </svg>
-            Add article
-          </button>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', top: '50%', left: 10, transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                <SearchIcon />
-              </span>
-              <input
-                type="text"
-                placeholder="Search articles…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{
-                  height: 32, paddingLeft: 32, paddingRight: 12, fontSize: 13, fontFamily: SFT,
-                  border: '1px solid var(--border)', borderRadius: 6, outline: 'none',
-                  color: 'var(--text)', background: 'var(--background-weak)', width: 200,
-                }}
-                onFocus={e => e.target.style.borderColor = 'var(--icon)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              />
-            </div>
-            {[
-              { label: 'Filter', Icon: FilterIcon },
-              { label: 'Sort', Icon: SortIcon },
-            ].map(({ label, Icon }) => (
+        {/* ── Tabs ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0, borderBottom: '1px solid var(--border)' }}>
+          {TABS.map(tab => {
+            const active = activeTab === tab.id;
+            return (
               <button
-                key={label}
+                key={tab.id}
                 type="button"
+                onClick={() => setActiveTab(tab.id)}
                 style={{
-                  height: 32, padding: '0 10px', fontSize: 12, fontFamily: SFT,
-                  borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer',
-                  background: 'var(--background-weak)', color: 'var(--text-weak)',
-                  display: 'flex', alignItems: 'center', gap: 5, transition: 'border-color 0.1s, color 0.1s',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  height: 36, padding: '0 14px', fontSize: 13, fontFamily: SFT,
+                  fontWeight: active ? 500 : 400, cursor: 'pointer',
+                  background: 'transparent', border: 'none',
+                  color: active ? 'var(--text)' : 'var(--text-weak)',
+                  borderBottom: active ? '2px solid var(--selected-background-strong)' : '2px solid transparent',
+                  marginBottom: -1,
+                  transition: 'color 0.1s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--text-weak)'; }}
               >
-                <Icon /> {label}
+                {tab.label}
+                <span style={{
+                  fontSize: 10, fontWeight: 600, lineHeight: '14px', padding: '0 4px', borderRadius: 3,
+                  background: active ? 'var(--selected-background-strong)' : 'var(--background-medium)',
+                  color: active ? 'var(--selected-text-strong)' : 'var(--text-weak)',
+                  minWidth: 18, textAlign: 'center',
+                }}>
+                  {tab.count}
+                </span>
+                {tab.dot && !active && (
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--selected-background-strong)', flexShrink: 0, marginLeft: -2 }} />
+                )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* ── Table ── */}
-      <div className="flex-1 min-h-0 overflow-hidden px-8 pb-8">
-        <div className="h-full overflow-auto" style={{ overscrollBehavior: 'none' }}>
-          <div style={{ minWidth: '100%', width: 'max-content' }}>
-            <TableHeader />
-            {articles.length > 0
-              ? articles.map(article => <TableRow key={article.id} article={article} />)
-              : (
-                <div
-                  className="flex items-center justify-center py-16 w-full"
-                  style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)', fontFamily: SFT, fontSize: 13, color: 'var(--text-disabled)' }}
+      {activeTab === 'articles' ? (
+        <>
+          {/* ── Toolbar ── */}
+          <div className="shrink-0 px-8 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', top: '50%', left: 10, transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                  <SearchIcon />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search articles…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  style={{
+                    height: 32, paddingLeft: 32, paddingRight: 12, fontSize: 13, fontFamily: SFT,
+                    border: '1px solid var(--border)', borderRadius: 6, outline: 'none',
+                    color: 'var(--text)', background: 'var(--background-weak)', width: 200,
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'var(--icon)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <FilterPanel
+                  fields={KB_FILTER_FIELDS}
+                  quickFilters={KB_QUICK_FILTERS}
+                  filters={filters}
+                  onChange={setFilters}
+                />
+                <button
+                  type="button"
+                  style={{
+                    height: 32, padding: '0 10px', fontSize: 12, fontFamily: SFT,
+                    borderRadius: 6, border: 'none', cursor: 'pointer',
+                    background: 'transparent', color: 'var(--text-weak)',
+                    display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-weak)'; }}
                 >
-                  {search ? 'No articles match your search.' : 'No articles yet.'}
-                </div>
-              )
-            }
+                  <SortIcon /> Sort
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* ── Table ── */}
+          <div className="flex-1 min-h-0 overflow-hidden px-8 pb-8">
+            <div className="h-full overflow-auto" style={{ overscrollBehavior: 'none' }}>
+              <div style={{ minWidth: '100%', width: 'max-content' }}>
+                <TableHeader />
+                {articles.length > 0
+                  ? articles.map(article => <TableRow key={article.id} article={article} />)
+                  : (
+                    <div
+                      className="flex items-center justify-center py-16 w-full"
+                      style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)', fontFamily: SFT, fontSize: 13, color: 'var(--text-disabled)' }}
+                    >
+                      {search ? 'No articles match your search.' : 'No articles yet.'}
+                    </div>
+                  )
+                }
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* ── Learnings tab ── */
+        <div className="flex-1 min-h-0 overflow-y-auto px-8 py-5">
+          <LearningsTab projectId={projectId} allArticles={allArticles} />
         </div>
-      </div>
+      )}
 
       {/* ── Manage Integration Panel ── */}
-      <RightPanelOverlay open={manageOpen} onClose={() => setManageOpen(false)} width={400}>
+      <RightPanelOverlay open={manageOpen} onClose={() => setManageOpen(false)} width="min(660px, 72%)">
         <ManageIntegrationPanel
           project={project}
           allArticles={allArticles}

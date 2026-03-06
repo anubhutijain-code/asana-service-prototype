@@ -1,11 +1,11 @@
 // ─── Tickets dashboard data ────────────────────────────────────────────────────
 
 export const STATS = [
-  { label: 'Total tickets',                    value: '51',  trend: '+4 from last week',      trendGood: true  },
-  { label: 'AI-deflected tickets',             value: '14',  trend: '27% of total',           trendGood: true  },
-  { label: 'AI deflection rate',               value: '99%', trend: '3% above last month',    trendGood: true  },
-  { label: 'MTTA (Mean Time to Acknowledge)',  value: '4s',  trend: '18% faster than target', trendGood: true  },
-  { label: 'SLA compliance',                   value: '67%', trend: '3% below target',        trendGood: false },
+  { label: 'Total tickets',                   value: '51',  trend: '+4 from last week',      trendGood: true  },
+  { label: 'AI-deflected tickets',            value: '14',  trend: '27% of total',           trendGood: true  },
+  { label: 'AI deflection rate',              value: '99%', trend: '3% above last month',    trendGood: true  },
+  { label: 'MTTA (Mean Time to Acknowledge)', value: '4s',  trend: '18% faster than target', trendGood: true  },
+  { label: 'SLA compliance',                  value: '67%', trend: '3% below target',        trendGood: false },
 ];
 
 export const TABS = ['My Tickets', 'All Tickets', 'Unassigned', 'Open Tickets', 'SLA Urgent', 'Resolved'];
@@ -53,23 +53,15 @@ export const TICKETS = [
       {
         id: 's1', type: 'agent',
         label: 'Intake & Task Distribution', team: 'IT Agent',
-        status: 'active',
-        body: 'Classified as Access Management → Salesforce role update post department transfer. Kicked off parallel HR verification and manager approval tasks.',
+        status: 'completed',
+        completedAt: '7 min ago',
+        outcomeNote: 'Classified as Access Management → Salesforce role update following department transfer. HR employment verification task created.',
       },
       {
         id: 's2', type: 'linked',
         label: 'HR Employment Verification', team: 'HR',
-        status: 'pending',
-        parallelGroup: 'approval-check',
+        status: 'active',
         linkedTicket: { id: 'HR-112', name: 'Confirm department transfer: Sarah Lee (Marketing → Finance)', status: 'Open' },
-      },
-      {
-        id: 's3', type: 'linked',
-        label: 'Manager Approval', team: 'Manager',
-        status: 'pending',
-        parallelGroup: 'approval-check',
-        // CWM task — no IT ticket ID
-        linkedTicket: { name: 'Manager approval: Salesforce access update for Sarah Lee', status: 'Open' },
       },
       {
         id: 's4', type: 'agent',
@@ -183,13 +175,14 @@ export const HR_PEOPLE = {
 };
 
 export const HR_STATS = [
-  { label: 'Open Cases',          value: '8',     trend: '3% from last week',     trendGood: false },
-  { label: 'Avg Resolution Time', value: '1d 4h', trend: '12% faster than target', trendGood: true  },
-  { label: 'SLA Compliance',      value: '95%',   trend: '1% below target',        trendGood: false },
-  { label: 'Escalated Cases',     value: '2',     trend: '1 fewer than last week',  trendGood: true  },
+  { label: 'Total cases',                     value: '8',     trend: '+1 from last week',      trendGood: false },
+  { label: 'AI-handled cases',                value: '3',     trend: '38% of total',           trendGood: true  },
+  { label: 'AI deflection rate',              value: '38%',   trend: '5% above last month',    trendGood: true  },
+  { label: 'MTTA (Mean Time to Acknowledge)', value: '2h 15m',trend: '12% faster than target', trendGood: true  },
+  { label: 'SLA compliance',                  value: '95%',   trend: '1% below target',        trendGood: false },
 ];
 
-export const HR_TABS = ['All Cases', 'Open Cases', 'Pending', 'Resolved'];
+export const HR_TABS = ['All Cases', 'Unassigned', 'Open Cases', 'Pending', 'Resolved'];
 
 export const HR_TICKETS = [
   { id: 'HR-014', date: 'Feb 24, 2026', name: 'Parental Leave Policy Clarification',  issueType: 'Leave',       priority: 'Medium',   status: 'Investigating', updated: 'just now',    sla: '3d',   slaType: 'normal',  assignee: HR_PEOPLE.sarah_hr, employee: HR_PEOPLE.maya   },
@@ -220,6 +213,9 @@ export const WORK_TASKS = [
 export function filterHRTickets(tickets, tab, query) {
   let result = tickets;
   switch (tab) {
+    case 'Unassigned':
+      result = result.filter(t => !t.assignee);
+      break;
     case 'Open Cases':
       result = result.filter(t => ['Not started', 'On hold', 'Investigating'].includes(t.status));
       break;

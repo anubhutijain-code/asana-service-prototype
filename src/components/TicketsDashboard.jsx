@@ -1,9 +1,32 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Pill from './Pill';
 import StatCard from './StatCard';
 import Avatar from './ui/Avatar';
 import { STATS, TABS, TICKETS, filterTickets, HR_TICKETS } from '../data/tickets';
 import TicketDetailView from './TicketDetailView';
+import FilterPanel, { applyFilters } from './ui/FilterPanel';
+
+// ─── Filter config ────────────────────────────────────────────────────────────
+const TICKET_FIELDS = [
+  { id: 'status',   label: 'Status',   type: 'select', options: ['Not started', 'In Progress', 'On hold', 'Resolved', 'Closed'] },
+  { id: 'priority', label: 'Priority', type: 'select', options: ['Critical', 'High', 'Medium', 'Low'] },
+  { id: 'category', label: 'Category', type: 'select', options: ['Access Management', 'Hardware', 'Software', 'Network', 'Other'] },
+  { id: 'assignee', label: 'Assignee', type: 'text' },
+];
+
+const TICKET_QUICK_FILTERS = [
+  { id: 'open',     label: 'Open tickets', rules: [{ field: 'status', op: 'is not', value: 'Resolved' }] },
+  { id: 'critical', label: 'Critical',     rules: [{ field: 'priority', op: 'is', value: 'Critical' }] },
+  { id: 'unassigned', label: 'Unassigned', rules: [{ field: 'assignee', op: 'is', value: '' }] },
+];
+
+const TICKET_ACCESSORS = {
+  status:   t => t.status,
+  priority: t => t.priority,
+  category: t => t.category,
+  assignee: t => t.assignee?.name ?? '',
+};
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -193,25 +216,24 @@ function PersonCell({ person }) {
 // Frozen cols: sticky left-0 (120px) · sticky left-[120px] (300px)
 // No drop shadows. Rows have border-t/r/l only; header has rounded-t-lg.
 
-const COL  = 'text-xs font-medium text-text-weak px-4 py-3 text-left whitespace-nowrap';
-const CELL = 'px-4';
-// Cell divider applied via inline style so it's guaranteed in all browsers/Tailwind versions
-const divStyle = { borderRight: '1px solid var(--border)' };
+const COL  = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
+const CELL = 'px-6';
+const divStyle = {};
 
 function TableHeader() {
   return (
     <div
-      className="flex items-center w-full bg-background-medium sticky top-0 z-[2]"
-      style={{ border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}
+      className="flex items-center w-full bg-white sticky top-0 z-[2]"
+      style={{ borderBottom: '1px solid var(--border)' }}
     >
-      <div className={`${COL} sticky left-0       bg-background-medium z-[3] w-[120px] shrink-0`} style={divStyle}>Ticket number</div>
-      <div className={`${COL} sticky left-[120px] bg-background-medium z-[3] w-[300px] shrink-0`} style={divStyle}>Name</div>
-      <div className={`${COL} w-[130px] shrink-0`} style={divStyle}>Priority</div>
-      <div className={`${COL} w-[175px] shrink-0`} style={divStyle}>Status</div>
-      <div className={`${COL} w-[155px] shrink-0`} style={divStyle}>Last updated</div>
-      <div className={`${COL} w-[101px] shrink-0`} style={divStyle}>SLA</div>
-      <div className={`${COL} w-[165px] shrink-0`} style={divStyle}>Assigned to</div>
-      <div className={`${COL} flex-1 min-w-[165px]`} style={divStyle}>Requested by</div>
+      <div className={`${COL} sticky left-0       bg-white z-[3] w-[120px] shrink-0`}>Ticket number</div>
+      <div className={`${COL} sticky left-[120px] bg-white z-[3] w-[300px] shrink-0`}>Name</div>
+      <div className={`${COL} w-[130px] shrink-0`}>Priority</div>
+      <div className={`${COL} w-[175px] shrink-0`}>Status</div>
+      <div className={`${COL} w-[155px] shrink-0`}>Last updated</div>
+      <div className={`${COL} w-[101px] shrink-0`}>SLA</div>
+      <div className={`${COL} w-[165px] shrink-0`}>Assigned to</div>
+      <div className={`${COL} flex-1 min-w-[165px]`}>Requested by</div>
     </div>
   );
 }
@@ -221,7 +243,7 @@ function TableRow({ ticket, onClick }) {
     <div
       onClick={onClick}
       className="group flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}
+      style={{ borderBottom: '1px solid var(--border)' }}
     >
       <div className={`${CELL} sticky left-0       z-[1] bg-background-weak group-hover:bg-background-medium w-[120px] shrink-0 flex items-center`}
            style={{ ...divStyle, ...typoTicketNo }}>
@@ -270,9 +292,11 @@ function TableRow({ ticket, onClick }) {
 // Only the table rows scroll, inside a single overflow:auto container.
 // That container is also the sticky context for the header and frozen cols.
 
-export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTicket = () => {}, deepLinkTicketId = null, onDeepLinkHandled = () => {}, onURLBack = null, linkedHRTickets = {}, onLinkHRTicket = () => {}, onGoToLinkedHRTicket }) {
-  const [activeTab, setActiveTab] = useState('My Tickets');
+export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTicket = () => {}, deepLinkTicketId = null, onDeepLinkHandled = () => {}, onURLBack = null, linkedHRTickets = {}, onLinkHRTicket = () => {}, onGoToLinkedHRTicket, initialTab = 'My Tickets' }) {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [statusOverrides, setStatusOverrides] = useState({});
 
@@ -289,7 +313,7 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
   );
   // Routed tickets leave the IT queue entirely — they live in HR now
   const queueTickets = ticketsWithOverrides.filter(t => t.status !== 'Routed');
-  const rows = filterTickets(queueTickets, activeTab, search);
+  const rows = applyFilters(filterTickets(queueTickets, activeTab, search), filters, TICKET_ACCESSORS);
 
   function handleRouteComplete(ticket, chatSnapshot, notes) {
     setStatusOverrides(prev => ({ ...prev, [ticket.id]: 'Routed' }));
@@ -517,12 +541,12 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
           </div>
 
           <div className="flex items-center gap-1">
-            <button type="button"
-              className="flex items-center gap-1.5 px-3 h-8 text-sm text-text-weak
-                         border-0 bg-transparent rounded-md cursor-pointer
-                         hover:bg-background-medium hover:text-text transition-colors">
-              <FilterIcon /> Filter
-            </button>
+            <FilterPanel
+              fields={TICKET_FIELDS}
+              quickFilters={TICKET_QUICK_FILTERS}
+              filters={filters}
+              onChange={setFilters}
+            />
             <button type="button"
               className="flex items-center gap-1.5 px-3 h-8 text-sm text-text-weak
                          border-0 bg-transparent rounded-md cursor-pointer
@@ -559,7 +583,7 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
                   <TableRow
                     key={t.id + i}
                     ticket={t}
-                    onClick={() => setSelectedTicket(t)}
+                    onClick={() => navigate(`/tickets/${t.id}`)}
                   />
                 ))
               : (

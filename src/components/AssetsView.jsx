@@ -1,8 +1,30 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Pill from './Pill';
 import RightPanelOverlay from './RightPanelOverlay';
 import Avatar from './ui/Avatar';
 import { ASSETS } from '../data/assets';
+import FilterPanel, { applyFilters } from './ui/FilterPanel';
+
+// ─── Filter config ────────────────────────────────────────────────────────────
+const ASSET_FIELDS = [
+  { id: 'os',         label: 'OS',         type: 'select', options: ['macOS', 'Windows', 'iOS'] },
+  { id: 'status',     label: 'Status',     type: 'select', options: ['Active', 'EOL grace period', 'EOL planned', 'Inactive'] },
+  { id: 'compliance', label: 'Compliance', type: 'select', options: ['Compliant', 'Non compliant'] },
+  { id: 'location',   label: 'Location',   type: 'text' },
+];
+
+const ASSET_QUICK_FILTERS = [
+  { id: 'compliant',    label: 'Compliant',     rules: [{ field: 'compliance', op: 'is', value: 'Compliant' }] },
+  { id: 'noncompliant', label: 'Non-compliant', rules: [{ field: 'compliance', op: 'is', value: 'Non compliant' }] },
+  { id: 'eol',          label: 'EOL devices',   rules: [{ field: 'status', op: 'is', value: 'EOL grace period' }] },
+];
+
+const ASSET_ACCESSORS = {
+  os:         a => a.os,
+  status:     a => a.status,
+  compliance: a => a.compliance,
+  location:   a => a.location,
+};
 
 // ─── Status badge config ──────────────────────────────────────────────────────
 const STATUS_BADGE = {
@@ -483,14 +505,10 @@ function AssetDetail({ asset, onClose }) {
 // ─── AssetsView ───────────────────────────────────────────────────────────────
 
 export default function AssetsView() {
-  const [search, setSearch]         = useState('');
-  const [filterOs, setFilterOs]     = useState(null);
-  const [filterStatus, setFilterStatus] = useState(null);
-  const [filterCompliance, setFilterCompliance] = useState(null);
-  const [filterLocation, setFilterLocation]     = useState(null);
-  const [selected, setSelected]     = useState(new Set());
-  const [slideOver, setSlideOver]   = useState(null);
-  const [view, setView]             = useState('table');
+  const [search, setSearch]   = useState('');
+  const [filters, setFilters] = useState([]);
+  const [selected, setSelected] = useState(new Set());
+  const [slideOver, setSlideOver] = useState(null);
 
   // KPI counts
   const unassigned   = ASSETS.filter(a => !a.assignee).length;
@@ -499,17 +517,13 @@ export default function AssetsView() {
   const total        = ASSETS.length;
 
   // Filtered rows
-  const filtered = ASSETS.filter(a => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (!a.name.toLowerCase().includes(q) && !a.id.toLowerCase().includes(q) && !a.model.toLowerCase().includes(q)) return false;
-    }
-    if (filterOs         && a.os !== filterOs)             return false;
-    if (filterStatus     && a.status !== filterStatus)     return false;
-    if (filterCompliance && a.compliance !== filterCompliance) return false;
-    if (filterLocation   && a.location !== filterLocation) return false;
-    return true;
-  });
+  const searchFiltered = search
+    ? ASSETS.filter(a => {
+        const q = search.toLowerCase();
+        return a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q) || a.model.toLowerCase().includes(q);
+      })
+    : ASSETS;
+  const filtered = applyFilters(searchFiltered, filters, ASSET_ACCESSORS);
 
   const allSelected = filtered.length > 0 && filtered.every(a => selected.has(a.id));
 
@@ -549,7 +563,7 @@ export default function AssetsView() {
       {/* ── Filter bar ───────────────────────────────────────────────────── */}
       <div className="shrink-0 px-8 pb-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          {/* Left: search + chips */}
+          {/* Left: search */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Search */}
             <div style={{ position: 'relative' }}>
@@ -570,31 +584,16 @@ export default function AssetsView() {
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
             </div>
-            {/* Filter chips */}
-            <FilterChip label="OS" options={['macOS','Windows','iOS']} value={filterOs} onChange={setFilterOs} />
-            <FilterChip label="Status" options={['Active','EOL grace period','EOL planned','Inactive']} value={filterStatus} onChange={setFilterStatus} />
-            <FilterChip label="Compliance" options={['Compliant','Non compliant']} value={filterCompliance} onChange={setFilterCompliance} />
-            <FilterChip label="Location" options={locations} value={filterLocation} onChange={setFilterLocation} />
           </div>
 
-          {/* Right: view toggle + import */}
+          {/* Right: filter + import */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* View toggle */}
-            <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
-              {[
-                { id: 'table', Icon: TableViewIcon },
-                { id: 'card',  Icon: CardViewIcon  },
-              ].map(({ id, Icon }) => (
-                <button key={id} type="button" onClick={() => setView(id)}
-                  style={{
-                    width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: 'none', cursor: 'pointer',
-                    background: view === id ? 'var(--background-medium)' : 'var(--background-weak)',
-                  }}>
-                  <Icon active={view === id} />
-                </button>
-              ))}
-            </div>
+            <FilterPanel
+              fields={ASSET_FIELDS}
+              quickFilters={ASSET_QUICK_FILTERS}
+              filters={filters}
+              onChange={setFilters}
+            />
             {/* Import button */}
             <button
               type="button"

@@ -15,6 +15,13 @@ import AssetsView from './components/AssetsView';
 import KnowledgeBaseView from './components/KnowledgeBaseView';
 import DashboardView from './components/DashboardView';
 import SettingsView from './components/SettingsView';
+import OptimizeView from './components/OptimizeView';
+import Admin2HomeView from './components/Admin2HomeView';
+import MyApprovalsView from './components/MyApprovalsView';
+import EscalationsView from './components/EscalationsView';
+import AgentMyTicketsView from './components/AgentMyTicketsView';
+import CollaboratingView from './components/CollaboratingView';
+import AgentHomeView from './components/AgentHomeView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
 // ModeSidebar    = w-16 = 4rem    = 64px
@@ -46,11 +53,46 @@ function getRouteState(pathname) {
   if (pathname === '/automations')  return { mode: 'service',  serviceNav: 'Automations',  workItem: null    };
   if (pathname === '/assets')       return { mode: 'service',  serviceNav: 'Assets',       workItem: null    };
   if (pathname === '/dashboard')    return { mode: 'service',  serviceNav: 'Dashboard',    workItem: null    };
+  if (pathname === '/optimize')     return { mode: 'service',  serviceNav: 'Optimize',     workItem: null    };
   if (pathname === '/create-queue') return { mode: 'service',  serviceNav: 'Create Queue', workItem: null    };
   if (pathname === '/knowledge-base' || pathname.startsWith('/knowledge-base/'))
     return { mode: 'service', serviceNav: 'Knowledge base', workItem: null };
   if (pathname === '/settings')
     return { mode: 'service', serviceNav: 'Settings', workItem: null };
+  if (pathname === '/my-queue')
+    return { mode: 'service', serviceNav: 'My Queue', workItem: null };
+  if (pathname === '/following')
+    return { mode: 'service', serviceNav: 'Following', workItem: null };
+  if (pathname === '/unassigned')
+    return { mode: 'service', serviceNav: 'Unassigned', workItem: null };
+  if (pathname === '/my-dashboard')
+    return { mode: 'service', serviceNav: 'My Dashboard', workItem: null };
+  // Agent (workbench) routes
+  if (pathname === '/my-tickets')
+    return { mode: 'service', serviceNav: 'My Tickets', workItem: null };
+  if (pathname === '/collaborating')
+    return { mode: 'service', serviceNav: 'Collaborating', workItem: null };
+  if (pathname === '/agent-home')
+    return { mode: 'service', serviceNav: 'Agent Home', workItem: null };
+  if (pathname === '/all-tickets')
+    return { mode: 'service', serviceNav: 'All Tickets', workItem: null };
+  if (pathname === '/it-unassigned')
+    return { mode: 'service', serviceNav: 'IT Unassigned', workItem: null };
+  if (pathname === '/it-all-active')
+    return { mode: 'service', serviceNav: 'IT All Active', workItem: null };
+  if (pathname === '/hr-unassigned')
+    return { mode: 'service', serviceNav: 'HR Unassigned', workItem: null };
+  if (pathname === '/hr-all-active')
+    return { mode: 'service', serviceNav: 'HR All Active', workItem: null };
+  // Agent 3 / Admin 2 routes
+  if (pathname === '/home')
+    return { mode: 'service', serviceNav: 'Home', workItem: null };
+  if (pathname === '/workload')
+    return { mode: 'service', serviceNav: 'Workload', workItem: null };
+  if (pathname === '/escalations')
+    return { mode: 'service', serviceNav: 'Escalations', workItem: null };
+  if (pathname === '/my-approvals')
+    return { mode: 'service', serviceNav: 'My Approvals', workItem: null };
   return { mode: 'service', serviceNav: null, workItem: null };
 }
 
@@ -92,7 +134,26 @@ const SERVICE_NAV_URL = {
   'Create Queue':    '/create-queue',
   'Knowledge base':  '/knowledge-base',
   'Dashboard':       '/dashboard',
+  'Optimize':        '/optimize',
   'Settings':        '/settings',
+  'My Queue':        '/my-queue',
+  'Following':       '/following',
+  'Unassigned':      '/unassigned',
+  'My Dashboard':    '/my-dashboard',
+  // Agent workbench
+  'My Tickets':      '/my-tickets',
+  'Collaborating':   '/collaborating',
+  'Agent Home':      '/agent-home',
+  'All Tickets':     '/all-tickets',
+  'IT Unassigned':   '/it-unassigned',
+  'IT All Active':   '/it-all-active',
+  'HR Unassigned':   '/hr-unassigned',
+  'HR All Active':   '/hr-all-active',
+  // Agent 3 / Admin 2
+  'Home':            '/home',
+  'Workload':        '/workload',
+  'Escalations':     '/escalations',
+  'My Approvals':    '/my-approvals',
 };
 
 export default function AsanaService() {
@@ -101,6 +162,16 @@ export default function AsanaService() {
   const { mode: activeMode, serviceNav: activeServiceNav, workItem: workActiveItem } =
     getRouteState(location.pathname);
 
+  const [role, setRole] = useState('agent2');
+
+  function handleRoleChange(newRole) {
+    setRole(newRole);
+    if (newRole === 'agent')       navigate('/my-tickets');
+    else if (newRole === 'agent3') navigate('/agent-home');
+    else if (newRole === 'admin')  navigate('/dashboard');
+    else if (newRole === 'admin2') navigate('/home');
+    else                           navigate('/inbox'); // agent2
+  }
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [kbExpanded, setKbExpanded] = useState(false);
   const [routedHRTickets, setRoutedHRTickets] = useState([]);
@@ -110,8 +181,14 @@ export default function AsanaService() {
   const searchPillRef = useRef(null);
 
   function handleSelectMode(mode) {
-    if (mode === 'work')     navigate('/');
-    else if (mode === 'service')  navigate('/inbox');
+    if (mode === 'work')          navigate('/');
+    else if (mode === 'service') {
+      if (role === 'agent')        navigate('/my-tickets');
+      else if (role === 'agent3')  navigate('/agent-home');
+      else if (role === 'admin')   navigate('/dashboard');
+      else if (role === 'admin2')  navigate('/home');
+      else                         navigate('/inbox');
+    }
     else if (mode === 'plan')     navigate('/strategy');
     else if (mode === 'workflow') navigate('/workflow');
     else if (mode === 'company')  navigate('/people');
@@ -211,7 +288,7 @@ export default function AsanaService() {
       {/* ── Mode sidebar ────────────────────────────── left-0, below top bar */}
       {sidebarOpen && (
         <div className="absolute top-12 left-0 w-16 bottom-0 z-40">
-          <ModeSidebar active={activeMode} onSelect={handleSelectMode} />
+          <ModeSidebar active={activeMode} onSelect={handleSelectMode} role={role} onRoleChange={handleRoleChange} />
         </div>
       )}
 
@@ -234,6 +311,7 @@ export default function AsanaService() {
               onToggleKB={() => setKbExpanded(v => !v)}
               activeKBProject={activeKBProject}
               onSelectKBProject={(id) => navigate(`/knowledge-base/${id}`)}
+              role={role}
             />
           )}
           {activeMode === 'work' && (
@@ -300,7 +378,91 @@ export default function AsanaService() {
             <CreateQueueWizard onDone={() => navigate('/tickets')} />
           } />
           <Route path="/dashboard" element={<DashboardView />} />
+          <Route path="/optimize" element={<OptimizeView onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
           <Route path="/settings" element={<SettingsView />} />
+          <Route path="/my-queue" element={
+            <TicketsDashboard
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          <Route path="/following" element={
+            <TicketsDashboard
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          <Route path="/unassigned" element={
+            <TicketsDashboard
+              initialTab="Unassigned"
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          <Route path="/my-dashboard" element={<DashboardView />} />
+          {/* Agent workbench routes */}
+          <Route path="/my-tickets" element={<AgentMyTicketsView />} />
+          <Route path="/collaborating" element={<CollaboratingView />} />
+          <Route path="/it-unassigned" element={
+            <TicketsDashboard
+              initialTab="Unassigned"
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          <Route path="/it-all-active" element={
+            <TicketsDashboard
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          <Route path="/hr-unassigned" element={
+            <HRTicketsDashboard
+              initialTab="Unassigned"
+              extraTickets={routedHRTickets}
+              onHRCaseStatusChange={handleHRCaseStatusChange}
+              onGoToLinkedITTicket={handleGoToLinkedITTicket}
+            />
+          } />
+          <Route path="/hr-all-active" element={
+            <HRTicketsDashboard
+              extraTickets={routedHRTickets}
+              onHRCaseStatusChange={handleHRCaseStatusChange}
+              onGoToLinkedITTicket={handleGoToLinkedITTicket}
+            />
+          } />
+          {/* Agent 3 routes */}
+          <Route path="/agent-home" element={<AgentHomeView />} />
+          <Route path="/all-tickets" element={
+            <TicketsDashboard
+              initialTab="All Tickets"
+              onRouteToHR={handleAddHRTicket}
+              onCreateHRTicket={handleAddHRTicket}
+              linkedHRTickets={linkedHRTickets}
+              onLinkHRTicket={handleLinkHRTicket}
+              onGoToLinkedHRTicket={handleGoToLinkedHRTicket}
+            />
+          } />
+          {/* Admin 2 routes */}
+          <Route path="/home"         element={<Admin2HomeView />} />
+          <Route path="/workload"     element={<DashboardView initialTab="Team" hideTabs={true} />} />
+          <Route path="/escalations"  element={<EscalationsView />} />
+          <Route path="/my-approvals" element={<MyApprovalsView />} />
           <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
           <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
           <Route path="/people" element={<EmptyModeView mode="People" />} />

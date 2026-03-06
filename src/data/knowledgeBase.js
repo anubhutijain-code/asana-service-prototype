@@ -62,6 +62,91 @@ export const KB_ARTICLES = [
   { id: 'onb-004', projectId: 'onb-kb', title: 'Benefits Enrollment Instructions',       status: 'Draft',       category: 'Benefits',        author: 'Liam Okafor',  team: 'People Ops',       content: '', updatedAt: '2025-03-15', source: 'internal'   },
 ];
 
+// ─── KB Learnings — AI-detected knowledge gaps ─────────────────────────────────
+// status: 'new' | 'reviewed' | 'dismissed'
+// type:   'new-article' | 'update-article'
+export const KB_LEARNINGS = [
+  // IT KB
+  {
+    id: 'learn-it-001', projectId: 'it-kb', status: 'new',
+    type: 'new-article',
+    gap: 'No article covers setting up MFA on a new device after hardware replacement',
+    suggestion: 'MFA Device Re-enrollment After Hardware Replacement',
+    category: 'Account Access',
+    sourceTickets: [{ id: 'TICK-042', title: 'MFA not working after laptop swap' }, { id: 'TICK-051', title: 'Can\'t log in after device replacement' }],
+    detectedAt: '2026-03-01T10:00:00Z',
+  },
+  {
+    id: 'learn-it-002', projectId: 'it-kb', status: 'new',
+    type: 'update-article',
+    linkedArticleId: 'it-001',
+    gap: 'VPN article doesn\'t cover the split-tunnel configuration for the new AWS workspace',
+    suggestion: 'Add a section on split-tunnel setup for AWS Workspaces',
+    category: 'Network',
+    sourceTickets: [{ id: 'TICK-038', title: 'VPN drops when connecting to AWS resources' }],
+    detectedAt: '2026-03-02T08:30:00Z',
+  },
+  {
+    id: 'learn-it-003', projectId: 'it-kb', status: 'new',
+    type: 'new-article',
+    gap: 'No guidance on requesting admin privileges for approved tools — users repeatedly ask',
+    suggestion: 'How to Request Local Admin Access for Approved Software',
+    category: 'Policy',
+    sourceTickets: [{ id: 'TICK-029', title: 'Need admin access to install dev tools' }, { id: 'TICK-033', title: 'Can\'t install Figma without admin rights' }, { id: 'TICK-044', title: 'Software install blocked by policy' }],
+    detectedAt: '2026-02-28T14:00:00Z',
+  },
+  {
+    id: 'learn-it-004', projectId: 'it-kb', status: 'reviewed',
+    type: 'update-article',
+    linkedArticleId: 'it-003',
+    gap: 'Printer article omits setup for the new Ricoh model deployed in London office',
+    suggestion: 'Add Ricoh MP C4504 setup steps for the London office',
+    category: 'Hardware',
+    sourceTickets: [{ id: 'TICK-019', title: 'Can\'t add London printer' }],
+    detectedAt: '2026-02-20T11:15:00Z',
+  },
+  {
+    id: 'learn-it-005', projectId: 'it-kb', status: 'dismissed',
+    type: 'new-article',
+    gap: 'Several tickets asked about Zoom Rooms setup, not covered anywhere',
+    suggestion: 'Zoom Rooms Setup and Troubleshooting Guide',
+    category: 'Collaboration',
+    sourceTickets: [{ id: 'TICK-011', title: 'Zoom Room won\'t connect in conf room B' }],
+    detectedAt: '2026-02-15T09:00:00Z',
+  },
+
+  // HR KB
+  {
+    id: 'learn-hr-001', projectId: 'hr-kb', status: 'new',
+    type: 'new-article',
+    gap: 'No article explains how parental leave interacts with the performance review cycle',
+    suggestion: 'Parental Leave and Performance Review — What to Expect',
+    category: 'Leave',
+    sourceTickets: [{ id: 'TICK-067', title: 'Will parental leave affect my review rating?' }, { id: 'TICK-071', title: 'Performance cycle during leave of absence' }],
+    detectedAt: '2026-03-01T16:00:00Z',
+  },
+  {
+    id: 'learn-hr-002', projectId: 'hr-kb', status: 'new',
+    type: 'update-article',
+    linkedArticleId: 'hr-004',
+    gap: 'Expense policy doesn\'t address reimbursement limits for home office equipment',
+    suggestion: 'Add a section covering home office equipment reimbursement limits',
+    category: 'Finance',
+    sourceTickets: [{ id: 'TICK-058', title: 'Can I expense a standing desk?' }, { id: 'TICK-062', title: 'Reimbursement limit for monitor purchase' }],
+    detectedAt: '2026-02-27T12:00:00Z',
+  },
+  {
+    id: 'learn-hr-003', projectId: 'hr-kb', status: 'reviewed',
+    type: 'update-article',
+    linkedArticleId: 'hr-001',
+    gap: 'Benefits article doesn\'t mention the new dental network change effective April',
+    suggestion: 'Add a note on the April 2026 dental network changes',
+    category: 'Benefits',
+    sourceTickets: [{ id: 'TICK-049', title: 'Is my dentist still in-network?' }],
+    detectedAt: '2026-02-22T10:30:00Z',
+  },
+];
+
 export function formatDate(iso) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
