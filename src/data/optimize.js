@@ -17,6 +17,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-67', name: 'Help Updating MacBook to Latest macOS' },
       ],
       suggestion: 'Create article: MFA Device Re-enrollment After Hardware Replacement',
+      summary: 'Covers the step-by-step process to re-enroll MFA after a device swap — including Okta Verify, Microsoft Authenticator, and hardware token options. Includes what agents should tell users before the swap and what to do if the old device is unavailable.',
     },
     {
       id: 'c-002',
@@ -29,6 +30,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-69', name: 'Wrong Microsoft 365 License After Department Transfer' },
       ],
       suggestion: 'Create article: Access Changes Required When an Employee Transfers Teams',
+      summary: 'Documents which systems require access updates on a team transfer (Salesforce, M365, Jira, Slack channels), the order of operations, required approvals, and who is responsible at each step. Includes a checklist agents can follow.',
     },
     {
       id: 'c-003',
@@ -42,6 +44,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-60', name: 'Phone Unable to Connect to Office WiFi' },
       ],
       suggestion: 'Update VPN Setup Guide: add split-tunnel section for AWS Workspaces',
+      summary: 'Adds a new section to the VPN Setup Guide covering split-tunnel configuration for AWS Workspaces on macOS and Windows. Includes network adapter settings, common error codes, and when to escalate to network ops.',
     },
   ],
 
@@ -58,6 +61,8 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-66', name: 'Urgent Request for SFDC License Access' },
       ],
       suggestion: 'Grant L1 agents read + unlock permission in Okta admin console',
+      summary: 'L1 agents get read and unlock-only access in Okta — no ability to modify groups, reset MFA, or change user attributes. Covers the permission scope, approval process, and an audit log requirement for all unlock actions.',
+      integrations: ['Okta'],
     },
     {
       id: 'a-002',
@@ -70,6 +75,8 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-69', name: 'Wrong Microsoft 365 License After Department Transfer' },
       ],
       suggestion: 'Automate: trigger license sync when HR marks a department change as confirmed',
+      summary: 'When HR sets a transfer as confirmed in Workday, an automation triggers a license review across M365, Salesforce, and Jira. Agents receive a pre-filled update task with the recommended changes for one-click approval rather than manual lookup.',
+      integrations: ['Workday', 'Microsoft 365', 'Salesforce', 'Jira'],
     },
     {
       id: 'a-003',
@@ -81,6 +88,8 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-68', name: 'Paycheck Short — Missing Overtime Pay for Feb' },
       ],
       suggestion: 'Add a formal HR Payroll routing rule to the IT intake workflow',
+      summary: 'A routing rule automatically assigns payroll-category tickets to the HR queue with a 2-hour SLA, sends an acknowledgement to the requester, and creates a linked ticket in the HR system with full context from the original submission.',
+      integrations: ['Workday'],
     },
   ],
 
@@ -98,6 +107,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-66', name: 'Urgent Request for SFDC License Access' },
       ],
       suggestion: 'Update the "Account Access" KB article with Okta-specific login and reset steps so the AI has accurate grounding for these requests.',
+      summary: 'Revises the Account Access article to include Okta-specific login troubleshooting: the difference between a locked account and an expired password, the correct reset URL, and step-by-step MFA re-verification. This directly grounds the AI response for the most common failure pattern.',
     },
     {
       id: 'cx-002',
@@ -111,6 +121,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-60', name: 'Phone Unable to Connect to Office WiFi' },
       ],
       suggestion: 'Update the auto-close rule to require a confirmation reply from the user before setting status to Resolved.',
+      summary: 'Changes the deflection automation to set status to "Pending user confirmation" after the AI response, with a 48-hour window for the user to confirm or reopen. Only moves to Resolved after a positive reply or expiry with no further activity.',
     },
     {
       id: 'cx-003',
@@ -124,6 +135,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-63', name: 'Unable to Connect to WiFi After Troubleshooting' },
       ],
       suggestion: 'Add split-tunnel VPN configuration to the L1 routing scope in the AI playbook so it stops escalating these unnecessarily.',
+      summary: 'Updates the AI routing playbook to classify split-tunnel VPN requests as L1-resolvable. Adds a decision rule: if the ticket contains "split-tunnel" or "AWS Workspaces" and no hardware fault is mentioned, route to L1 with the VPN Setup Guide attached.',
     },
     {
       id: 'cx-004',
@@ -136,6 +148,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-68', name: 'Paycheck Short — Missing Overtime Pay for Feb' },
       ],
       suggestion: 'Update the AI response template for payroll-category tickets to acknowledge urgency and escalate to a human within 30 minutes.',
+      summary: 'Replaces the generic acknowledgement with a payroll-specific response that names the issue type, confirms it\'s been flagged as urgent, and sets a 30-minute human escalation timer. Removes AI self-resolution attempts for payroll — always routes to a human.',
     },
   ],
 
@@ -152,6 +165,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-62', name: 'Report Lost Laptop for Patrick Tuckey' },
       ],
       suggestion: 'Make Device ID a required field on the Hardware ticket intake form',
+      summary: 'Adds Device ID as a mandatory field on the Hardware intake form with a helper link to "How to find your Device ID" for macOS, Windows, and iOS. Form cannot be submitted without it, eliminating the follow-up round-trip.',
     },
     {
       id: 'd-002',
@@ -165,6 +179,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-53', name: 'Need access to Jira project for Q1 planning' },
       ],
       suggestion: 'Add Department and Current Role as required fields on the Access Request form',
+      summary: 'Adds Department and Current Role as required fields, auto-populated from the HRIS where available. Agents can immediately validate whether the requested access level is appropriate without a separate HR lookup.',
     },
     {
       id: 'd-003',
@@ -177,6 +192,7 @@ export const OPTIMIZE_GAPS = {
         { id: 'TICKET-60', name: 'Phone Unable to Connect to Office WiFi' },
       ],
       suggestion: 'Add OS Version and Device Type to the Network ticket intake form',
+      summary: 'Adds OS Version and Device Type as required fields on the Network form, with dropdowns for common values. The intake form uses device type to pre-attach the relevant troubleshooting guide so agents start with the right context.',
     },
   ],
 };

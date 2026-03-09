@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { OPTIMIZE_GAPS } from '../data/optimize';
-import RightPanelOverlay from './RightPanelOverlay';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+const SFD = '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
-const TABS = [
+export const TABS = [
   {
     id: 'content',
     label: 'Content gaps',
@@ -56,7 +56,7 @@ const TABS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function ImpactPill({ impact }) {
+export function ImpactPill({ impact }) {
   const styles = {
     high:   { bg: 'var(--danger-background)',  color: 'var(--danger-text)'  },
     medium: { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
@@ -74,7 +74,7 @@ function ImpactPill({ impact }) {
   );
 }
 
-function StatusBadge({ status }) {
+export function StatusBadge({ status }) {
   if (!status || status === 'open') return null;
   const cfg = {
     'in-review': { bg: 'var(--warning-background)', color: 'var(--warning-text)', label: 'In review' },
@@ -94,7 +94,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function CxScorePill({ score }) {
+export function CxScorePill({ score }) {
   const styles = score < 2.5
     ? { bg: 'var(--danger-background)',  color: 'var(--danger-text)'  }
     : score < 3.5
@@ -131,49 +131,43 @@ function GapCard({ item, selected, status, onSelect }) {
       onClick={() => onSelect(item)}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelect(item); }}
       style={{
-        background: selected ? 'var(--selected-background)' : 'var(--background-weak)',
-        border: selected ? '1px solid var(--selected-background-strong)' : '1px solid var(--border)',
-        borderRadius: 10,
-        padding: '14px 16px',
+        background: selected ? 'var(--selected-background)' : 'transparent',
+        borderBottom: '1px solid var(--border)',
+        borderLeft: `2px solid ${selected ? 'var(--selected-background-strong)' : 'transparent'}`,
+        padding: '0 16px 0 14px',
+        height: 48,
         display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
+        alignItems: 'center',
+        gap: 10,
         cursor: 'pointer',
         outline: 'none',
-        transition: 'border-color 0.1s, background 0.1s',
+        transition: 'background 0.1s',
         opacity: isDone ? 0.55 : 1,
       }}
-      onMouseEnter={e => { if (!selected) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; } }}
-      onMouseLeave={e => { if (!selected) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; } }}
+      onMouseEnter={e => { if (!selected) e.currentTarget.style.background = 'var(--background-medium)'; }}
+      onMouseLeave={e => { if (!selected) e.currentTarget.style.background = 'transparent'; }}
     >
-      {/* Top row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        {item.cxScore != null
-          ? <CxScorePill score={item.cxScore} />
-          : <ImpactPill impact={item.impact} />
-        }
-        <span style={{
-          fontSize: 11, fontFamily: SFT,
-          padding: '2px 7px', borderRadius: 4,
-          background: 'var(--background-medium)', color: 'var(--text-disabled)',
-        }}>
-          {item.ticketCount} interactions
-        </span>
-        <StatusBadge status={status} />
-      </div>
-
-      {/* Title */}
-      <p style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, lineHeight: '20px' }}>
+      {item.cxScore != null
+        ? <CxScorePill score={item.cxScore} />
+        : <ImpactPill impact={item.impact} />
+      }
+      <span style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {item.gap}
-      </p>
-
+      </span>
+      <span style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text-disabled)', flexShrink: 0 }}>
+        {item.ticketCount} interactions
+      </span>
+      <StatusBadge status={status} />
+      <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+        <path d="M4 2l4 4-4 4"/>
+      </svg>
     </div>
   );
 }
 
 // ─── Gap detail panel ─────────────────────────────────────────────────────────
 
-function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTicketClick }) {
+export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTicketClick }) {
   if (!item) return null;
 
   const isOpen = !status || status === 'open';
@@ -189,13 +183,6 @@ function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTi
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: 11, fontWeight: 500, fontFamily: SFT,
-                padding: '2px 7px', borderRadius: 4,
-                background: 'var(--background-medium)', color: 'var(--text-disabled)',
-              }}>
-                {tabConfig.label}
-              </span>
               {item.cxScore != null
                 ? <CxScorePill score={item.cxScore} />
                 : <ImpactPill impact={item.impact} />
@@ -223,20 +210,16 @@ function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTi
       </div>
 
       {/* Scrollable body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px' }}>
 
-        {/* Detail */}
         <PanelSection label={item.cxScore != null ? 'What went wrong' : "What's happening"}>
           <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-weak)', margin: 0, lineHeight: '20px' }}>
             {item.detail}
           </p>
         </PanelSection>
 
-        <PanelDivider />
-
-        {/* Source tickets / interactions */}
         <PanelSection label={item.cxScore != null ? 'Interactions' : 'Source tickets'}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {item.sourceTickets.map(t => (
               <button
                 key={t.id}
@@ -245,12 +228,12 @@ function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTi
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '8px 12px', borderRadius: 7,
-                  border: '1px solid var(--border)', cursor: 'pointer',
-                  background: 'var(--background-weak)', textAlign: 'left',
-                  transition: 'border-color 0.1s, background 0.1s',
+                  border: 'none', cursor: 'pointer',
+                  background: 'var(--background-medium)', textAlign: 'left',
+                  transition: 'box-shadow 0.1s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = 'inset 0 0 0 1px var(--border)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; }}
               >
                 <span style={{
                   fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--selected-text)',
@@ -270,138 +253,139 @@ function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTi
           </div>
         </PanelSection>
 
-        <PanelDivider />
-
-        {/* Recommendation */}
         <PanelSection label="Recommendation">
-          <div style={{
-            display: 'flex', alignItems: 'flex-start', gap: 10,
-            padding: '12px 14px', borderRadius: 8,
-            background: 'var(--selected-background)', border: '1px solid var(--selected-background-strong)',
-          }}>
-            <svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="var(--selected-text)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 1, flexShrink: 0 }}>
-              <path d="M2 6h8M7 3l3 3-3 3"/>
-            </svg>
-            <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--selected-text)', margin: 0, lineHeight: '20px' }}>
-              {item.suggestion}
+          <p style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 8px', lineHeight: '20px' }}>
+            {item.suggestion}
+          </p>
+          {item.summary && (
+            <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-weak)', margin: '0 0 10px', lineHeight: '20px' }}>
+              {item.summary}
             </p>
-          </div>
+          )}
+          {item.integrations?.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>Integrations needed:</span>
+              {item.integrations.map(name => (
+                <span key={name} style={{
+                  fontFamily: SFT, fontSize: 11, fontWeight: 500,
+                  padding: '2px 7px', borderRadius: 4,
+                  background: 'var(--background-medium)', color: 'var(--text-weak)',
+                }}>
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
         </PanelSection>
 
-        <PanelDivider />
+      </div>
 
-        {/* Actions */}
-        <PanelSection label="Actions">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Sticky footer */}
+      <div style={{
+        borderTop: '1px solid var(--border)',
+        padding: '12px 20px',
+        background: 'var(--background-weak)',
+        display: 'flex', alignItems: 'center', gap: 8,
+        flexShrink: 0,
+      }}>
+        {!isDone && !isDismissed && (
+          <button
+            type="button"
+            onClick={() => onStatusChange('done')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              height: 32, padding: '0 14px', borderRadius: 7,
+              fontSize: 13, fontFamily: SFT, fontWeight: 500,
+              background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
+              border: 'none', cursor: 'pointer',
+              transition: 'opacity 0.1s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            {tabConfig.actionIcon}
+            {tabConfig.actionLabel}
+          </button>
+        )}
 
-            {/* Primary action */}
-            {!isDone && !isDismissed && (
-              <button
-                type="button"
-                onClick={() => onStatusChange('done')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  height: 34, padding: '0 14px', borderRadius: 7,
-                  fontSize: 13, fontFamily: SFT, fontWeight: 500,
-                  background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
-                  border: 'none', cursor: 'pointer',
-                  transition: 'opacity 0.1s',
-                  width: '100%', justifyContent: 'center',
-                }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-              >
-                {tabConfig.actionIcon}
-                {tabConfig.actionLabel}
-              </button>
-            )}
+        {isOpen && (
+          <button
+            type="button"
+            onClick={() => onStatusChange('in-review')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              height: 32, padding: '0 12px', borderRadius: 7,
+              fontSize: 13, fontFamily: SFT, fontWeight: 500,
+              background: 'var(--background-weak)', color: 'var(--text)',
+              border: '1px solid var(--border)', cursor: 'pointer',
+              transition: 'border-color 0.1s, background 0.1s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; }}
+          >
+            <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="6" cy="6" r="5"/>
+              <path d="M4 6l1.5 1.5L8 4"/>
+            </svg>
+            Mark in review
+          </button>
+        )}
 
-            {/* Mark in review */}
-            {isOpen && (
-              <button
-                type="button"
-                onClick={() => onStatusChange('in-review')}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  height: 34, padding: '0 14px', borderRadius: 7,
-                  fontSize: 13, fontFamily: SFT, fontWeight: 500,
-                  background: 'var(--background-weak)', color: 'var(--text)',
-                  border: '1px solid var(--border)', cursor: 'pointer',
-                  transition: 'border-color 0.1s, background 0.1s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; }}
-              >
-                <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="6" cy="6" r="5"/>
-                  <path d="M4 6l1.5 1.5L8 4"/>
-                </svg>
-                Mark in review
-              </button>
-            )}
+        <div style={{ marginLeft: 'auto' }} />
 
-            {/* Undo / re-open */}
-            {(isInReview || isDone) && (
-              <button
-                type="button"
-                onClick={() => onStatusChange('open')}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  height: 32, padding: '0 4px', borderRadius: 6,
-                  fontSize: 12, fontFamily: SFT, fontWeight: 400,
-                  border: 'none', cursor: 'pointer',
-                  background: 'transparent', color: 'var(--text-disabled)',
-                  transition: 'color 0.1s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
-              >
-                Undo
-              </button>
-            )}
+        {!isDismissed && !isDone && (
+          <button
+            type="button"
+            onClick={() => onStatusChange('dismissed')}
+            style={{
+              height: 32, padding: '0 6px', borderRadius: 6,
+              fontSize: 12, fontFamily: SFT, fontWeight: 400,
+              border: 'none', cursor: 'pointer',
+              background: 'transparent', color: 'var(--text-disabled)',
+              transition: 'color 0.1s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
+          >
+            Dismiss
+          </button>
+        )}
 
-            {/* Dismiss */}
-            {!isDismissed && !isDone && (
-              <button
-                type="button"
-                onClick={() => onStatusChange('dismissed')}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  height: 32, padding: '0 4px', borderRadius: 6,
-                  fontSize: 12, fontFamily: SFT, fontWeight: 400,
-                  border: 'none', cursor: 'pointer',
-                  background: 'transparent', color: 'var(--text-disabled)',
-                  transition: 'color 0.1s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
-              >
-                Dismiss
-              </button>
-            )}
+        {(isInReview || isDone) && (
+          <button
+            type="button"
+            onClick={() => onStatusChange('open')}
+            style={{
+              height: 32, padding: '0 6px', borderRadius: 6,
+              fontSize: 12, fontFamily: SFT, fontWeight: 400,
+              border: 'none', cursor: 'pointer',
+              background: 'transparent', color: 'var(--text-disabled)',
+              transition: 'color 0.1s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
+          >
+            Undo
+          </button>
+        )}
 
-            {/* Dismissed — restore */}
-            {isDismissed && (
-              <button
-                type="button"
-                onClick={() => onStatusChange('open')}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  height: 32, padding: '0 4px', borderRadius: 6,
-                  fontSize: 12, fontFamily: SFT, fontWeight: 400,
-                  border: 'none', cursor: 'pointer',
-                  background: 'transparent', color: 'var(--text-disabled)',
-                  transition: 'color 0.1s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
-              >
-                Restore
-              </button>
-            )}
-          </div>
-        </PanelSection>
-
+        {isDismissed && (
+          <button
+            type="button"
+            onClick={() => onStatusChange('open')}
+            style={{
+              height: 32, padding: '0 6px', borderRadius: 6,
+              fontSize: 12, fontFamily: SFT, fontWeight: 400,
+              border: 'none', cursor: 'pointer',
+              background: 'transparent', color: 'var(--text-disabled)',
+              transition: 'color 0.1s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
+          >
+            Restore
+          </button>
+        )}
       </div>
     </div>
   );
@@ -409,9 +393,9 @@ function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTi
 
 function PanelSection({ label, children }) {
   return (
-    <div style={{ marginBottom: 4 }}>
+    <div style={{ marginBottom: 28 }}>
       <div style={{
-        fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT,
+        fontSize: 11, fontWeight: 600, color: 'var(--text-weak)', fontFamily: SFT,
         marginBottom: 10,
       }}>
         {label}
@@ -421,8 +405,19 @@ function PanelSection({ label, children }) {
   );
 }
 
-function PanelDivider() {
-  return <div style={{ height: 1, background: 'var(--border)', margin: '18px 0' }} />;
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+function OptimizeEmptyState() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, color: 'var(--text-disabled)' }}>
+      <svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="13" cy="13" r="9"/>
+        <path d="M20 20l8 8"/>
+        <path d="M13 9v8M13 19v2"/>
+      </svg>
+      <p style={{ fontSize: 13, fontFamily: SFT, margin: 0 }}>Select a gap to view details</p>
+    </div>
+  );
 }
 
 // ─── OptimizeView ─────────────────────────────────────────────────────────────
@@ -430,7 +425,6 @@ function PanelDivider() {
 export default function OptimizeView({ onNavigateToTicket }) {
   const [activeTab, setActiveTab] = useState('content');
   const [selectedItem, setSelectedItem] = useState(null);
-  // status: { [item.id]: 'open' | 'in-review' | 'done' | 'dismissed' }
   const [statuses, setStatuses] = useState({});
 
   const tab = TABS.find(t => t.id === activeTab);
@@ -451,77 +445,75 @@ export default function OptimizeView({ onNavigateToTicket }) {
     setSelectedItem(null);
   }
 
-  // Keep selectedItem in sync if user switches tabs
   const selectedItemInCurrentTab = selectedItem && items.find(i => i.id === selectedItem.id) ? selectedItem : null;
 
   return (
-    <div className="relative flex flex-col h-full overflow-hidden bg-background-weak">
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: 'var(--background-weak)' }}>
 
-      {/* Header */}
-      <div className="shrink-0 px-8 pt-7 pb-0">
-        <div style={{ marginBottom: 12 }}>
-          <h1 style={{ fontFamily: SFT, fontSize: 20, fontWeight: 600, color: 'var(--text)', margin: '0 0 4px', lineHeight: '28px' }}>
+      {/* ── Left: list pane ──────────────────────────────────────────────────── */}
+      <div style={{ width: 380, flexShrink: 0, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+        {/* Header */}
+        <div style={{ padding: '24px 16px 0', flexShrink: 0 }}>
+          <h2 style={{ fontFamily: SFD, fontSize: 18, fontWeight: 500, color: 'var(--text)', margin: '0 0 14px', letterSpacing: '0.38px' }}>
             Optimize
-          </h1>
-          <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-weak)', margin: 0 }}>
-            Patterns detected across tickets in the last 30 days — gaps in knowledge, capability, intake quality, and AI response effectiveness.
+          </h2>
+
+          {/* Tab bar */}
+          <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
+            {TABS.map(t => {
+              const active = activeTab === t.id;
+              const count = (OPTIMIZE_GAPS[t.id] ?? []).length;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleTabChange(t.id)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    height: 32, padding: '0 9px', fontSize: 12, fontFamily: SFT,
+                    fontWeight: active ? 500 : 400, cursor: 'pointer',
+                    background: 'transparent', border: 'none',
+                    color: active ? 'var(--text)' : 'var(--text-weak)',
+                    borderBottom: active ? '2px solid var(--selected-background-strong)' : '2px solid transparent',
+                    marginBottom: -1, transition: 'color 0.1s', flexShrink: 0,
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text)'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--text-weak)'; }}
+                >
+                  {t.label}
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, lineHeight: '14px', padding: '0 4px', borderRadius: 3,
+                    background: active ? 'var(--selected-background-strong)' : 'var(--background-medium)',
+                    color: active ? 'var(--selected-text-strong)' : 'var(--text-weak)',
+                    minWidth: 16, textAlign: 'center',
+                  }}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Description */}
+        <div style={{ padding: '10px 16px 6px', flexShrink: 0 }}>
+          <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)', margin: 0, lineHeight: '18px' }}>
+            {tab?.description}
+            {activeTab === 'cx' && items.length > 0 ? (
+              <span style={{ marginLeft: 8, fontWeight: 600, color: 'var(--danger-text)' }}>
+                avg ★ {(items.reduce((s, i) => s + (i.cxScore ?? 0), 0) / items.length).toFixed(1)}
+              </span>
+            ) : highCount > 0 ? (
+              <span style={{ marginLeft: 8, fontWeight: 500, color: 'var(--danger-text)' }}>
+                {highCount} high impact
+              </span>
+            ) : null}
           </p>
         </div>
 
-        {/* Tab bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0, borderBottom: '1px solid var(--border)' }}>
-          {TABS.map(t => {
-            const active = activeTab === t.id;
-            const count = OPTIMIZE_GAPS[t.id]?.length ?? 0;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => handleTabChange(t.id)}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  height: 36, padding: '0 14px', fontSize: 13, fontFamily: SFT,
-                  fontWeight: active ? 500 : 400, cursor: 'pointer',
-                  background: 'transparent', border: 'none',
-                  color: active ? 'var(--text)' : 'var(--text-weak)',
-                  borderBottom: active ? '2px solid var(--selected-background-strong)' : '2px solid transparent',
-                  marginBottom: -1,
-                  transition: 'color 0.1s',
-                }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text)'; }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--text-weak)'; }}
-              >
-                {t.label}
-                <span style={{
-                  fontSize: 10, fontWeight: 600, lineHeight: '14px', padding: '0 4px', borderRadius: 3,
-                  background: active ? 'var(--selected-background-strong)' : 'var(--background-medium)',
-                  color: active ? 'var(--selected-text-strong)' : 'var(--text-weak)',
-                  minWidth: 18, textAlign: 'center',
-                }}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-8 py-5">
-        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)', margin: '0 0 14px', lineHeight: '18px' }}>
-          {tab?.description}
-          {activeTab === 'cx' && items.length > 0 ? (
-            <span style={{ marginLeft: 8, fontWeight: 600, color: 'var(--danger-text)' }}>
-              avg ★ {(items.reduce((sum, i) => sum + (i.cxScore ?? 0), 0) / items.length).toFixed(1)}
-            </span>
-          ) : highCount > 0 ? (
-            <span style={{ marginLeft: 8, fontWeight: 500, color: 'var(--danger-text)' }}>
-              {highCount} high impact
-            </span>
-          ) : null}
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Scrollable list */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
           {items.map(item => (
             <GapCard
               key={item.id}
@@ -532,25 +524,23 @@ export default function OptimizeView({ onNavigateToTicket }) {
             />
           ))}
         </div>
-
-        <div style={{ height: 16 }} />
       </div>
 
-      {/* Detail panel */}
-      <RightPanelOverlay
-        open={!!selectedItemInCurrentTab}
-        onClose={() => setSelectedItem(null)}
-        width="min(660px, 72%)"
-      >
-        <GapDetailPanel
-          item={selectedItemInCurrentTab}
-          tabConfig={tab}
-          status={selectedItemInCurrentTab ? statuses[selectedItemInCurrentTab.id] : null}
-          onStatusChange={handleStatusChange}
-          onClose={() => setSelectedItem(null)}
-          onTicketClick={onNavigateToTicket}
-        />
-      </RightPanelOverlay>
+      {/* ── Right: detail or empty ────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {selectedItemInCurrentTab ? (
+          <GapDetailPanel
+            item={selectedItemInCurrentTab}
+            tabConfig={tab}
+            status={statuses[selectedItemInCurrentTab.id]}
+            onStatusChange={handleStatusChange}
+            onClose={() => setSelectedItem(null)}
+            onTicketClick={onNavigateToTicket}
+          />
+        ) : (
+          <OptimizeEmptyState />
+        )}
+      </div>
 
     </div>
   );

@@ -31,9 +31,9 @@ const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-
 const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const typoCell = { fontFamily: SFT, fontSize: '13px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
 const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
-const COL = 'text-xs font-medium text-text-weak px-3 py-3 text-left whitespace-nowrap';
-const CELL = 'px-3 flex items-center';
-const divStyle = { borderRight: '1px solid var(--border)' };
+const COL = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
+const CELL = 'px-6 flex items-center';
+const divStyle = {};
 
 // ─── Status badge config ───────────────────────────────────────────────────────
 const STATUS_BADGE = {
@@ -456,8 +456,8 @@ function SourceChip({ type }) {
 
 function TableHeader() {
   return (
-    <div className="flex items-center w-full" style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--background-medium)', border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}>
-      <div className={`${COL} sticky left-0 bg-[var(--background-medium)] z-[3] w-[280px] shrink-0`} style={divStyle}>Article name</div>
+    <div className="flex items-center w-full bg-white sticky top-0 z-[2]" style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className={`${COL} sticky left-0 bg-white z-[3] w-[280px] shrink-0`} style={divStyle}>Article name</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Source</div>
       <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Author</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Status</div>
@@ -475,7 +475,7 @@ function TableRow({ article }) {
     <div
       role="row"
       className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid var(--border)', height: 44, borderLeft: '1px solid var(--border)' }}
+      style={{ borderBottom: '1px solid var(--border)', height: 44 }}
     >
       <div className={`${CELL} sticky left-0 z-[1] w-[280px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
         <span className="truncate max-w-[250px]" style={{ ...typoCell, fontWeight: 500 }}>{article.title}</span>
@@ -869,7 +869,7 @@ export default function KnowledgeBaseView() {
                   : (
                     <div
                       className="flex items-center justify-center py-16 w-full"
-                      style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)', fontFamily: SFT, fontSize: 13, color: 'var(--text-disabled)' }}
+                      style={{ borderBottom: '1px solid var(--border)', fontFamily: SFT, fontSize: 13, color: 'var(--text-disabled)' }}
                     >
                       {search ? 'No articles match your search.' : 'No articles yet.'}
                     </div>

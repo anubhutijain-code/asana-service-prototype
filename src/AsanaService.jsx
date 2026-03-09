@@ -16,7 +16,10 @@ import KnowledgeBaseView from './components/KnowledgeBaseView';
 import DashboardView from './components/DashboardView';
 import SettingsView from './components/SettingsView';
 import OptimizeView from './components/OptimizeView';
+import OptimizeV2View from './components/OptimizeV2View';
 import Admin2HomeView from './components/Admin2HomeView';
+import UnifiedHomeView from './components/UnifiedHomeView';
+import RequestsView from './components/RequestsView';
 import MyApprovalsView from './components/MyApprovalsView';
 import EscalationsView from './components/EscalationsView';
 import AgentMyTicketsView from './components/AgentMyTicketsView';
@@ -54,6 +57,7 @@ function getRouteState(pathname) {
   if (pathname === '/assets')       return { mode: 'service',  serviceNav: 'Assets',       workItem: null    };
   if (pathname === '/dashboard')    return { mode: 'service',  serviceNav: 'Dashboard',    workItem: null    };
   if (pathname === '/optimize')     return { mode: 'service',  serviceNav: 'Optimize',     workItem: null    };
+  if (pathname === '/optimize-v2')  return { mode: 'service',  serviceNav: 'Optimize V2',  workItem: null    };
   if (pathname === '/create-queue') return { mode: 'service',  serviceNav: 'Create Queue', workItem: null    };
   if (pathname === '/knowledge-base' || pathname.startsWith('/knowledge-base/'))
     return { mode: 'service', serviceNav: 'Knowledge base', workItem: null };
@@ -93,6 +97,8 @@ function getRouteState(pathname) {
     return { mode: 'service', serviceNav: 'Escalations', workItem: null };
   if (pathname === '/my-approvals')
     return { mode: 'service', serviceNav: 'My Approvals', workItem: null };
+  if (pathname === '/requests')
+    return { mode: 'service', serviceNav: 'Requests', workItem: null };
   return { mode: 'service', serviceNav: null, workItem: null };
 }
 
@@ -135,6 +141,7 @@ const SERVICE_NAV_URL = {
   'Knowledge base':  '/knowledge-base',
   'Dashboard':       '/dashboard',
   'Optimize':        '/optimize',
+  'Optimize V2':     '/optimize-v2',
   'Settings':        '/settings',
   'My Queue':        '/my-queue',
   'Following':       '/following',
@@ -154,6 +161,7 @@ const SERVICE_NAV_URL = {
   'Workload':        '/workload',
   'Escalations':     '/escalations',
   'My Approvals':    '/my-approvals',
+  'Requests':        '/requests',
 };
 
 export default function AsanaService() {
@@ -379,6 +387,7 @@ export default function AsanaService() {
           } />
           <Route path="/dashboard" element={<DashboardView />} />
           <Route path="/optimize" element={<OptimizeView onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
+          <Route path="/optimize-v2" element={<OptimizeV2View onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
           <Route path="/settings" element={<SettingsView />} />
           <Route path="/my-queue" element={
             <TicketsDashboard
@@ -459,10 +468,11 @@ export default function AsanaService() {
             />
           } />
           {/* Admin 2 routes */}
-          <Route path="/home"         element={<Admin2HomeView />} />
+          <Route path="/home"         element={<UnifiedHomeView defaultTab="service" onOpenServiceMode={() => navigate('/tickets')} />} />
           <Route path="/workload"     element={<DashboardView initialTab="Team" hideTabs={true} />} />
           <Route path="/escalations"  element={<EscalationsView />} />
           <Route path="/my-approvals" element={<MyApprovalsView />} />
+          <Route path="/requests"     element={<RequestsView />} />
           <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
           <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
           <Route path="/people" element={<EmptyModeView mode="People" />} />

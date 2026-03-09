@@ -181,16 +181,11 @@ function ApprovalRow({ item, isSelected, onSelect }) {
         transition: 'background 0.1s',
       }}
     >
-      {/* Line 1: priority pill + ticket ID + time */}
+      {/* Line 1: ticket ID + time */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: pill.color, background: pill.bg, borderRadius: 10, padding: '1px 6px', lineHeight: '16px', fontFamily: SFT }}>
-            {item.ticket.priority}
-          </span>
-          <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
-            {item.ticket.id}
-          </span>
-        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
+          {item.ticket.id}
+        </span>
         <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>
           {item.time}
         </span>
@@ -201,13 +196,18 @@ function ApprovalRow({ item, isSelected, onSelect }) {
         {item.title}
       </p>
 
-      {/* Line 3: requester */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 }}>
-        <div style={{ width: 24, height: 24, borderRadius: '50%', background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-          {item.initials}
+      {/* Line 3: requester + priority pill */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 }}>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+            {item.initials}
+          </div>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {item.requestedBy}
+          </span>
         </div>
-        <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {item.requestedBy}
+        <span style={{ fontSize: 10, fontWeight: 600, color: pill.color, background: pill.bg, borderRadius: 3, padding: '1px 6px', lineHeight: '16px', fontFamily: SFT, flexShrink: 0 }}>
+          {item.ticket.priority}
         </span>
       </div>
     </div>
@@ -255,16 +255,16 @@ export default function MyApprovalsView() {
 
       {/* ── Col 1: Ticket list ──────────────────────────────────────────────── */}
       <div style={{
-        width: 268, flexShrink: 0,
+        width: 340, flexShrink: 0,
         borderRight: '1px solid var(--border)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         background: 'var(--background-weak)',
       }}>
-        {/* Header — 44px to match TicketChatPanel header */}
-        <div style={{ height: 44, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-          <h4 style={{ fontFamily: '"SF Pro Display"', fontSize: 15, fontWeight: 500, color: 'var(--text)', letterSpacing: '-0.15px', margin: 0 }}>
+        {/* Header */}
+        <div style={{ padding: '24px 16px 16px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 18, fontWeight: 500, color: 'var(--text)', letterSpacing: '0.38px', margin: 0 }}>
             My tickets
-          </h4>
+          </h2>
         </div>
 
         {/* Flat list */}

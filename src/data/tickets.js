@@ -1,11 +1,11 @@
 // ─── Tickets dashboard data ────────────────────────────────────────────────────
 
 export const STATS = [
-  { label: 'Total tickets',                   value: '51',  trend: '+4 from last week',      trendGood: true  },
-  { label: 'AI-deflected tickets',            value: '14',  trend: '27% of total',           trendGood: true  },
-  { label: 'AI deflection rate',              value: '99%', trend: '3% above last month',    trendGood: true  },
-  { label: 'MTTA (Mean Time to Acknowledge)', value: '4s',  trend: '18% faster than target', trendGood: true  },
-  { label: 'SLA compliance',                  value: '67%', trend: '3% below target',        trendGood: false },
+  { label: 'Total tickets',     value: '51',  trend: '+4 from last week',      trendGood: true,  spark: [32,36,31,39,42,45,51] },
+  { label: 'AI deflected',      value: '14',  trend: '27% of total',           trendGood: true,  spark: [7,9,8,11,10,13,14]   },
+  { label: 'AI deflection rate',value: '99%', trend: '3% above last month',    trendGood: true,  spark: [88,90,91,93,95,97,99] },
+  { label: 'MTTA',              value: '4s',  trend: '18% faster than target', trendGood: true,  spark: [18,15,14,12,10,8,4]  },
+  { label: 'SLA compliance',    value: '67%', trend: '3% below target',        trendGood: false, spark: [74,72,71,70,69,68,67] },
 ];
 
 export const TABS = ['My Tickets', 'All Tickets', 'Unassigned', 'Open Tickets', 'SLA Urgent', 'Resolved'];
@@ -175,11 +175,11 @@ export const HR_PEOPLE = {
 };
 
 export const HR_STATS = [
-  { label: 'Total cases',                     value: '8',     trend: '+1 from last week',      trendGood: false },
-  { label: 'AI-handled cases',                value: '3',     trend: '38% of total',           trendGood: true  },
-  { label: 'AI deflection rate',              value: '38%',   trend: '5% above last month',    trendGood: true  },
-  { label: 'MTTA (Mean Time to Acknowledge)', value: '2h 15m',trend: '12% faster than target', trendGood: true  },
-  { label: 'SLA compliance',                  value: '95%',   trend: '1% below target',        trendGood: false },
+  { label: 'Total cases',        value: '8',      trend: '+1 from last week',      trendGood: false, spark: [5, 6, 5, 7, 6, 7, 8]          },
+  { label: 'AI-handled cases',   value: '3',      trend: '38% of total',           trendGood: true,  spark: [1, 1, 2, 2, 2, 3, 3]          },
+  { label: 'AI deflection rate', value: '38%',    trend: '5% above last month',    trendGood: true,  spark: [28, 30, 31, 33, 34, 36, 38]   },
+  { label: 'MTTA',               value: '2h 15m', trend: '12% faster than target', trendGood: true,  spark: [195, 180, 172, 165, 158, 148, 135] },
+  { label: 'SLA compliance',     value: '95%',    trend: '1% below target',        trendGood: false, spark: [97, 96, 97, 96, 95, 96, 95]   },
 ];
 
 export const HR_TABS = ['All Cases', 'Unassigned', 'Open Cases', 'Pending', 'Resolved'];

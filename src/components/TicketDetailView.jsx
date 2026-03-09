@@ -143,7 +143,10 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
       initPublic: [],
       initInternal: [
         { type: 'inbound', name: 'IT Agent', time: 'just now',
+          bg: '6d8aad', fg: 'ffffff', initials: 'IT',
           text: `Verification request from IT queue (${ticket.id}).\n\n${step.body ?? step.label}` },
+        { type: 'outbound', isAi: true, senderLabel: 'HR Agent', time: 'just now',
+          text: `I've reviewed this request. Here's the recommended approach:\n\n1. Check Workday to confirm Sarah Lee's department transfer (Marketing → Finance) and the effective date\n2. Verify with the Finance team lead that the role change is approved\n3. Once confirmed, update the employment record and reply to the IT queue\n\nEstimated turnaround: 1–2 hours\nPriority: High — Salesforce access is blocked pending this verification.` },
       ],
       initTranscript: [],
       linkedFromId: ticket.id,

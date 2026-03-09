@@ -4,8 +4,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   BarChart, Bar, Legend,
   AreaChart, Area,
+  Treemap,
 } from 'recharts';
-import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA } from '../data/dashboard';
+import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA, TICKET_TOPICS } from '../data/dashboard';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const TICK = { fontSize: 11, fill: '#9ea0a2', fontFamily: SFT };
@@ -67,7 +68,7 @@ function TrendDown({ color = 'currentColor', size = 10 }) {
 function ChartCard({ title, subtitle, children, style }) {
   return (
     <div style={{ ...CARD, padding: '20px 24px', ...style }}>
-      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, margin: '0 0 2px' }}>{title}</p>
+      <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 2px' }}>{title}</p>
       {subtitle && <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 16px' }}>{subtitle}</p>}
       {children}
     </div>
@@ -88,30 +89,145 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-// ─── KPI Card (no icon) ────────────────────────────────────────────────────────
+// ─── KPI Card — borderless + sparkline ────────────────────────────────────────
 
-function KpiCard({ label, value, trend, trendGood }) {
-  const pillBg    = trendGood ? 'var(--success-background)'  : 'var(--danger-background)';
-  const pillColor = trendGood ? 'var(--success-text)'         : 'var(--danger-text)';
+function KpiCard({ label, value, trend, trendGood, spark = [] }) {
+  const [hov, setHov] = useState(false);
+  const trendColor  = trendGood ? 'var(--success-text)' : 'var(--danger-text)';
+  const strokeColor = 'var(--selected-background-strong)';
+  const trendPrefix = trendGood ? '↑' : '↓';
+  const data = spark.map((v, i) => ({ i, v }));
+  const minV = Math.min(...spark);
+  const maxV = Math.max(...spark);
+  const pad  = (maxV - minV) * 0.25 || 1;
+  const domain = [minV - pad, maxV + pad];
+
   return (
-    <div style={{ ...CARD, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, lineHeight: '18px' }}>{label}</span>
-        {trendGood
-          ? <TrendUp color="var(--success-background-strong)" size={11} />
-          : <TrendDown color="var(--danger-background-strong)" size={11} />
-        }
-      </div>
-      <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', fontFamily: SFT, lineHeight: 1, margin: '0 0 14px', letterSpacing: '-0.5px' }}>{value}</p>
-      <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: 4,
-        padding: '3px 7px', borderRadius: 99,
-        fontSize: 11, fontWeight: 500, fontFamily: SFT,
-        background: pillBg, color: pillColor, alignSelf: 'flex-start',
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: 'var(--background-weak)',
+        borderRadius: 10,
+        padding: '18px 20px',
+        boxShadow: hov
+          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
+          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
+        transition: 'box-shadow 0.15s',
       }}>
-        {trendGood ? <TrendUp color={pillColor} size={9} /> : <TrendDown color={pillColor} size={9} />}
-        {trend}
+      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 38, fontWeight: 500, color: 'var(--text)', lineHeight: 1, letterSpacing: '0.38px', margin: '0 0 6px', fontFeatureSettings: "'liga' off" }}>{value}</p>
+      <p style={{ fontSize: 12, color: trendColor, fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
+        {trendPrefix} {trend}
+      </p>
+    </div>
+  );
+}
+
+// ─── Topic Volume Card ─────────────────────────────────────────────────────────
+
+// Blue scale: index 0 = highest volume (darkest) → index 7 = lowest (lightest)
+const TOPIC_BLUES = [
+  '#1e3a8a', '#1d4ed8', '#2563eb', '#3b82f6',
+  '#4273D1', '#60a5fa', '#93c5fd', '#bfdbfe',
+];
+
+function TreemapContent(props) {
+  const { x, y, width, height, name, count, sla, colorIdx } = props;
+  if (!width || !height || width < 4 || height < 4) return null;
+  const bg = TOPIC_BLUES[colorIdx ?? 0];
+  const isDark = (colorIdx ?? 0) < 5;
+  const textFill = isDark ? '#ffffff' : '#1e3a8a';
+  return (
+    <g>
+      <rect
+        x={x + 1} y={y + 1}
+        width={Math.max(0, width - 2)} height={Math.max(0, height - 2)}
+        fill={bg} rx={4}
+      />
+      {width > 52 && height > 28 && (
+        <text x={x + 9} y={y + 18} fill={textFill} fontSize={11} fontWeight={600} fontFamily={SFT} style={{ userSelect: 'none' }}>
+          {name}
+        </text>
+      )}
+      {width > 52 && height > 44 && (
+        <text x={x + 9} y={y + 32} fill={textFill} fontSize={10} opacity={0.8} fontFamily={SFT} style={{ userSelect: 'none' }}>
+          {count} tickets
+        </text>
+      )}
+      {width > 52 && height > 58 && (
+        <text x={x + 9} y={y + 46} fill={textFill} fontSize={10} opacity={0.7} fontFamily={SFT} style={{ userSelect: 'none' }}>
+          {sla}% SLA
+        </text>
+      )}
+    </g>
+  );
+}
+
+function TopicVolumeCard() {
+  const treemapData = TICKET_TOPICS.map((t, i) => ({
+    name: t.name, count: t.count, sla: t.sla, colorIdx: i, value: t.count,
+  }));
+
+  return (
+    <div style={{ ...CARD, display: 'flex', height: 360, overflow: 'hidden' }}>
+
+      {/* ── Left: treemap ──────────────────────────────────────────────── */}
+      <div style={{ flex: '0 0 60%', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px 8px', flexShrink: 0 }}>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>Ticket topics</p>
+          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Volume by category · this month</p>
+        </div>
+        <div style={{ flex: 1, minHeight: 0, padding: '0 16px 16px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <Treemap
+              data={treemapData}
+              dataKey="value"
+              aspectRatio={1.4}
+              content={<TreemapContent />}
+              isAnimationActive={false}
+            />
+          </ResponsiveContainer>
+        </div>
       </div>
+
+      {/* ── Right: sparkline rows ──────────────────────────────────────── */}
+      <div style={{ flex: '0 0 40%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px 8px', flexShrink: 0 }}>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>7-day trend</p>
+          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Daily ticket volume per topic</p>
+        </div>
+        <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
+          {TICKET_TOPICS.map((topic, i) => (
+            <div key={topic.name} style={{
+              flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+              borderBottom: i < TICKET_TOPICS.length - 1 ? '1px solid var(--border)' : 'none',
+              minHeight: 0,
+            }}>
+              <span style={{ width: 86, fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {topic.name}
+              </span>
+              <div style={{ flex: 1, minWidth: 0, height: 26 }}>
+                <ResponsiveContainer width="100%" height={26}>
+                  <AreaChart data={topic.spark.map((v, idx) => ({ i: idx, v }))} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
+                    <YAxis domain={['dataMin - 2', 'dataMax + 2']} hide />
+                    <Area
+                      type="monotone" dataKey="v"
+                      stroke={TOPIC_BLUES[i]} fill={TOPIC_BLUES[i]}
+                      fillOpacity={0.18} strokeWidth={1.5}
+                      dot={false} isAnimationActive={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <span style={{ width: 28, fontSize: 11, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, textAlign: 'right', flexShrink: 0 }}>
+                {topic.count}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -125,12 +241,15 @@ function QueueDropdown({ value, onChange }) {
   const label = QUEUE_OPTIONS.find(o => o.id === value)?.label ?? 'All Queues';
   return (
     <div ref={ref} tabIndex="-1" onBlur={handleBlur} style={{ position: 'relative' }}>
-      <button type="button" onClick={() => setOpen(o => !o)} style={{
-        height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
-        fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text)',
-        background: 'var(--background-weak)', border: '1px solid var(--border)',
-        borderRadius: 6, cursor: 'pointer',
-      }}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--background-weak)'; }}
+        style={{
+          height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
+          fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text)',
+          background: 'var(--background-weak)', border: '1px solid var(--border)',
+          borderRadius: 6, cursor: 'pointer', transition: 'background 0.1s',
+        }}>
         {label}<ChevronDownIcon />
       </button>
       {open && (
@@ -142,13 +261,15 @@ function QueueDropdown({ value, onChange }) {
           {QUEUE_OPTIONS.map(opt => (
             <button key={opt.id} type="button"
               onMouseDown={e => { e.preventDefault(); onChange(opt.id); setOpen(false); }}
+              onMouseEnter={e => { if (opt.id !== value) e.currentTarget.style.background = 'var(--background-medium)'; }}
+              onMouseLeave={e => { if (opt.id !== value) e.currentTarget.style.background = 'transparent'; }}
               style={{
                 display: 'block', width: '100%', textAlign: 'left', padding: '7px 14px',
                 fontSize: 13, fontFamily: SFT,
                 color: opt.id === value ? 'var(--text)' : 'var(--text-weak)',
                 fontWeight: opt.id === value ? 500 : 400,
                 background: opt.id === value ? 'var(--background-medium)' : 'transparent',
-                border: 'none', cursor: 'pointer',
+                border: 'none', cursor: 'pointer', transition: 'background 0.1s',
               }}
             >{opt.label}</button>
           ))}
@@ -198,6 +319,110 @@ function AutomationCoverageCard({ data }) {
   );
 }
 
+// ─── Integrations Card (dashboard) ────────────────────────────────────────────
+
+const CONNECTED_INTEGRATIONS = [
+  { id: 'okta',  name: 'Okta'          },
+  { id: 'ms365', name: 'Microsoft 365' },
+];
+const RECOMMENDED_INTEGRATIONS = [
+  { id: 'workday', name: 'Workday', desc: 'Auto-provision accounts on hire — estimated 8 fewer tickets/week' },
+  { id: 'slack',   name: 'Slack',   desc: 'Surface SLA alerts in team channels — reduce response lag by ~40 min' },
+];
+
+function SlackLogo({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <path d="M6.72313 20.2219C6.72313 22.0721 5.21173 23.5835 3.36156 23.5835C1.5114 23.5835 0 22.0721 0 20.2219C0 18.3718 1.5114 16.8604 3.36156 16.8604H6.72313V20.2219Z" fill="#E01E5A"/>
+      <path d="M8.41602 20.2219C8.41602 18.3718 9.92742 16.8604 11.7776 16.8604C13.6277 16.8604 15.1391 18.3718 15.1391 20.2219V28.6389C15.1391 30.489 13.6277 32.0004 11.7776 32.0004C9.92742 32.0004 8.41602 30.489 8.41602 28.6389V20.2219Z" fill="#E01E5A"/>
+      <path d="M11.7776 6.72313C9.92742 6.72313 8.41602 5.21173 8.41602 3.36156C8.41602 1.5114 9.92742 0 11.7776 0C13.6277 0 15.1391 1.5114 15.1391 3.36156V6.72313H11.7776Z" fill="#36C5F0"/>
+      <path d="M11.7785 8.41699C13.6287 8.41699 15.1401 9.92839 15.1401 11.7786C15.1401 13.6287 13.6287 15.1401 11.7785 15.1401H3.36156C1.5114 15.1401 0 13.6287 0 11.7786C0 9.92839 1.5114 8.41699 3.36156 8.41699H11.7785Z" fill="#36C5F0"/>
+      <path d="M25.2793 11.7776C25.2793 9.92742 26.7907 8.41602 28.6409 8.41602C30.491 8.41602 32.0024 9.92742 32.0024 11.7776C32.0024 13.6277 30.491 15.1391 28.6409 15.1391H25.2793V11.7776Z" fill="#2EB67D"/>
+      <path d="M23.5825 11.7785C23.5825 13.6287 22.0711 15.1401 20.2209 15.1401C18.3708 15.1401 16.8594 13.6287 16.8594 11.7785V3.36156C16.8594 1.5114 18.3708 0 20.2209 0C22.0711 0 23.5825 1.5114 23.5825 3.36156V11.7785Z" fill="#2EB67D"/>
+      <path d="M20.2209 25.2773C22.0711 25.2773 23.5825 26.7887 23.5825 28.6389C23.5825 30.4891 22.0711 32.0005 20.2209 32.0005C18.3708 32.0005 16.8594 30.4891 16.8594 28.6389V25.2773H20.2209Z" fill="#ECB22E"/>
+      <path d="M20.2209 23.5835C18.3708 23.5835 16.8594 22.0721 16.8594 20.2219C16.8594 18.3718 18.3708 16.8604 20.2209 16.8604H28.6379C30.488 16.8604 31.9994 18.3718 31.9994 20.2219C31.9994 22.0721 30.488 23.5835 28.6379 23.5835H20.2209Z" fill="#ECB22E"/>
+    </svg>
+  );
+}
+function WorkdayLogo({ size = 28 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 6, flexShrink: 0 }}>
+      <rect width="24" height="24" rx="5" fill="#F7941D"/>
+      <path d="M5 15L8 8l3 5 3-5 3 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  );
+}
+function OktaLogo({ size = 28 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 6, flexShrink: 0 }}>
+      <rect width="24" height="24" rx="5" fill="#007DC1"/>
+      <circle cx="12" cy="12" r="5" stroke="white" strokeWidth="1.8" fill="none"/>
+      <circle cx="12" cy="12" r="2" fill="white"/>
+    </svg>
+  );
+}
+function Microsoft365Logo({ size = 28 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 6, flexShrink: 0 }}>
+      <rect width="24" height="24" rx="5" fill="#fff" stroke="#E5E7EB" strokeWidth="0.75"/>
+      <rect x="5"  y="5"  width="6" height="6" rx="1" fill="#F25022"/>
+      <rect x="13" y="5"  width="6" height="6" rx="1" fill="#7FBA00"/>
+      <rect x="5"  y="13" width="6" height="6" rx="1" fill="#00A4EF"/>
+      <rect x="13" y="13" width="6" height="6" rx="1" fill="#FFB900"/>
+    </svg>
+  );
+}
+
+const DASH_LOGO = {
+  okta: <OktaLogo size={20} />, ms365: <Microsoft365Logo size={20} />,
+  workday: <WorkdayLogo size={32} />, slack: <SlackLogo size={28} />,
+};
+
+function DashRecommendedTile({ item }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div role="button" tabIndex={0} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ background: hov ? 'var(--background-medium)' : '#fff', borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', transition: 'background 0.1s' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {DASH_LOGO[item.id]}
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, lineHeight: '18px' }}>{item.name}</span>
+      </div>
+      <p style={{ fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '17px', fontFamily: SFT }}>{item.desc}</p>
+    </div>
+  );
+}
+
+function DashIntegrationsCard() {
+  return (
+    <div style={{ ...CARD, overflow: 'hidden' }}>
+      <div style={{ padding: '20px 20px 18px' }}>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 10px' }}>Integrations</p>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+          <span style={{ fontFamily: SFT, fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>23pp</span>
+          <span style={{ fontSize: 14, color: 'var(--text-weak)', fontFamily: SFT }}>of AI deflection driven by integrations</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>Connected</span>
+          {CONNECTED_INTEGRATIONS.map(int => (
+            <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 4px', borderRadius: 20, background: 'var(--background-medium)', border: '1px solid var(--border)' }}>
+              {DASH_LOGO[int.id]}
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text)', fontFamily: SFT }}>{int.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ background: 'var(--Default-background-medium, #F2F3F4)', padding: '14px 20px 20px', borderTop: '1px solid var(--border)' }}>
+        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 12px' }}>Recommended integrations</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {RECOMMENDED_INTEGRATIONS.map(item => <DashRecommendedTile key={item.id} item={item} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Ticket Resolution by Type ─────────────────────────────────────────────────
 
 const COL  = 'text-xs font-medium text-text-weak px-4 py-3 text-left whitespace-nowrap';
@@ -206,114 +431,180 @@ const DIV  = { borderRight: '1px solid var(--border)' };
 function TicketResolutionTable() {
   const rows = TICKET_RESOLUTION_BY_TYPE;
   return (
-    <div style={{ marginTop: 28 }}>
-      <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, margin: '0 0 3px' }}>Ticket Resolution by Type</p>
-      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 12px' }}>Detailed breakdown of resolution methods by ticket category</p>
-
-      <div className="flex items-center w-full bg-background-medium"
-        style={{ border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}>
-        <div className={COL} style={{ ...DIV, flex: 1 }}>Ticket Type</div>
-        <div className={`${COL} w-16 text-right`} style={DIV}>Total</div>
-        <div className={`${COL} w-[116px] text-right`} style={DIV}>AI Self-Service</div>
-        <div className={`${COL} w-[104px] text-right`} style={DIV}>AI-Assisted</div>
-        <div className={`${COL} w-24 text-right`} style={DIV}>Human Only</div>
-        <div className={`${COL} w-[116px] text-right`} style={DIV}>Avg Time</div>
+    <div style={{ ...CARD, overflow: 'hidden' }}>
+      <div style={{ padding: '20px 24px 16px' }}>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Ticket Resolution by Type</p>
+        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Detailed breakdown of resolution methods by ticket category</p>
       </div>
 
+      <div style={{ padding: '0 16px' }}>
+      {/* Column headers — no background */}
+      <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className={COL} style={{ ...DIV, flex: 1 }}>Ticket Type</div>
+        <div className={`${COL} w-[110px] text-right`} style={DIV}>Total</div>
+        <div className={`${COL} w-[110px] text-right`} style={DIV}>AI Self-Service</div>
+        <div className={`${COL} w-[110px] text-right`} style={DIV}>AI-Assisted</div>
+        <div className={`${COL} w-[110px] text-right`} style={DIV}>Human Only</div>
+        <div className={`${COL} w-[110px] text-right`}>Avg Time</div>
+      </div>
+
+      {/* Rows */}
       {rows.map((row, i) => (
         <div key={i}
           className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
-          style={{
-            borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)',
-            borderRadius: i === rows.length - 1 ? '0 0 8px 8px' : 0,
-          }}>
-          <div className="px-4 flex flex-col justify-center" style={{ flex: 1, ...DIV, paddingTop: 10, paddingBottom: 10, minHeight: 56 }}>
-            <p style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '20px' }}>{row.type}</p>
+          style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="px-4 flex flex-col justify-center" style={{ flex: 1, ...DIV, paddingTop: 10, paddingBottom: 10, minHeight: 52 }}>
+            <p style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '22px' }}>{row.type}</p>
             {row.insight && (
-              <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '2px 0 0', lineHeight: '15px' }}>{row.insight}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '2px 0 0', lineHeight: '18px' }}>{row.insight}</p>
             )}
           </div>
-          <div className="flex items-center justify-end px-4 w-16" style={DIV}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.total}</span>
+          <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.total}</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-[116px]" style={DIV}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.aiSelf.count}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>{row.aiSelf.pct}%</span>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={DIV}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.aiSelf.count}</span>
+            <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{row.aiSelf.pct}%</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-[104px]" style={DIV}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.aiAssisted.count}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>{row.aiAssisted.pct}%</span>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={DIV}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.aiAssisted.count}</span>
+            <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{row.aiAssisted.pct}%</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-24" style={DIV}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.humanOnly.count}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>{row.humanOnly.pct}%</span>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={DIV}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.humanOnly.count}</span>
+            <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{row.humanOnly.pct}%</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-[116px]" style={DIV}>
-            <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT, marginBottom: 4 }}>{row.avgTime}</span>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]">
+            <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT, marginBottom: 4 }}>{row.avgTime}</span>
             <div style={{ height: 3, borderRadius: 2, background: 'var(--background-strong)', overflow: 'hidden', width: 56 }}>
               <div style={{ height: '100%', width: `${row.avgTimePct}%`, background: 'var(--selected-background-strong)', borderRadius: 2 }} />
             </div>
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
 
 // ─── KB Performance ─────────────────────────────────────────────────────────────
 
+const KB_INSIGHTS = [
+  {
+    id: 'kb-001',
+    category: 'Content gap',
+    impact: 'high',
+    gap: 'No guidance on MFA re-enrollment after device replacement',
+    ticketCount: 8,
+    suggestion: 'Create article: MFA Device Re-enrollment After Hardware Replacement',
+  },
+  {
+    id: 'kb-002',
+    category: 'Action gap',
+    impact: 'high',
+    gap: 'Salesforce login article missing SSO troubleshooting steps — low deflect rate',
+    ticketCount: 12,
+    suggestion: 'Add SSO and MFA reset instructions to Salesforce Login Issues article',
+  },
+  {
+    id: 'kb-003',
+    category: 'Content gap',
+    impact: 'medium',
+    gap: 'VPN article screenshots outdated — reported in 12 recent tickets',
+    ticketCount: 12,
+    suggestion: 'Update VPN Setup screenshots for latest client version',
+  },
+];
+
+const KB_CAT_STYLES = {
+  'Content gap': { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
+  'Action gap':  { bg: 'var(--danger-background)',  color: 'var(--danger-text)'  },
+};
+
+function KBImpactPill({ impact }) {
+  const styles = {
+    high:   { bg: 'var(--danger-background)',  color: 'var(--danger-text)'  },
+    medium: { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
+    low:    { bg: 'var(--background-medium)',  color: 'var(--text-weak)'    },
+  }[impact] ?? { bg: 'var(--background-medium)', color: 'var(--text-weak)' };
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 500, fontFamily: SFT, padding: '2px 7px', borderRadius: 4, background: styles.bg, color: styles.color, flexShrink: 0 }}>
+      {impact.charAt(0).toUpperCase() + impact.slice(1)} impact
+    </span>
+  );
+}
+
+function KBInsightRow({ insight, divider }) {
+  const catStyle = KB_CAT_STYLES[insight.category] ?? { bg: 'var(--background-medium)', color: 'var(--text-weak)' };
+  return (
+    <div style={{ padding: '13px 0', borderBottom: divider ? '1px solid var(--border)' : 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 11, fontWeight: 500, fontFamily: SFT, padding: '2px 7px', borderRadius: 4, background: catStyle.bg, color: catStyle.color, flexShrink: 0 }}>
+          {insight.category}
+        </span>
+        <KBImpactPill impact={insight.impact} />
+        <span style={{ fontSize: 11, fontFamily: SFT, padding: '2px 7px', borderRadius: 4, background: 'var(--background-medium)', color: 'var(--text-disabled)' }}>
+          {insight.ticketCount} tickets
+        </span>
+      </div>
+      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 4px', lineHeight: '20px' }}>{insight.gap}</p>
+      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>{insight.suggestion}</p>
+    </div>
+  );
+}
+
 function KBPerformanceCard() {
   const kb = KB_PERFORMANCE;
   return (
-    <div style={{ marginTop: 28 }}>
-      <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, margin: '0 0 3px' }}>Knowledge Base Performance</p>
-      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 12px' }}>Article views, ticket deflections, and content gaps</p>
-
-      <div className="flex items-center w-full bg-background-medium"
-        style={{ border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}>
-        <div className={COL} style={{ ...DIV, flex: 1 }}>Article</div>
-        <div className={`${COL} w-20 text-right`} style={DIV}>Views</div>
-        <div className={`${COL} w-[110px] text-right`} style={DIV}>Deflections</div>
-        <div className={`${COL} w-24 text-right`} style={DIV}>Deflect %</div>
+    <div style={{ ...CARD, overflow: 'hidden' }}>
+      <div style={{ padding: '20px 24px 16px' }}>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Knowledge Base Performance</p>
+        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Article views, ticket deflections, and content gaps</p>
       </div>
-
-      {kb.topArticles.map((a, i) => (
-        <div key={i}
-          className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
-          style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}>
-          <div className="px-4 flex items-center" style={{ flex: 1, ...DIV, minHeight: 52 }}>
-            <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT }}>{a.title}</span>
-          </div>
-          <div className="flex items-center justify-end px-4 w-20" style={DIV}>
-            <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT }}>{a.views.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
-            <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT }}>{a.deflections.toLocaleString()}</span>
-          </div>
-          <div className="flex flex-col justify-center items-end px-4 w-24" style={DIV}>
-            <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, marginBottom: 3 }}>{a.pct}%</span>
-            <div style={{ height: 3, borderRadius: 2, background: 'var(--background-strong)', overflow: 'hidden', width: 48 }}>
-              <div style={{ height: '100%', width: `${a.pct}%`, background: 'var(--success-background-strong)', borderRadius: 2 }} />
+      <div style={{ padding: '0 16px' }}>
+        <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className={COL} style={{ ...DIV, flex: 1 }}>Article</div>
+          <div className={`${COL} w-[110px] text-right`} style={DIV}>Views</div>
+          <div className={`${COL} w-[110px] text-right`} style={DIV}>Deflections</div>
+          <div className={`${COL} w-[110px] text-right`}>Deflect %</div>
+        </div>
+        {kb.topArticles.map((a, i) => (
+          <div key={i}
+            className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
+            style={{ borderBottom: '1px solid var(--border)' }}>
+            <div className="px-4 flex items-center" style={{ flex: 1, ...DIV, minHeight: 52 }}>
+              <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.title}</span>
+            </div>
+            <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
+              <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.views.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
+              <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.deflections.toLocaleString()}</span>
+            </div>
+            <div className="flex flex-col justify-center items-end px-4 w-[110px]">
+              <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, marginBottom: 3 }}>{a.pct}%</span>
+              <div style={{ height: 3, borderRadius: 2, background: 'var(--background-strong)', overflow: 'hidden', width: 48 }}>
+                <div style={{ height: '100%', width: `${a.pct}%`, background: 'var(--success-background-strong)', borderRadius: 2 }} />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+    </div>
+  );
+}
 
-      <div className="bg-background-weak"
-        style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '11px 16px 13px' }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, margin: '0 0 7px' }}>Search gaps — top queries with no KB match</p>
-        <div className="flex flex-wrap gap-2">
-          {kb.searchGaps.map(g => (
-            <span key={g.query} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              padding: '2px 9px', borderRadius: 99, fontSize: 11, fontFamily: SFT,
-              background: 'var(--background-medium)', border: '1px solid var(--border)', color: 'var(--text-weak)',
-            }}>
-              "{g.query}"
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--danger-text)' }}>{g.count}</span>
-            </span>
-          ))}
-        </div>
+function KBOptimizationsCard() {
+  return (
+    <div style={{ ...CARD, overflow: 'hidden' }}>
+      <div style={{ padding: '20px 24px 16px' }}>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>KB Optimizations</p>
+        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Suggested improvements to KB content</p>
+      </div>
+      <div style={{ padding: '0 24px' }}>
+        {KB_INSIGHTS.map((insight, i) => (
+          <KBInsightRow key={insight.id} insight={insight} divider={i < KB_INSIGHTS.length - 1} />
+        ))}
       </div>
     </div>
   );
@@ -365,8 +656,12 @@ function WorkloadTooltip({ active, payload, label, dates }) {
 }
 
 function TeamKpiCard({ label, value }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div style={{ ...CARD, padding: '14px 16px' }}>
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{ ...CARD, padding: '14px 16px', background: hov ? 'var(--background-medium)' : CARD.background, transition: 'background 0.12s' }}>
       <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 6px' }}>{label}</p>
       <p style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', fontFamily: SFT, lineHeight: 1, margin: 0, letterSpacing: '-0.3px' }}>{value}</p>
     </div>
@@ -381,12 +676,15 @@ function AgentDropdown({ agents, selectedAgent, onChange }) {
   const label = options.find(o => o.id === selectedAgent)?.label ?? 'All Agents';
   return (
     <div ref={ref} tabIndex="-1" onBlur={handleBlur} style={{ position: 'relative' }}>
-      <button type="button" onClick={() => setOpen(o => !o)} style={{
-        height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
-        fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text)',
-        background: 'var(--background-weak)', border: '1px solid var(--border)',
-        borderRadius: 6, cursor: 'pointer',
-      }}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--background-weak)'; }}
+        style={{
+          height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
+          fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text)',
+          background: 'var(--background-weak)', border: '1px solid var(--border)',
+          borderRadius: 6, cursor: 'pointer', transition: 'background 0.1s',
+        }}>
         {label}<ChevronDownIcon />
       </button>
       {open && (
@@ -398,13 +696,15 @@ function AgentDropdown({ agents, selectedAgent, onChange }) {
           {options.map(opt => (
             <button key={opt.id ?? 'all'} type="button"
               onMouseDown={e => { e.preventDefault(); onChange(opt.id); setOpen(false); }}
+              onMouseEnter={e => { if (opt.id !== selectedAgent) e.currentTarget.style.background = 'var(--background-medium)'; }}
+              onMouseLeave={e => { if (opt.id !== selectedAgent) e.currentTarget.style.background = 'transparent'; }}
               style={{
                 display: 'block', width: '100%', textAlign: 'left', padding: '7px 14px',
                 fontSize: 13, fontFamily: SFT,
                 color: opt.id === selectedAgent ? 'var(--text)' : 'var(--text-weak)',
                 fontWeight: opt.id === selectedAgent ? 500 : 400,
                 background: opt.id === selectedAgent ? 'var(--background-medium)' : 'transparent',
-                border: 'none', cursor: 'pointer',
+                border: 'none', cursor: 'pointer', transition: 'background 0.1s',
               }}
             >{opt.label}</button>
           ))}
@@ -625,15 +925,18 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
         {!hideTabs && (
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 24 }}>
           {DASH_TABS.map(tab => (
-            <button key={tab} type="button" onClick={() => setActiveTab(tab)} style={{
-              padding: '7px 16px 8px',
-              fontSize: 13, fontFamily: SFT,
-              fontWeight: activeTab === tab ? 600 : 400,
-              color: activeTab === tab ? 'var(--text)' : 'var(--text-weak)',
-              background: 'none', border: 'none', cursor: 'pointer',
-              borderBottom: activeTab === tab ? '2px solid var(--text)' : '2px solid transparent',
-              marginBottom: -1,
-            }}>{tab}</button>
+            <button key={tab} type="button" onClick={() => setActiveTab(tab)}
+              onMouseEnter={e => { if (tab !== activeTab) e.currentTarget.style.color = 'var(--text)'; }}
+              onMouseLeave={e => { if (tab !== activeTab) e.currentTarget.style.color = 'var(--text-weak)'; }}
+              style={{
+                padding: '7px 16px 8px',
+                fontSize: 13, fontFamily: SFT,
+                fontWeight: activeTab === tab ? 600 : 400,
+                color: activeTab === tab ? 'var(--text)' : 'var(--text-weak)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderBottom: activeTab === tab ? '2px solid var(--text)' : '2px solid transparent',
+                marginBottom: -1, transition: 'color 0.1s',
+              }}>{tab}</button>
           ))}
         </div>
         )}
@@ -646,44 +949,13 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
               {data.kpis.map((kpi, i) => <KpiCard key={i} {...kpi} />)}
             </div>
 
-            {/* Row 1 */}
+            {/* Row 1 — Topic volume (full-width) */}
+            <div style={{ marginBottom: 14 }}>
+              <TopicVolumeCard />
+            </div>
+
+            {/* Row 2 — Backlog trend + Integrations */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14, marginBottom: 14 }}>
-
-              {/* Donut */}
-              <ChartCard title="Tickets by Category" subtitle="Current month distribution">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ flexShrink: 0 }}>
-                    <ResponsiveContainer width={180} height={180}>
-                      <PieChart>
-                        <Pie data={data.ticketsByCategory} cx="50%" cy="50%" innerRadius={52} outerRadius={82}
-                          paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
-                          {data.ticketsByCategory.map((e, i) => <Cell key={i} fill={e.color} />)}
-                          <Label position="center" content={<DonutCenter total={total} />} />
-                        </Pie>
-                        <RechartsTooltip content={<CustomTooltip />} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {data.ticketsByCategory.map(item => (
-                      <div key={item.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{item.name}</span>
-                        </div>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{item.value}</span>
-                      </div>
-                    ))}
-                    <div style={{ height: 1, background: 'var(--border)' }} />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>Total</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', fontFamily: SFT }}>{total}</span>
-                    </div>
-                  </div>
-                </div>
-              </ChartCard>
-
-              {/* Line */}
               <ChartCard title="Ticket Backlog Trend" subtitle="6-month trend">
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={data.backlogTrend} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
@@ -696,32 +968,17 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
                   </LineChart>
                 </ResponsiveContainer>
               </ChartCard>
-            </div>
-
-            {/* Row 2 */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
-              <AutomationCoverageCard data={data.automationCoverage} />
-              <ChartCard title="Weekly Ticket Volume" subtitle="Deflected vs resolved">
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={data.weeklyVolume} margin={{ top: 4, right: 8, bottom: 0, left: -16 }} barCategoryGap="32%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="day" tick={TICK} axisLine={false} tickLine={false} />
-                    <YAxis tick={TICK} axisLine={false} tickLine={false} width={38} />
-                    <RechartsTooltip content={<CustomTooltip />} />
-                    <Bar dataKey="Deflected" stackId="a" fill="var(--success-background-strong)" />
-                    <Bar dataKey="Resolved"  stackId="a" fill="var(--selected-background-strong)" radius={[4, 4, 0, 0]} />
-                    <Legend verticalAlign="bottom" height={26} iconType="circle" iconSize={6}
-                      wrapperStyle={{ fontSize: 11, fontFamily: SFT, color: '#9ea0a2', paddingTop: 6 }} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
+              <DashIntegrationsCard />
             </div>
 
             {/* Row 3 — Ticket Resolution by Type */}
-            <TicketResolutionTable />
+            <div style={{ marginBottom: 14 }}><TicketResolutionTable /></div>
 
-            {/* Row 4 — KB Performance */}
-            <KBPerformanceCard />
+            {/* Row 4 — KB Performance + KB Optimizations */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <KBPerformanceCard />
+              <KBOptimizationsCard />
+            </div>
           </>
         )}
 

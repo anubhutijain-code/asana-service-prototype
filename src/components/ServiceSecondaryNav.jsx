@@ -415,24 +415,21 @@ function Admin2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
     <>
       <NavItem label="Home" Icon={HomeIcon} active={activeItem === 'Home'} onClick={() => onSelect('Home')} />
 
-      <SectionLabel label="My work" />
-      <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Approvals' || activeItem === 'My Tickets'} onClick={() => onSelect('My Approvals')} />
-
-      <SectionLabel label="Team & capacity" />
-      <NavItem label="Workload" Icon={WorkloadIcon} active={activeItem === 'Workload'} onClick={() => onSelect('Workload')} />
+      <SectionLabel label="Triage" />
       <NavItem label="Escalations" Icon={EscalationIcon} badge={3} active={activeItem === 'Escalations'} onClick={() => onSelect('Escalations')} />
       <ExpandableNavItem label="Unassigned" Icon={UnassignedIcon} active={unassignedActive} expanded={expandedUnassigned} onToggle={() => setExpandedUnassigned(v => !v)}>
         <QueueSubItem label="IT Support" badge={8} active={activeItem === 'IT Unassigned'} onClick={() => onSelect('IT Unassigned')} />
         <QueueSubItem label="HR"         badge={3} active={activeItem === 'HR Unassigned'} onClick={() => onSelect('HR Unassigned')} />
       </ExpandableNavItem>
-
-      <SectionLabel label="Queues" onAdd={() => onSelect('Create Queue')} />
       <NavItem label="IT Support" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets'} onClick={() => onSelect('IT Tickets')} />
       <NavItem label="HR"         Icon={TicketsIcon} badge={9}  active={activeItem === 'HR Tickets'} onClick={() => onSelect('HR Tickets')} />
+      <NavItem label="Conversations" Icon={InboxIcon} badge={24} active={activeItem === 'Requests'} onClick={() => onSelect('Requests')} />
 
       <SectionLabel label="Insights" />
-      <NavItem label="Dashboard" Icon={DashboardIcon} active={activeItem === 'Dashboard'} onClick={() => onSelect('Dashboard')} />
-      <NavItem label="Optimize" Icon={OptimizeIcon} active={activeItem === 'Optimize'} onClick={() => onSelect('Optimize')} />
+      <NavItem label="Dashboard"  Icon={DashboardIcon}   active={activeItem === 'Dashboard'}  onClick={() => onSelect('Dashboard')} />
+      <NavItem label="Workload"   Icon={WorkloadIcon}    active={activeItem === 'Workload'}    onClick={() => onSelect('Workload')} />
+      <NavItem label="Optimize"    Icon={OptimizeIcon}    active={activeItem === 'Optimize'}    onClick={() => onSelect('Optimize')} />
+      <NavItem label="Optimize V2" Icon={OptimizeIcon}    active={activeItem === 'Optimize V2'} onClick={() => onSelect('Optimize V2')} />
 
       <SectionLabel label="Resources" />
       <NavItem label="Automations" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />

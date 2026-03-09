@@ -95,11 +95,11 @@ export const KB_PERFORMANCE = {
   articlesPublished: 142,
   searchHitRate: 81,
   topArticles: [
-    { title: 'Reset Your Password',                  views: 1240, deflections: 892, pct: 72, rating: 4.8, trend: 'up'     },
-    { title: 'VPN Setup & Troubleshooting',           views: 876,  deflections: 654, pct: 75, rating: 4.5, trend: 'up'     },
-    { title: 'Request Software Access',               views: 732,  deflections: 521, pct: 71, rating: 4.3, trend: 'stable' },
-    { title: 'Salesforce Login Issues',               views: 618,  deflections: 298, pct: 48, rating: 3.9, trend: 'down'   },
-    { title: 'New Employee Onboarding Guide',         views: 542,  deflections: 421, pct: 78, rating: 4.6, trend: 'up'     },
+    { title: 'Reset Your Password',          views: 1240, deflections: 892, pct: 72, rating: 4.8, trend: 'up',     optimization: 'Add a video walkthrough — high traffic article with room to improve deflection' },
+    { title: 'VPN Setup & Troubleshooting',  views: 876,  deflections: 654, pct: 75, rating: 4.5, trend: 'up',     optimization: 'Update screenshots for latest VPN client — reported as outdated in 12 tickets' },
+    { title: 'Request Software Access',      views: 732,  deflections: 521, pct: 71, rating: 4.3, trend: 'stable', optimization: 'Add approval timeline section — repeat follow-up tickets suggest missing context' },
+    { title: 'Salesforce Login Issues',      views: 618,  deflections: 298, pct: 48, rating: 3.9, trend: 'down',   optimization: 'Low deflect rate — add SSO troubleshooting steps and MFA reset instructions' },
+    { title: 'New Employee Onboarding Guide',views: 542,  deflections: 421, pct: 78, rating: 4.6, trend: 'up',     optimization: 'Consider splitting into role-specific guides to improve search relevance' },
   ],
   searchGaps: [
     { query: 'outlook calendar sync',    count: 47 },
@@ -174,10 +174,10 @@ const PURPLE = '#7C5EA8'; // no token — muted purple for secondary series
 export const DASHBOARD_DATA = {
   all: {
     kpis: [
-      { label: 'SLA Compliance',        value: '94%',     trend: '+3% vs last month',  trendGood: true  },
-      { label: 'Automation Coverage',   value: '46%',     trend: '+12% vs last month', trendGood: true  },
-      { label: 'Avg. Resolution Time',  value: '2.4 hrs', trend: '-18% vs last month', trendGood: true  },
-      { label: 'Goal-Aligned Projects', value: '87%',     trend: '+5% vs last month',  trendGood: true  },
+      { label: 'SLA Compliance',        value: '94%',     trend: '+3% vs last month',  trendGood: true,  spark: [88,89,90,91,92,93,94] },
+      { label: 'Automation Coverage',   value: '46%',     trend: '+12% vs last month', trendGood: true,  spark: [30,32,35,37,40,43,46] },
+      { label: 'Avg. Resolution Time',  value: '2.4 hrs', trend: '-18% vs last month', trendGood: true,  spark: [4.2,3.9,3.6,3.2,2.9,2.6,2.4] },
+      { label: 'Goal-Aligned Projects', value: '87%',     trend: '+5% vs last month',  trendGood: true,  spark: [78,80,81,83,84,86,87] },
     ],
     ticketsByCategory: [
       { name: 'Service Requests', value: 289, color: BLUE  },
@@ -203,10 +203,10 @@ export const DASHBOARD_DATA = {
   },
   it: {
     kpis: [
-      { label: 'SLA Compliance',        value: '91%',     trend: '+1% vs last month',  trendGood: true  },
-      { label: 'Automation Coverage',   value: '52%',     trend: '+8% vs last month',  trendGood: true  },
-      { label: 'Avg. Resolution Time',  value: '1.8 hrs', trend: '-22% vs last month', trendGood: true  },
-      { label: 'Goal-Aligned Projects', value: '78%',     trend: '-2% vs last month',  trendGood: false },
+      { label: 'SLA Compliance',        value: '91%',     trend: '+1% vs last month',  trendGood: true,  spark: [86,87,88,88,89,90,91] },
+      { label: 'Automation Coverage',   value: '52%',     trend: '+8% vs last month',  trendGood: true,  spark: [40,42,44,46,48,50,52] },
+      { label: 'Avg. Resolution Time',  value: '1.8 hrs', trend: '-22% vs last month', trendGood: true,  spark: [3.2,2.9,2.6,2.4,2.2,2.0,1.8] },
+      { label: 'Goal-Aligned Projects', value: '78%',     trend: '-2% vs last month',  trendGood: false, spark: [82,81,81,80,79,79,78] },
     ],
     ticketsByCategory: [
       { name: 'Access Mgmt', value: 124, color: BLUE  },
@@ -233,10 +233,10 @@ export const DASHBOARD_DATA = {
   },
   hr: {
     kpis: [
-      { label: 'SLA Compliance',        value: '97%',     trend: '+5% vs last month',  trendGood: true  },
-      { label: 'Automation Coverage',   value: '38%',     trend: '+4% vs last month',  trendGood: true  },
-      { label: 'Avg. Resolution Time',  value: '3.2 hrs', trend: '+6% vs last month',  trendGood: false },
-      { label: 'Goal-Aligned Projects', value: '92%',     trend: '+8% vs last month',  trendGood: true  },
+      { label: 'SLA Compliance',        value: '97%',     trend: '+5% vs last month',  trendGood: true,  spark: [88,90,92,93,95,96,97] },
+      { label: 'Automation Coverage',   value: '38%',     trend: '+4% vs last month',  trendGood: true,  spark: [32,33,34,35,36,37,38] },
+      { label: 'Avg. Resolution Time',  value: '3.2 hrs', trend: '+6% vs last month',  trendGood: false, spark: [2.8,2.9,3.0,3.0,3.1,3.1,3.2] },
+      { label: 'Goal-Aligned Projects', value: '92%',     trend: '+8% vs last month',  trendGood: true,  spark: [80,82,84,86,88,90,92] },
     ],
     ticketsByCategory: [
       { name: 'Leave Requests', value: 68, color: BLUE   },
@@ -262,3 +262,16 @@ export const DASHBOARD_DATA = {
     automationCoverage: { total: 120, aiResolved: 45, ruleBased: 75 },
   },
 };
+
+// ─── Ticket topic volume data (for TopicVolumeCard) ────────────────────────────
+// Sorted descending by count — index drives blue shade (0 = darkest)
+export const TICKET_TOPICS = [
+  { name: 'Access & Auth',  count: 247, sla: 71, spark: [28,32,35,41,38,44,29] },
+  { name: 'Hardware',       count: 198, sla: 68, spark: [18,22,26,24,28,31,19] },
+  { name: 'Network',        count: 183, sla: 74, spark: [22,19,24,28,25,22,23] },
+  { name: 'Software',       count: 156, sla: 69, spark: [15,17,19,22,20,24,19] },
+  { name: 'Onboarding',     count: 134, sla: 82, spark: [12,14,16,18,22,20,12] },
+  { name: 'Email & Comms',  count: 112, sla: 66, spark: [14,12,16,18,14,16,12] },
+  { name: 'Printing',       count:  87, sla: 73, spark: [8, 10,12, 9,11,10, 7] },
+  { name: 'Other',          count:  64, sla: 78, spark: [6,  8, 7, 9, 8,10, 6] },
+];

@@ -62,8 +62,17 @@ const SLA_CLR = {
 // ── KPI card ──────────────────────────────────────────────────────────────────
 
 function KpiCard({ label, value, sub, color }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div style={{ ...CARD, padding: '16px 20px' }}>
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        ...CARD,
+        padding: '16px 20px',
+        boxShadow: hov ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
+        transition: 'box-shadow 0.15s',
+      }}>
       <div style={{ fontSize: 26, fontWeight: 600, color, letterSpacing: '-0.5px', fontFamily: SFD, lineHeight: '32px' }}>
         {value}
       </div>
@@ -99,36 +108,36 @@ function TicketCard({ ticket, showSla, onClick }) {
         transition: 'background 0.1s',
       }}
     >
-      {/* Line 1: priority pill + ticket ID + time */}
+      {/* Line 1: ticket ID + time */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: pill.color, background: pill.bg, borderRadius: 10, padding: '1px 6px', lineHeight: '16px', fontFamily: SFT }}>
-            {ticket.priority}
-          </span>
-          <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
-            {ticket.id}
-          </span>
-        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
+          {ticket.id}
+        </span>
         <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>
           {ticket.time}
         </span>
       </div>
 
       {/* Line 2: title */}
-      <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: '19px', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.1px', fontFamily: SFT, margin: '0 0 4px' }}>
+      <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: '19px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.1px', fontFamily: SFT, margin: '0 0 4px' }}>
         {ticket.title}
       </p>
 
-      {/* Line 3: SLA (colored) or requester */}
-      {showSla ? (
-        <span style={{ fontSize: 11, fontWeight: 500, color: SLA_CLR[ticket.slaType], fontFamily: SFT }}>
-          {ticket.sla}
+      {/* Line 3: SLA or requester + priority pill */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        {showSla ? (
+          <span style={{ fontSize: 11, fontWeight: 500, color: SLA_CLR[ticket.slaType], fontFamily: SFT }}>
+            {ticket.sla}
+          </span>
+        ) : (
+          <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {ticket.requestedBy}
+          </span>
+        )}
+        <span style={{ fontSize: 10, fontWeight: 600, color: pill.color, background: pill.bg, borderRadius: 3, padding: '1px 6px', lineHeight: '16px', fontFamily: SFT, flexShrink: 0 }}>
+          {ticket.priority}
         </span>
-      ) : (
-        <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>
-          {ticket.requestedBy}
-        </span>
-      )}
+      </div>
     </div>
   );
 }
@@ -139,7 +148,7 @@ function TicketColumn({ title, tickets, showSla, onTicketClick }) {
   return (
     <div style={{ flex: 1, ...CARD, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
       <div style={{ height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-        <h4 style={{ fontFamily: SFD, fontSize: 15, fontWeight: 500, color: 'var(--text)', letterSpacing: '-0.15px', margin: 0 }}>
+        <h4 style={{ fontFamily: SFT, fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', letterSpacing: '-0.32px', lineHeight: '20px', fontFeatureSettings: "'liga' off, 'clig' off", margin: 0 }}>
           {title}
         </h4>
         <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-disabled)', fontFamily: SFT }}>

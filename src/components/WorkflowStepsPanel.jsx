@@ -471,6 +471,18 @@ export default function WorkflowStepsPanel({ initialSteps, onLinkedTicketClick, 
     () => new Set(initialSteps.filter(s => s.status === 'active' && s.type === 'linked').map(s => s.id))
   );
 
+  // Notify parent about already-active linked steps on mount so HR tickets get registered
+  const onStepCreateTaskRef = useRef(onStepCreateTask);
+  onStepCreateTaskRef.current = onStepCreateTask;
+  useEffect(() => {
+    initialSteps.forEach(s => {
+      if (s.status === 'active' && s.type === 'linked') {
+        onStepCreateTaskRef.current?.(s.id, s);
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const completedCount = steps.filter(s => s.status === 'completed').length;
   const progress = completedCount / steps.length * 100;
 

@@ -49,9 +49,9 @@ const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-
 const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const typoCell = { fontFamily: SFT, fontSize: '13px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
 const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
-const COL = 'text-xs font-medium text-text-weak px-3 py-3 text-left whitespace-nowrap';
-const CELL = 'px-3 flex items-center';
-const divStyle = { borderRight: '1px solid var(--border)' };
+const COL = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
+const CELL = 'px-6 flex items-center';
+const divStyle = {};
 const AVATAR = { width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' };
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -218,13 +218,13 @@ function FilterChip({ label, options, value, onChange }) {
 
 function TableHeader({ allSelected, onSelectAll }) {
   return (
-    <div className="flex items-center w-full bg-background-medium sticky top-0 z-[2]"
-         style={{ border: '1px solid var(--border)', borderRadius: '8px 8px 0 0' }}>
-      <div className={`${COL} sticky left-0 bg-background-medium z-[3] w-[48px] shrink-0 flex items-center justify-center`} style={divStyle}>
+    <div className="flex items-center w-full bg-white sticky top-0 z-[2]"
+         style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className={`${COL} sticky left-0 bg-white z-[3] w-[48px] shrink-0 flex items-center justify-center`} style={divStyle}>
         <input type="checkbox" checked={allSelected} onChange={onSelectAll}
                style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--text)' }} />
       </div>
-      <div className={`${COL} sticky left-[48px] bg-background-medium z-[3] w-[210px] shrink-0`} style={divStyle}>Asset</div>
+      <div className={`${COL} sticky left-[48px] bg-white z-[3] w-[210px] shrink-0`} style={divStyle}>Asset</div>
       <div className={`${COL} w-[140px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[160px] shrink-0`} style={divStyle}>Model</div>
       <div className={`${COL} w-[90px] shrink-0`} style={divStyle}>OS</div>
@@ -252,7 +252,7 @@ function TableRow({ asset, selected, onSelect, onOpen }) {
     <div
       onClick={onOpen}
       className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
-      style={{ height: 56, borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}
+      style={{ height: 56, borderBottom: '1px solid var(--border)' }}
     >
       {/* Checkbox */}
       <div className={`${CELL} sticky left-0 z-[1] bg-background-weak group-hover:bg-background-medium w-[48px] shrink-0 justify-center`} style={divStyle}>
@@ -631,7 +631,7 @@ export default function AssetsView() {
                 ))
               : (
                 <div className="flex items-center justify-center py-16 w-full text-sm text-text-disabled"
-                     style={{ borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}>
+                     style={{ borderBottom: '1px solid var(--border)' }}>
                   No assets match your filters.
                 </div>
               )

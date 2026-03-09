@@ -311,13 +311,13 @@ function PeopleCard() {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function HomeView({ onOpenServiceMode }) {
+export default function HomeView({ onOpenServiceMode, hideGreeting = false }) {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background-weak)' }}>
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 48 }}>
 
         {/* Greeting header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '40px 32px 28px', flexShrink: 0 }}>
+        {!hideGreeting && <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '40px 32px 28px', flexShrink: 0 }}>
           <div>
             <p style={{ fontSize: 13, color: 'var(--text-weak)', lineHeight: '18px', marginBottom: 6 }}>
               Wednesday, February 25
@@ -354,10 +354,10 @@ export default function HomeView({ onOpenServiceMode }) {
               Customize
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* Row 1: My Tasks + Tickets Queue */}
-        <div style={{ display: 'flex', gap: 16, padding: '0 32px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 16, padding: hideGreeting ? '28px 32px 0' : '0 32px', marginBottom: 16 }}>
           <MyTasksCard />
           <TicketsQueueCard onOpenServiceMode={onOpenServiceMode} />
         </div>
