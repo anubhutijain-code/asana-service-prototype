@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, useParams, Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import ModeSidebar from './components/ModeSidebar';
@@ -171,6 +171,14 @@ export default function AsanaService() {
     getRouteState(location.pathname);
 
   const [role, setRole] = useState('admin2');
+
+  useEffect(() => {
+    if (role === 'agent')       navigate('/my-tickets');
+    else if (role === 'agent3') navigate('/agent-home');
+    else if (role === 'admin')  navigate('/dashboard');
+    else if (role === 'admin2') navigate('/home');
+    else                        navigate('/inbox');
+  }, []);
 
   function handleRoleChange(newRole) {
     setRole(newRole);
