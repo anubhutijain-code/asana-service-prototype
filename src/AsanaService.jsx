@@ -170,7 +170,7 @@ export default function AsanaService() {
   const { mode: activeMode, serviceNav: activeServiceNav, workItem: workActiveItem } =
     getRouteState(location.pathname);
 
-  const [role, setRole] = useState('agent2');
+  const [role, setRole] = useState('admin2');
 
   function handleRoleChange(newRole) {
     setRole(newRole);

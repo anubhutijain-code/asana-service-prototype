@@ -357,7 +357,6 @@ function AdminNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeK
 function AgentNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject }) {
   return (
     <>
-      <SectionLabel label="My work" />
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
       <NavItem label="Collaborating" Icon={FollowingIcon} badge={2} active={activeItem === 'Collaborating'} onClick={() => onSelect('Collaborating')} />
 
@@ -384,7 +383,6 @@ function Agent3NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
     <>
       <NavItem label="Home" Icon={HomeIcon} active={activeItem === 'Agent Home' || activeItem === 'Home'} onClick={() => onSelect('Agent Home')} />
 
-      <SectionLabel label="My work" />
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
       <NavItem label="Collaborating" Icon={FollowingIcon} badge={2} active={activeItem === 'Collaborating' || activeItem === 'Following'} onClick={() => onSelect('Collaborating')} />
 
