@@ -7,8 +7,6 @@ import RightPanelOverlay from './RightPanelOverlay';
 import ApprovalTaskView from './ApprovalTaskView';
 import CreateHRTicketModal from './CreateHRTicketModal';
 import RouteToHRModal from './RouteToHRModal';
-import WorkflowStepsPanel from './WorkflowStepsPanel';
-
 // ─── Payroll ticket chat content (TICKET-68) ──────────────────────────────────
 
 const PAYROLL_TRANSCRIPT = [
@@ -31,7 +29,6 @@ const PAYROLL_INTERNAL = [
 
 export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCreateHRTicket, onAddLinkedHRTicket, hrLinkedTicket, onGoToLinkedITTicket, onGoToLinkedHRTicket, onHRStatusChange, onITStatusChange }) {
   const navigate = useNavigate();
-  const [workflowOpen, setWorkflowOpen] = useState(!!ticket.steps?.length);
   const [workflowLinkedTicket, setWorkflowLinkedTicket] = useState(null);
   const [approvalState, setApprovalState] = useState(null);
   const [chatEvents, setChatEvents] = useState([]);
@@ -196,9 +193,6 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         onRouteToHR={() => setShowRouteModal(true)}
         onCreateTicketHR={() => setHrCreateOpen(true)}
         readOnly={routedToHR}
-        hasWorkflow={!!ticket.steps?.length}
-        workflowOpen={workflowOpen}
-        onToggleWorkflow={() => setWorkflowOpen(v => !v)}
       />
 
       {/* Banner: ticket routed to HR — IT ticket is now view-only */}
@@ -256,21 +250,6 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             initTranscript={chatInitTranscript}
           />
         </div>
-        {ticket.steps?.length > 0 && workflowOpen && (
-          <div style={{
-            width: 340, flexShrink: 0,
-            borderLeft: '1px solid #EDEAE9',
-            borderRight: '1px solid #EDEAE9',
-            overflow: 'hidden', display: 'flex', flexDirection: 'column',
-          }}>
-            <WorkflowStepsPanel
-              initialSteps={ticket.steps}
-              onLinkedTicketClick={handleWorkflowLinkedTicketClick}
-              onStepCreateTask={handleWorkflowStepCreateTask}
-              onStepComplete={handleWorkflowStepComplete}
-            />
-          </div>
-        )}
         <div style={{ width: '30%', maxWidth: 600, minWidth: 300, flexShrink: 0 }}>
           <TicketInfoSidebar
             ticket={ticket}
@@ -295,6 +274,10 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             }}
             onPriorityChange={setLocalPriority}
             readOnly={routedToHR}
+            steps={ticket.steps}
+            onLinkedTicketClick={handleWorkflowLinkedTicketClick}
+            onStepCreateTask={handleWorkflowStepCreateTask}
+            onStepComplete={handleWorkflowStepComplete}
           />
         </div>
       </div>

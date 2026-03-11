@@ -190,10 +190,9 @@ function ChatListItem({ chat, selected, onClick }) {
     <div
       onClick={onClick}
       style={{
-        padding: '12px 16px 12px 14px',
+        padding: '12px 16px',
         borderBottom: '1px solid var(--border)',
-        borderLeft: `2px solid ${selected ? 'var(--selected-background-strong)' : 'transparent'}`,
-        background: selected ? 'var(--selected-background)' : 'transparent',
+        background: selected ? 'var(--background-medium)' : 'transparent',
         cursor: 'pointer',
         transition: 'background 0.1s',
       }}
@@ -205,16 +204,16 @@ function ChatListItem({ chat, selected, onClick }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Name + time */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, ...LIGA }}>{chat.user.name}</span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text)', fontFamily: SFT, letterSpacing: '-0.15px', ...LIGA }}>{chat.user.name}</span>
             <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, flexShrink: 0, marginLeft: 8 }}>{chat.time}</span>
           </div>
           {/* Subject */}
-          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...LIGA }}>
+          <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--text)', fontFamily: SFT, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...LIGA }}>
             {chat.subject}
           </p>
           {/* Preview + status */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
               {chat.preview}
             </p>
             <span style={{
@@ -380,12 +379,12 @@ export default function RequestsView() {
 
         {/* List header */}
         <div style={{ padding: '24px 16px 0', flexShrink: 0 }}>
-          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 18, fontWeight: 500, color: 'var(--text)', margin: '0 0 14px', letterSpacing: '0.38px', ...LIGA }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 14px' }}>
             Requests
           </h2>
 
           {/* Tab bar */}
-          <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', gap: 0 }}>
+          <div className="flex border-b border-border gap-6">
             {TABS.map(tab => {
               const active = activeTab === tab.id;
               return (
@@ -393,26 +392,21 @@ export default function RequestsView() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    height: 32, padding: '0 10px', fontSize: 12, fontFamily: SFT,
-                    fontWeight: active ? 500 : 400, cursor: 'pointer',
-                    background: 'transparent', border: 'none',
-                    color: active ? 'var(--text)' : 'var(--text-weak)',
-                    borderBottom: active ? '2px solid var(--selected-background-strong)' : '2px solid transparent',
-                    marginBottom: -1,
-                    transition: 'color 0.1s',
-                  }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text)'; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--text-weak)'; }}
+                  className={[
+                    'flex items-center gap-1.5 pb-2.5 text-sm cursor-pointer border-0 bg-transparent whitespace-nowrap',
+                    'transition-colors duration-150',
+                    active
+                      ? 'text-text font-medium shadow-[inset_0_-2px_0_var(--icon)]'
+                      : 'text-text-weak hover:text-text',
+                    'focus:outline-none',
+                  ].join(' ')}
                 >
                   {tab.label}
-                  <span style={{
-                    fontSize: 10, fontWeight: 600, lineHeight: '14px', padding: '0 4px', borderRadius: 3,
-                    background: active ? 'var(--selected-background-strong)' : 'var(--background-medium)',
-                    color: active ? 'var(--selected-text-strong)' : 'var(--text-weak)',
-                    minWidth: 16, textAlign: 'center',
-                  }}>
+                  <span className={[
+                    'inline-flex items-center justify-center min-w-[18px] h-[18px] px-1',
+                    'rounded text-[11px] font-medium leading-none',
+                    active ? 'bg-background-strong text-text' : 'bg-background-medium text-text-disabled',
+                  ].join(' ')}>
                     {tabCounts[tab.id]}
                   </span>
                 </button>

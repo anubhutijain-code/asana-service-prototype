@@ -97,11 +97,12 @@ const MAIN_NAV = [
 ];
 
 const RECENTS = [
-  { label: 'Creative Requests',   icon: <SquircleIcon color="#E05A4E" className="w-4 h-4 shrink-0" /> },
-  { label: 'Content Calendar',    icon: <SquircleIcon color="#F0A830" className="w-4 h-4 shrink-0" /> },
+  { label: 'IT Escalations Inbox', icon: <SquircleIcon color="#A69FF3" className="w-4 h-4 shrink-0" /> },
+  { label: 'Creative Requests',    icon: <SquircleIcon color="#E05A4E" className="w-4 h-4 shrink-0" /> },
+  { label: 'Content Calendar',     icon: <SquircleIcon color="#F0A830" className="w-4 h-4 shrink-0" /> },
   { label: 'End-of-Year Camp...',  icon: <SquircleIcon color="#58C6C6" className="w-4 h-4 shrink-0" /> },
-  { label: 'Web Bugs & Fixes',    icon: <SquircleIcon color="#4573D2" className="w-4 h-4 shrink-0" /> },
-  { label: 'FY25 Campaigns',      icon: <PortfolioFillIcon className="w-4 h-4 shrink-0 text-icon" /> },
+  { label: 'Web Bugs & Fixes',     icon: <SquircleIcon color="#4573D2" className="w-4 h-4 shrink-0" /> },
+  { label: 'FY25 Campaigns',       icon: <PortfolioFillIcon className="w-4 h-4 shrink-0 text-icon" /> },
 ];
 
 // ── WorkSecondaryNav ───────────────────────────────────────────────────────────

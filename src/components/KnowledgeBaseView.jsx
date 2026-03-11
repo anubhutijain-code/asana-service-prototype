@@ -29,11 +29,11 @@ const KB_ACCESSORS = {
 // ─── Shared typography ─────────────────────────────────────────────────────────
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
-const typoCell = { fontFamily: SFT, fontSize: '13px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
+const typoCell = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
 const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
-const COL = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
-const CELL = 'px-6 flex items-center';
-const divStyle = {};
+const COL = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
+const CELL = 'px-2 flex items-center';
+const divStyle = { borderRight: '1px solid var(--border)' };
 
 // ─── Status badge config ───────────────────────────────────────────────────────
 const STATUS_BADGE = {
@@ -456,9 +456,10 @@ function SourceChip({ type }) {
 
 function TableHeader() {
   return (
-    <div className="flex items-center w-full bg-white sticky top-0 z-[2]" style={{ borderBottom: '1px solid var(--border)' }}>
-      <div className={`${COL} sticky left-0 bg-white z-[3] w-[280px] shrink-0`} style={divStyle}>Article name</div>
-      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Source</div>
+    <div className="flex items-stretch w-full bg-white sticky top-0 z-[2]" style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className={`${COL} w-[44px] shrink-0 justify-center`}>#</div>
+      <div className={`${COL} sticky left-[44px] bg-white z-[3] w-[280px] shrink-0`} style={divStyle}>Article name</div>
+      <div className={`${COL} sticky left-[324px] bg-white z-[3] w-[120px] shrink-0`} style={divStyle}>Source</div>
       <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Author</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Category</div>
@@ -469,21 +470,22 @@ function TableHeader() {
 
 // ─── Table row ─────────────────────────────────────────────────────────────────
 
-function TableRow({ article }) {
+function TableRow({ article, index }) {
   const badge = STATUS_BADGE[article.status] ?? STATUS_BADGE['Archived'];
   return (
     <div
       role="row"
       className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid var(--border)', height: 44 }}
+      style={{ height: 44, borderBottom: '1px solid var(--border)' }}
     >
-      <div className={`${CELL} sticky left-0 z-[1] w-[280px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
-        <span className="truncate max-w-[250px]" style={{ ...typoCell, fontWeight: 500 }}>{article.title}</span>
+      <div className={`${CELL} w-[44px] shrink-0 justify-center`} style={{ ...typoMeta, fontSize: 11 }}>{index + 1}</div>
+      <div className={`${CELL} sticky left-[44px] z-[1] w-[280px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
+        <span className="truncate max-w-[250px]" style={typoCell}>{article.title}</span>
       </div>
-      <div className={`${CELL} w-[120px] shrink-0`} style={divStyle}>
+      <div className={`${CELL} sticky left-[324px] z-[1] w-[120px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
         <SourceChip type={article.source ?? 'internal'} />
       </div>
-      <div className={`${CELL} w-[150px] shrink-0 gap-2`} style={{ ...divStyle, ...typoCell, fontSize: 13 }}>
+      <div className={`${CELL} w-[150px] shrink-0 gap-2`} style={{ ...divStyle, ...typoCell }}>
         <Avatar name={article.author} size={22} />
         <span className="truncate max-w-[100px]">{article.author}</span>
       </div>
@@ -495,7 +497,7 @@ function TableRow({ article }) {
       <div className={`${CELL} w-[150px] shrink-0`} style={{ ...divStyle, ...typoMeta }}>
         <span className="truncate max-w-[130px]">{article.category}</span>
       </div>
-      <div className={`${CELL} w-[130px] shrink-0`} style={{ ...divStyle, ...typoMeta }}>
+      <div className={`${CELL} w-[130px] shrink-0`} style={typoMeta}>
         {formatDate(article.updatedAt)}
       </div>
     </div>
@@ -696,6 +698,177 @@ function LearningsTab({ projectId, allArticles }) {
   );
 }
 
+// ─── KB Landing page ───────────────────────────────────────────────────────────
+
+// Asana-style project icon colors per KB project
+const PROJ_BG = { 'it-kb': '#E87264', 'hr-kb': '#4CA57E', 'eng-kb': '#4573D2', 'onb-kb': '#A97FD4' };
+
+function KBProjectIcon({ project, size = 28 }) {
+  const bg = PROJ_BG[project.id] ?? '#9ea0a2';
+  const iconSize = Math.round(size * 0.54);
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 6, background: bg, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* List-rows icon — matches Asana list project icon */}
+      <svg viewBox="0 0 14 12" width={iconSize} height={iconSize} fill="none" aria-hidden="true">
+        <path d="M0 1.5h14M0 6h14M0 10.5h9" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    </div>
+  );
+}
+
+function KBLandingPage() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+
+  const articleCountByProject = Object.fromEntries(
+    KB_PROJECTS.map(p => [p.id, KB_ARTICLES.filter(a => a.projectId === p.id).length])
+  );
+
+  const filtered = search
+    ? KB_PROJECTS.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.team.toLowerCase().includes(search.toLowerCase()))
+    : KB_PROJECTS;
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background-weak)' }}>
+
+      {/* ── Header ── */}
+      <div style={{ flexShrink: 0, padding: '28px 32px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
+          Browse knowledge bases
+        </h1>
+        <button
+          type="button"
+          style={{
+            height: 32, padding: '0 14px', fontSize: 13, fontFamily: SFT, fontWeight: 500,
+            borderRadius: 6, border: 'none', cursor: 'pointer',
+            background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
+            display: 'flex', alignItems: 'center', gap: 6,
+            transition: 'opacity 0.1s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+        >
+          <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M6 1v10M1 6h10"/>
+          </svg>
+          Create knowledge base
+        </button>
+      </div>
+
+      {/* ── Search ── */}
+      <div style={{ flexShrink: 0, padding: '0 32px 16px' }}>
+        <div style={{ position: 'relative', maxWidth: 480 }}>
+          <span style={{ position: 'absolute', top: '50%', left: 10, transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+            <SearchIcon />
+          </span>
+          <input
+            type="text"
+            placeholder="Find a knowledge base…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%', height: 36, paddingLeft: 34, paddingRight: 12,
+              fontSize: 13, fontFamily: SFT,
+              border: '1px solid var(--border)', borderRadius: 8, outline: 'none',
+              color: 'var(--text)', background: 'white',
+            }}
+            onFocus={e => e.target.style.borderColor = 'var(--icon)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border)'}
+          />
+        </div>
+      </div>
+
+      {/* ── Table header ── */}
+      <div style={{
+        position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
+        padding: '0 32px', height: 36,
+        background: 'white',
+      }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
+        <span style={{ ...typoMeta, flex: 1, minWidth: 200, fontWeight: 500 }}>Name</span>
+        <span style={{ ...typoMeta, width: 120, flexShrink: 0, fontWeight: 500 }}>Integration</span>
+        <span style={{ ...typoMeta, width: 120, flexShrink: 0, fontWeight: 500 }}>Team</span>
+        <span style={{ ...typoMeta, width: 120, flexShrink: 0, fontWeight: 500, textAlign: 'right' }}>Articles</span>
+        <span style={{ ...typoMeta, width: 120, flexShrink: 0, fontWeight: 500, textAlign: 'right' }}>Last synced</span>
+      </div>
+
+      {/* ── Rows ── */}
+      <div style={{ flex: 1, overflowY: 'auto', background: 'white' }}>
+        {filtered.map(proj => {
+          const cfg = proj.source ? (INTEGRATION_CONFIG[proj.source.type] ?? {}) : null;
+          const articleCount = articleCountByProject[proj.id] ?? 0;
+          return (
+            <div
+              key={proj.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/knowledge-base/${proj.id}`)}
+              onKeyDown={e => e.key === 'Enter' && navigate(`/knowledge-base/${proj.id}`)}
+              style={{
+                position: 'relative', display: 'flex', alignItems: 'center',
+                padding: '0 32px', height: 52,
+                cursor: 'pointer', transition: 'background 0.1s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-weak)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+            >
+              <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
+              {/* Name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 200 }}>
+                <KBProjectIcon project={proj} size={28} />
+                <span style={{ ...typoCell }}>{proj.name}</span>
+              </div>
+
+              {/* Integration */}
+              <div style={{ width: 120, flexShrink: 0 }}>
+                {cfg ? (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    padding: '2px 7px', borderRadius: 4,
+                    background: cfg.bg, fontSize: 11, fontWeight: 500, color: cfg.color, fontFamily: SFT,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    <SourceIcon type={proj.source.type} size={11} />
+                    {cfg.label}
+                  </span>
+                ) : (
+                  <span style={{ ...typoMeta }}>Internal</span>
+                )}
+              </div>
+
+              {/* Team */}
+              <div style={{ width: 120, flexShrink: 0 }}>
+                <span style={{ ...typoCell, color: 'var(--text-weak)' }}>{proj.team}</span>
+              </div>
+
+              {/* Articles */}
+              <div style={{ width: 120, flexShrink: 0, textAlign: 'right' }}>
+                <span style={{ ...typoMeta }}>{articleCount}</span>
+              </div>
+
+              {/* Last synced */}
+              <div style={{ width: 120, flexShrink: 0, textAlign: 'right' }}>
+                <span style={{ ...typoMeta }}>
+                  {proj.source ? formatRelativeTime(proj.source.syncedAt) : 'Never synced'}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
+        {filtered.length === 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120, fontFamily: SFT, fontSize: 13, color: 'var(--text-disabled)' }}>
+            No knowledge bases match your search.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── KnowledgeBaseView ─────────────────────────────────────────────────────────
 
 export default function KnowledgeBaseView() {
@@ -715,17 +888,7 @@ export default function KnowledgeBaseView() {
   const articles = applyFilters(searchFiltered, filters, KB_ACCESSORS);
 
   if (!projectId) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-3">
-        <svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5">
-          <path d="M24 10v28M10 24h28" strokeLinecap="round" />
-          <rect x="6" y="6" width="36" height="36" rx="4" />
-        </svg>
-        <p style={{ fontFamily: SFT, fontSize: 14, color: 'var(--text-disabled)', margin: 0 }}>
-          Select a knowledge base from the sidebar
-        </p>
-      </div>
-    );
+    return <KBLandingPage />;
   }
 
   if (!project) {
@@ -745,7 +908,7 @@ export default function KnowledgeBaseView() {
     <div className="relative flex flex-col h-full overflow-hidden bg-background-weak">
 
       {/* ── Header ── */}
-      <div className="shrink-0 px-8 pt-7 pb-0">
+      <div className="shrink-0 px-6 pt-7 pb-0">
         <div style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-weak)'} onClick={() => navigate('/knowledge-base')}>
             Knowledge Bases
@@ -755,13 +918,16 @@ export default function KnowledgeBaseView() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 12 }}>
-          <div>
-            <h1 style={{ fontFamily: SFT, fontSize: 20, fontWeight: 600, color: 'var(--text)', margin: '0 0 4px', lineHeight: '28px' }}>
-              {project.name}
-            </h1>
-            <p style={{ ...typoMeta, margin: 0 }}>
-              {project.team} · {allArticles.length} article{allArticles.length !== 1 ? 's' : ''}
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <KBProjectIcon project={project} size={32} />
+            <div>
+              <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 4px' }}>
+                {project.name}
+              </h1>
+              <p style={{ ...typoMeta, margin: 0 }}>
+                {project.team} · {allArticles.length} article{allArticles.length !== 1 ? 's' : ''}
+              </p>
+            </div>
           </div>
           <div style={{ flexShrink: 0, paddingTop: 2 }}>
             <IntegrationBadge
@@ -773,7 +939,7 @@ export default function KnowledgeBaseView() {
         </div>
 
         {/* ── Tabs ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0, borderBottom: '1px solid var(--border)' }}>
+        <div className="flex border-b border-border gap-6">
           {TABS.map(tab => {
             const active = activeTab === tab.id;
             return (
@@ -781,26 +947,21 @@ export default function KnowledgeBaseView() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  height: 36, padding: '0 14px', fontSize: 13, fontFamily: SFT,
-                  fontWeight: active ? 500 : 400, cursor: 'pointer',
-                  background: 'transparent', border: 'none',
-                  color: active ? 'var(--text)' : 'var(--text-weak)',
-                  borderBottom: active ? '2px solid var(--selected-background-strong)' : '2px solid transparent',
-                  marginBottom: -1,
-                  transition: 'color 0.1s',
-                }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text)'; }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--text-weak)'; }}
+                className={[
+                  'flex items-center gap-1.5 pb-2.5 text-sm cursor-pointer border-0 bg-transparent whitespace-nowrap',
+                  'transition-colors duration-150',
+                  active
+                    ? 'text-text font-medium shadow-[inset_0_-2px_0_var(--icon)]'
+                    : 'text-text-weak hover:text-text',
+                  'focus:outline-none',
+                ].join(' ')}
               >
                 {tab.label}
-                <span style={{
-                  fontSize: 10, fontWeight: 600, lineHeight: '14px', padding: '0 4px', borderRadius: 3,
-                  background: active ? 'var(--selected-background-strong)' : 'var(--background-medium)',
-                  color: active ? 'var(--selected-text-strong)' : 'var(--text-weak)',
-                  minWidth: 18, textAlign: 'center',
-                }}>
+                <span className={[
+                  'inline-flex items-center justify-center min-w-[18px] h-[18px] px-1',
+                  'rounded text-[11px] font-medium leading-none',
+                  active ? 'bg-background-strong text-text' : 'bg-background-medium text-text-disabled',
+                ].join(' ')}>
                   {tab.count}
                 </span>
                 {tab.dot && !active && (
@@ -815,7 +976,7 @@ export default function KnowledgeBaseView() {
       {activeTab === 'articles' ? (
         <>
           {/* ── Toolbar ── */}
-          <div className="shrink-0 px-8 py-4">
+          <div className="shrink-0 px-6 py-4">
             <div className="flex items-center justify-between gap-3">
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', top: '50%', left: 10, transform: 'translateY(-50%)', pointerEvents: 'none' }}>
@@ -860,12 +1021,12 @@ export default function KnowledgeBaseView() {
           </div>
 
           {/* ── Table ── */}
-          <div className="flex-1 min-h-0 overflow-hidden px-8 pb-8">
+          <div className="flex-1 min-h-0 overflow-hidden px-6 pb-6">
             <div className="h-full overflow-auto" style={{ overscrollBehavior: 'none' }}>
               <div style={{ minWidth: '100%', width: 'max-content' }}>
                 <TableHeader />
                 {articles.length > 0
-                  ? articles.map(article => <TableRow key={article.id} article={article} />)
+                  ? articles.map((article, i) => <TableRow key={article.id} article={article} index={i} />)
                   : (
                     <div
                       className="flex items-center justify-center py-16 w-full"

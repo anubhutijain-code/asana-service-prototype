@@ -254,7 +254,7 @@ export default function AutomationsView() {
 
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', margin: '0 0 6px' }}>Automations</h1>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 6px' }}>Automations</h1>
         <p style={{ fontSize: 13, color: 'var(--text-weak)', margin: 0 }}>
           Enable pre-built workflows to automate your service queue. Agents can toggle automations for their queues.
         </p>

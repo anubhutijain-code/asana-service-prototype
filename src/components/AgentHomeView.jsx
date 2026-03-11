@@ -68,20 +68,17 @@ function KpiCard({ label, value, sub, color }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        ...CARD,
-        padding: '16px 20px',
-        boxShadow: hov ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
+        background: 'var(--background-weak)',
+        borderRadius: 10,
+        padding: '18px 20px',
+        boxShadow: hov
+          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
+          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
         transition: 'box-shadow 0.15s',
       }}>
-      <div style={{ fontSize: 26, fontWeight: 600, color, letterSpacing: '-0.5px', fontFamily: SFD, lineHeight: '32px' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginTop: 3, fontFamily: SFT }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 12, color: 'var(--text-disabled)', marginTop: 1, fontFamily: SFT }}>
-        {sub}
-      </div>
+      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: color ?? 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>{sub}</p>
     </div>
   );
 }
@@ -186,7 +183,7 @@ export default function AgentHomeView() {
     }}>
       {/* Greeting */}
       <div style={{ flexShrink: 0 }}>
-        <h1 style={{ fontFamily: SFD, fontSize: 22, fontWeight: 500, color: 'var(--text)', margin: 0, letterSpacing: '-0.3px', lineHeight: '30px' }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
           {getGreeting()}, Sarah
         </h1>
         <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-disabled)', margin: '2px 0 0' }}>
@@ -195,7 +192,7 @@ export default function AgentHomeView() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, flexShrink: 0 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, flexShrink: 0 }}>
         {KPIS.map(k => <KpiCard key={k.label} {...k} />)}
       </div>
 

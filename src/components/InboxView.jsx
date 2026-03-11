@@ -508,7 +508,7 @@ export default function InboxView({ defaultTab = 'Activity' }) {
         {/* Header */}
         <div className="shrink-0 px-8 pt-7">
 
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text)', marginBottom: '12px', lineHeight: 1.2 }}>
+          <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', marginBottom: '12px' }}>
             Inbox
           </h1>
 

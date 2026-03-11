@@ -223,7 +223,7 @@ function EscalationRow({ item, isSelected, onSelect }) {
       </div>
 
       {/* Line 2: title */}
-      <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text)', lineHeight: '19px', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.1px' }}>
+      <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text)', lineHeight: '22px', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.15px', fontFamily: SFT }}>
         {item.title}
       </p>
 
@@ -233,7 +233,7 @@ function EscalationRow({ item, isSelected, onSelect }) {
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
             {item.initials}
           </div>
-          <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-weak)', fontFamily: SFT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.15px' }}>
             {item.assignedTo}
           </span>
         </div>
@@ -293,7 +293,7 @@ export default function EscalationsView() {
       }}>
         {/* Header */}
         <div style={{ padding: '24px 16px 16px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 18, fontWeight: 500, color: 'var(--text)', letterSpacing: '0.38px', margin: 0 }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
             Escalations
           </h2>
         </div>

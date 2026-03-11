@@ -28,7 +28,7 @@ export default function RouteToHRModal({ open, ticket, onClose, onRoute }) {
       onClose={onClose}
       title="Route to HR"
       subtitle={`Ref: ${ticket?.id}`}
-      size="sm"
+      size="md"
       footer={
         <>
           <ModalButton variant="secondary" onClick={onClose}>Cancel</ModalButton>

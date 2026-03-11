@@ -116,7 +116,7 @@ function KpiCard({ label, value, trend, trendGood, spark = [] }) {
         transition: 'box-shadow 0.15s',
       }}>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 38, fontWeight: 500, color: 'var(--text)', lineHeight: 1, letterSpacing: '0.38px', margin: '0 0 6px', fontFeatureSettings: "'liga' off" }}>{value}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
       <p style={{ fontSize: 12, color: trendColor, fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
         {trendPrefix} {trend}
       </p>
@@ -170,7 +170,7 @@ function TopicVolumeCard() {
   }));
 
   return (
-    <div style={{ ...CARD, display: 'flex', height: 360, overflow: 'hidden' }}>
+    <div style={{ ...CARD, display: 'flex', height: 480, overflow: 'hidden' }}>
 
       {/* ── Left: treemap ──────────────────────────────────────────────── */}
       <div style={{ flex: '0 0 60%', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -425,7 +425,7 @@ function DashIntegrationsCard() {
 
 // ─── Ticket Resolution by Type ─────────────────────────────────────────────────
 
-const COL  = 'text-xs font-medium text-text-weak px-4 py-3 text-left whitespace-nowrap';
+const COL  = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
 const DIV  = { borderRight: '1px solid var(--border)' };
 
 function TicketResolutionTable() {
@@ -437,7 +437,7 @@ function TicketResolutionTable() {
         <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Detailed breakdown of resolution methods by ticket category</p>
       </div>
 
-      <div style={{ padding: '0 16px' }}>
+      <div style={{ padding: '0 24px' }}>
       {/* Column headers — no background */}
       <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className={COL} style={{ ...DIV, flex: 1 }}>Ticket Type</div>
@@ -453,7 +453,7 @@ function TicketResolutionTable() {
         <div key={i}
           className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
           style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="px-4 flex flex-col justify-center" style={{ flex: 1, ...DIV, paddingTop: 10, paddingBottom: 10, minHeight: 52 }}>
+          <div className="px-2 flex flex-col justify-center" style={{ flex: 1, ...DIV, paddingTop: 8, paddingBottom: 8, minHeight: 52 }}>
             <p style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '22px' }}>{row.type}</p>
             {row.insight && (
               <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '2px 0 0', lineHeight: '18px' }}>{row.insight}</p>
@@ -547,7 +547,7 @@ function KBInsightRow({ insight, divider }) {
           {insight.ticketCount} tickets
         </span>
       </div>
-      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 4px', lineHeight: '20px' }}>{insight.gap}</p>
+      <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text)', fontFamily: SFT, margin: '0 0 4px', lineHeight: '22px', letterSpacing: '-0.15px' }}>{insight.gap}</p>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>{insight.suggestion}</p>
     </div>
   );
@@ -561,7 +561,7 @@ function KBPerformanceCard() {
         <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Knowledge Base Performance</p>
         <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Article views, ticket deflections, and content gaps</p>
       </div>
-      <div style={{ padding: '0 16px' }}>
+      <div style={{ padding: '0 24px' }}>
         <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className={COL} style={{ ...DIV, flex: 1 }}>Article</div>
           <div className={`${COL} w-[110px] text-right`} style={DIV}>Views</div>
@@ -661,9 +661,17 @@ function TeamKpiCard({ label, value }) {
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      style={{ ...CARD, padding: '14px 16px', background: hov ? 'var(--background-medium)' : CARD.background, transition: 'background 0.12s' }}>
-      <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 6px' }}>{label}</p>
-      <p style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', fontFamily: SFT, lineHeight: 1, margin: 0, letterSpacing: '-0.3px' }}>{value}</p>
+      style={{
+        background: 'var(--background-weak)',
+        borderRadius: 10,
+        padding: '18px 20px',
+        boxShadow: hov
+          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
+          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
+        transition: 'box-shadow 0.15s',
+      }}>
+      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: 0, fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
     </div>
   );
 }
@@ -750,20 +758,22 @@ function TeamTab() {
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 24 }}>
         {kpiCards.map((card, i) => <TeamKpiCard key={i} {...card} />)}
       </div>
 
       {/* Timeline block */}
-      <div style={{ ...CARD, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ ...CARD, border: 'none', display: 'flex', overflow: 'hidden' }}>
 
         {/* Left column — agent names/badges (does not scroll) */}
-        <div style={{ width: 140, flexShrink: 0, borderRight: '1px solid var(--border)' }}>
+        <div style={{ width: 200, flexShrink: 0, borderRight: '1px solid var(--border)' }}>
           {/* Header cell matching date header height */}
           <div style={{
-            height: 32, background: 'var(--background-medium)',
+            height: 32, background: 'white',
             borderBottom: '1px solid var(--border)',
-          }} />
+            display: 'flex', alignItems: 'center', padding: '0 10px',
+            fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT,
+          }}>Agent</div>
           {/* Agent rows */}
           {visibleAgents.map((agent, i) => (
             <div key={agent.id} style={{
@@ -779,8 +789,8 @@ function TeamTab() {
                 {agent.initials}
               </div>
               <p style={{
-                fontSize: 11, fontFamily: SFT, color: 'var(--text)', margin: 0,
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '14px',
+                fontSize: 14, fontFamily: SFT, color: 'var(--text)', margin: 0,
+                whiteSpace: 'nowrap', lineHeight: '22px', letterSpacing: '-0.15px',
               }}>{agent.name}</p>
             </div>
           ))}
@@ -800,7 +810,7 @@ function TeamTab() {
             {/* Date header */}
             <div style={{
               height: 32, borderBottom: '1px solid var(--border)',
-              background: 'var(--background-medium)', position: 'relative',
+              background: 'white', position: 'relative',
             }}>
               {WEEK_STARTS.map(ws => (
                 <span key={ws.label} style={{
@@ -823,7 +833,9 @@ function TeamTab() {
             {/* Agent chart rows */}
             {visibleAgents.map((agent, i) => (
               <div key={agent.id} style={{
+                height: chartHeight,
                 borderBottom: i < visibleAgents.length - 1 ? '1px solid var(--border)' : 'none',
+                overflow: 'hidden',
               }}>
                 <AreaChart
                   data={agent.daily.map((v, idx) => ({
@@ -885,7 +897,7 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', fontFamily: SFT, margin: '0 0 3px', letterSpacing: '-0.3px' }}>
+            <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 3px' }}>
               {hideTabs ? 'Team workload' : 'Dashboard'}
             </h1>
             <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>
@@ -945,17 +957,17 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
         {!hideTabs && activeTab === 'Overview' && (
           <>
             {/* KPI strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 14, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 24, marginBottom: 24 }}>
               {data.kpis.map((kpi, i) => <KpiCard key={i} {...kpi} />)}
             </div>
 
             {/* Row 1 — Topic volume (full-width) */}
-            <div style={{ marginBottom: 14 }}>
+            <div style={{ marginBottom: 24 }}>
               <TopicVolumeCard />
             </div>
 
             {/* Row 2 — Backlog trend + Integrations */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24, marginBottom: 24 }}>
               <ChartCard title="Ticket Backlog Trend" subtitle="6-month trend">
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={data.backlogTrend} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
@@ -972,10 +984,10 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
             </div>
 
             {/* Row 3 — Ticket Resolution by Type */}
-            <div style={{ marginBottom: 14 }}><TicketResolutionTable /></div>
+            <div style={{ marginBottom: 24 }}><TicketResolutionTable /></div>
 
             {/* Row 4 — KB Performance + KB Optimizations */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
               <KBPerformanceCard />
               <KBOptimizationsCard />
             </div>

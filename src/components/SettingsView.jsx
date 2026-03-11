@@ -131,11 +131,11 @@ function Toggle({ value, onChange }) {
 }
 
 // ── Section ───────────────────────────────────────────────────────────────────
-function Section({ title, description, children, action }) {
+function Section({ title, description, children, action, noDivider }) {
   return (
     <div style={{ marginBottom: 40 }}>
       {/* Header with rule beneath */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: 8, borderBottom: noDivider ? 'none' : '1px solid var(--border)' }}>
         <div>
           <p style={{ ...H5, margin: 0 }}>{title}</p>
           {description && (
@@ -372,19 +372,24 @@ function GeneralTab({ values, selectedSetting, onOpen }) {
       </Section>
 
       <Section title="SLA" description="Response and resolution time targets by priority level">
+        {/* Column headers */}
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--background-weak)' }}>
+          <div style={{ width: 240, flexShrink: 0, ...base, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', padding: '8px 12px', borderRight: '1px solid var(--border)' }}>Priority</div>
+          <div style={{ width: 240, flexShrink: 0, ...base, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', padding: '8px 12px', borderRight: '1px solid var(--border)' }}>First response</div>
+          <div style={{ width: 240, flexShrink: 0, ...base, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', padding: '8px 12px' }}>Resolution time</div>
+        </div>
+        {/* Rows */}
         {INITIAL_SLA.map((row, i) => (
-          <div key={row.priority} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 0', borderBottom: i < INITIAL_SLA.length - 1 ? '1px solid var(--border)' : 'none' }}>
-            <div style={{ width: 76, flexShrink: 0 }}>
+          <div key={row.priority} style={{ display: 'flex', alignItems: 'center', borderBottom: i < INITIAL_SLA.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            <div style={{ width: 240, flexShrink: 0, padding: '10px 12px', borderRight: '1px solid var(--border)' }}>
               <Badge variant={PRIORITY_VARIANT[row.priority]} size="sm">{row.priority}</Badge>
             </div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ ...base, fontSize: 12, color: 'var(--text-weak)', flexShrink: 0 }}>First response</span>
+            <div style={{ width: 240, flexShrink: 0, padding: '10px 12px', borderRight: '1px solid var(--border)' }}>
               <select defaultValue={row.response} style={{ ...inputStyle, height: 28, width: 'auto' }}>
                 {TIME_OPTS.map(o => <option key={o}>{o}</option>)}
               </select>
             </div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ ...base, fontSize: 12, color: 'var(--text-weak)', flexShrink: 0 }}>Resolution</span>
+            <div style={{ width: 240, flexShrink: 0, padding: '10px 12px' }}>
               <select defaultValue={row.resolution} style={{ ...inputStyle, height: 28, width: 'auto' }}>
                 {TIME_OPTS.map(o => <option key={o}>{o}</option>)}
               </select>
@@ -638,7 +643,7 @@ export default function SettingsView() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* ── Header ── */}
       <div style={{ padding: '32px 40px 0', flexShrink: 0 }}>
-        <p style={{ ...H5, fontSize: 20, margin: '0 0 24px' }}>Settings</p>
+        <p style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 24px' }}>Settings</p>
 
         {/* Tab bar */}
         <div className="flex border-b border-border">

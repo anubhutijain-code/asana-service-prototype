@@ -131,14 +131,12 @@ function GapCard({ item, selected, status, onSelect }) {
       onClick={() => onSelect(item)}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelect(item); }}
       style={{
-        background: selected ? 'var(--selected-background)' : 'transparent',
+        background: selected ? 'var(--background-medium)' : 'transparent',
         borderBottom: '1px solid var(--border)',
-        borderLeft: `2px solid ${selected ? 'var(--selected-background-strong)' : 'transparent'}`,
-        padding: '0 16px 0 14px',
-        height: 48,
+        padding: '12px 16px',
         display: 'flex',
-        alignItems: 'center',
-        gap: 10,
+        flexDirection: 'column',
+        gap: 5,
         cursor: 'pointer',
         outline: 'none',
         transition: 'background 0.1s',
@@ -147,20 +145,25 @@ function GapCard({ item, selected, status, onSelect }) {
       onMouseEnter={e => { if (!selected) e.currentTarget.style.background = 'var(--background-medium)'; }}
       onMouseLeave={e => { if (!selected) e.currentTarget.style.background = 'transparent'; }}
     >
-      {item.cxScore != null
-        ? <CxScorePill score={item.cxScore} />
-        : <ImpactPill impact={item.impact} />
-      }
-      <span style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      {/* Row 1: pills + ticket count */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        {item.cxScore != null
+          ? <CxScorePill score={item.cxScore} />
+          : <ImpactPill impact={item.impact} />
+        }
+        <StatusBadge status={status} />
+        <span style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text-disabled)', marginLeft: 'auto' }}>
+          {item.ticketCount} tickets
+        </span>
+      </div>
+      {/* Row 2: gap title */}
+      <p style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, lineHeight: '19px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
         {item.gap}
-      </span>
-      <span style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text-disabled)', flexShrink: 0 }}>
-        {item.ticketCount} interactions
-      </span>
-      <StatusBadge status={status} />
-      <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-        <path d="M4 2l4 4-4 4"/>
-      </svg>
+      </p>
+      {/* Row 3: suggestion */}
+      <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '17px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {item.suggestion}
+      </p>
     </div>
   );
 }
@@ -424,7 +427,7 @@ function OptimizeEmptyState() {
 
 export default function OptimizeView({ onNavigateToTicket }) {
   const [activeTab, setActiveTab] = useState('content');
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(() => OPTIMIZE_GAPS['content']?.[0] ?? null);
   const [statuses, setStatuses] = useState({});
 
   const tab = TABS.find(t => t.id === activeTab);
@@ -442,7 +445,7 @@ export default function OptimizeView({ onNavigateToTicket }) {
 
   function handleTabChange(id) {
     setActiveTab(id);
-    setSelectedItem(null);
+    setSelectedItem(OPTIMIZE_GAPS[id]?.[0] ?? null);
   }
 
   const selectedItemInCurrentTab = selectedItem && items.find(i => i.id === selectedItem.id) ? selectedItem : null;

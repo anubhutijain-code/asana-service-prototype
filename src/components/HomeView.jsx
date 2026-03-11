@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { TICKETS } from '../data/tickets';
 import Avatar from './ui/Avatar';
 
 const B = import.meta.env.BASE_URL;
@@ -34,30 +33,15 @@ const PHOTO = {
   jason : `${B}avatars/jason-smith.png`,
 };
 
-// ─── Queue data ───────────────────────────────────────────────────────────────
-
-const SLA_URGENCY   = { overdue: 0, warning: 1, normal: 2 };
-const PRIORITY_RANK = { Critical: 0, High: 1, Medium: 2, Low: 3 };
-
-function computeQueueStats() {
-  const active = TICKETS.filter(t => t.status !== 'Resolved');
-  const sorted = [...active].sort((a, b) => {
-    const sd = (SLA_URGENCY[a.slaType] ?? 2) - (SLA_URGENCY[b.slaType] ?? 2);
-    if (sd !== 0) return sd;
-    return (PRIORITY_RANK[a.priority] ?? 2) - (PRIORITY_RANK[b.priority] ?? 2);
-  });
-  return { topTickets: sorted.slice(0, 3) };
-}
-
 // ─── Static data ──────────────────────────────────────────────────────────────
 
 const TASKS = [
-  { id: 1, text: 'Review SFDC license provisioning for RevOps team',        date: 'Today',  dateColor: 'var(--success-text)' },
-  { id: 2, text: 'Complete Q1 IT security audit checklist',                 date: 'Today',  dateColor: 'var(--success-text)' },
-  { id: 3, text: 'Update VPN access policy documentation',                  date: 'Today',  dateColor: 'var(--success-text)' },
-  { id: 4, text: 'Close out TICKET-62: Lost laptop — Patrick Tuckey',       date: 'Feb 28', dateColor: 'var(--text-weak)' },
-  { id: 5, text: 'Review and approve device management policy update',       date: 'Feb 28', dateColor: 'var(--text-weak)' },
-  { id: 6, text: 'Prepare weekly IT team standup notes',                    date: 'Feb 28', dateColor: 'var(--text-weak)' },
+  { id: 1, text: 'Prep talking points for exec leadership sync',      date: 'Today',   dateColor: 'var(--success-text)' },
+  { id: 2, text: 'Review cross-functional OKRs for Q2 planning',      date: 'Today',   dateColor: 'var(--success-text)' },
+  { id: 3, text: "Send follow-up notes from yesterday's design review", date: 'Today',  dateColor: 'var(--success-text)' },
+  { id: 4, text: 'Approve budget proposal for content team offsite',   date: 'Mar 14',  dateColor: 'var(--text-weak)' },
+  { id: 5, text: 'Respond to partner co-marketing proposal',           date: 'Mar 14',  dateColor: 'var(--text-weak)' },
+  { id: 6, text: 'Finalize hire plan for H1 headcount asks',           date: 'Mar 14',  dateColor: 'var(--text-weak)' },
 ];
 
 const PEOPLE_ROWS = [
@@ -162,86 +146,76 @@ function MyTasksCard() {
   );
 }
 
-// ─── Tickets Queue Card ───────────────────────────────────────────────────────
+// ─── Tasks I've Assigned Card ─────────────────────────────────────────────────
 
-function TicketRow({ ticket, showAISuggestion, onOpen }) {
-  const slaOver = ticket.slaType === 'overdue';
-  const slaWarn = ticket.slaType === 'warning';
-  const slaColor = slaOver ? 'var(--danger-text)' : slaWarn ? 'var(--warning-text)' : 'var(--text-disabled)';
+const TAG_COLORS = {
+  'Marketing': { bg: '#e8f5e9', color: '#2e7d32', dot: '#43a047' },
+  'Design':    { bg: '#f3e8ff', color: '#7c3aed', dot: '#9333ea' },
+  'Planning':  { bg: '#fff3e0', color: '#c25e00', dot: '#f59e0b' },
+};
 
-  return (
-    <div style={{ border: '1px solid var(--border)', borderRadius: 8, background: 'var(--background-weak)', overflow: 'hidden' }}>
-      <button
-        onClick={onOpen}
-        style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 10 }}
-      >
-        <div style={{ flexShrink: 0, marginTop: 2 }}>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7.5" stroke="var(--text-disabled)" strokeWidth="1.2"/>
-            <path d="M5.5 9L7.8 11.5L12.5 6.5" stroke="var(--text-disabled)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text)', lineHeight: '22px', letterSpacing: '-0.15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {ticket.name}
-          </p>
-          <p style={{ fontSize: 12, color: 'var(--text-weak)', lineHeight: '18px', marginTop: 2 }}>
-            {ticket.id}
-          </p>
-        </div>
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
-          <SlaRingIcon color={slaColor} />
-          <span style={{ fontSize: 12, color: slaColor, lineHeight: '18px' }}>{ticket.sla}</span>
-        </div>
-      </button>
+const ASSIGNED_TASKS = [
+  { id: 1, text: 'Review Q2 campaign brief and share feedback',          tag: 'Marketing', assignee: { photo: PHOTO.ajeet,  bg: '#4573d2' } },
+  { id: 2, text: 'Finalize brand guidelines deck for stakeholder review', tag: 'Design',   assignee: { photo: PHOTO.zoe,    bg: '#8d84e8' } },
+  { id: 3, text: 'Draft agenda for all-hands meeting on March 20',       tag: 'Planning',  assignee: { photo: PHOTO.bryan,  bg: '#5da283' } },
+  { id: 4, text: 'Collect team input for annual performance review',     tag: null,        assignee: { photo: PHOTO.ian,    bg: '#f1bd6c' } },
+  { id: 5, text: 'Update project roadmap with revised launch dates',     tag: 'Planning',  assignee: { photo: PHOTO.jason,  bg: '#e8a87c' } },
+  { id: 6, text: 'Share homepage redesign comps with content team',      tag: 'Design',    assignee: { photo: PHOTO.zoe,    bg: '#8d84e8' } },
+];
 
-      {showAISuggestion && (
-        <div style={{ margin: '0 14px 14px', background: 'var(--background-medium)', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-weak)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <p style={{ flex: 1, fontSize: 13, color: 'var(--text)', lineHeight: '19px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            I've reviewed this request. The Professional edition includes the full reporting suite and would resolve this access issue.
-          </p>
-          <button onClick={onOpen} style={{ flexShrink: 0, marginLeft: 8, padding: '5px 12px', background: 'var(--background-weak)', border: '1px solid var(--border-strong)', borderRadius: 6, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
-            Respond
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TicketsQueueCard({ onOpenServiceMode }) {
-  const { topTickets } = computeQueueStats();
+function TasksAssignedCard() {
+  const [activeTab, setActiveTab] = useState('Upcoming');
 
   return (
     <div style={{ flex: 1, background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '16px 24px', height: 64, flexShrink: 0, boxSizing: 'border-box' }}>
-        <h4 style={H4}>
-          Tickets queue
-        </h4>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', background: 'none', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, color: 'var(--text-weak)', lineHeight: '18px' }}>
-          Critical <ChevronDown size={10} />
-        </button>
-        <div style={{ flex: 1 }} />
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-disabled)', padding: '4px 6px', borderRadius: 4, fontSize: 16, lineHeight: 1, letterSpacing: '0.1em' }}>
-          ···
+      <div style={{ padding: '16px 24px 0', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <h4 style={H4}>Tasks I've assigned</h4>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', background: 'none', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 13, color: 'var(--text-weak)', marginLeft: 8 }}>
+            Everyone <ChevronDown size={10} />
+          </button>
+          <div style={{ flex: 1 }} />
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-disabled)', padding: '4px 6px', borderRadius: 4, fontSize: 16, lineHeight: 1, letterSpacing: '0.1em' }}>···</button>
+        </div>
+        {/* Tab bar */}
+        <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--border)' }}>
+          {['Upcoming', 'Overdue', 'Completed'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: 'none', border: 'none', padding: '0 0 10px', cursor: 'pointer', fontSize: 14, fontWeight: activeTab === tab ? 500 : 400, letterSpacing: '-0.15px', lineHeight: '22px', color: activeTab === tab ? 'var(--text)' : 'var(--text-weak)', borderBottom: activeTab === tab ? '2px solid var(--icon)' : '2px solid transparent', marginBottom: -1 }}>
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Assign task row */}
+      <div style={{ padding: '10px 24px 8px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: '3px 0', cursor: 'pointer', fontSize: 13, color: 'var(--text-weak)' }}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M6 1v10M1 6h10" />
+          </svg>
+          Assign task
         </button>
       </div>
 
-      {/* Ticket rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '0 16px' }}>
-        {topTickets.map((t, i) => (
-          <TicketRow key={t.id} ticket={t} onOpen={onOpenServiceMode}
-            showAISuggestion={i === topTickets.length - 1} />
-        ))}
-      </div>
+      {/* Task rows */}
+      {ASSIGNED_TASKS.map(task => (
+        <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 24px', borderBottom: '1px solid var(--border)' }}>
+          <CheckCircle />
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 400, color: 'var(--text)', letterSpacing: '-0.15px', lineHeight: '22px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.text}</span>
+          {task.tag && (() => { const tc = TAG_COLORS[task.tag] ?? TAG_COLORS['IT Ops']; return (
+            <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500, background: tc.bg, color: tc.color, whiteSpace: 'nowrap' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: tc.dot, flexShrink: 0 }} />
+              {task.tag}
+            </span>
+          ); })()}
+          <Avatar name="" src={task.assignee.photo} size={22} bg={task.assignee.bg} />
+        </div>
+      ))}
 
-      <div style={{ padding: '12px 16px 16px' }}>
-        <button onClick={onOpenServiceMode} style={{ background: 'none', border: 'none', padding: '5px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--text-weak)' }}>
+      <div style={{ padding: '8px 24px 16px' }}>
+        <button style={{ background: 'none', border: 'none', padding: '5px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--text-weak)' }}>
           Show more
         </button>
       </div>
@@ -359,7 +333,7 @@ export default function HomeView({ onOpenServiceMode, hideGreeting = false }) {
         {/* Row 1: My Tasks + Tickets Queue */}
         <div style={{ display: 'flex', gap: 16, padding: hideGreeting ? '28px 32px 0' : '0 32px', marginBottom: 16 }}>
           <MyTasksCard />
-          <TicketsQueueCard onOpenServiceMode={onOpenServiceMode} />
+          <TasksAssignedCard />
         </div>
 
         {/* Row 2: People */}

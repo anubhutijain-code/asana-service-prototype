@@ -9,7 +9,6 @@ import InboxView from './components/InboxView';
 import WorkSecondaryNav from './components/WorkSecondaryNav';
 import SearchModal from './components/SearchModal';
 import AutomationsView from './components/AutomationsView';
-import HomeView from './components/HomeView';
 import CreateQueueWizard from './components/CreateQueueWizard';
 import AssetsView from './components/AssetsView';
 import KnowledgeBaseView from './components/KnowledgeBaseView';
@@ -17,14 +16,15 @@ import DashboardView from './components/DashboardView';
 import SettingsView from './components/SettingsView';
 import OptimizeView from './components/OptimizeView';
 import OptimizeV2View from './components/OptimizeV2View';
-import Admin2HomeView from './components/Admin2HomeView';
 import UnifiedHomeView from './components/UnifiedHomeView';
+import Admin2HomeView from './components/Admin2HomeView';
 import RequestsView from './components/RequestsView';
 import MyApprovalsView from './components/MyApprovalsView';
 import EscalationsView from './components/EscalationsView';
 import AgentMyTicketsView from './components/AgentMyTicketsView';
 import CollaboratingView from './components/CollaboratingView';
 import AgentHomeView from './components/AgentHomeView';
+import ITEscalationsProject from './components/ITEscalationsProject';
 
 // NavBar height  = h-11 = 2.75rem = 44px
 // ModeSidebar    = w-16 = 4rem    = 64px
@@ -43,8 +43,9 @@ function EmptyModeView({ mode }) {
 
 // ── URL → active state mapping ────────────────────────────────────────────────
 function getRouteState(pathname) {
-  if (pathname === '/')             return { mode: 'work',     serviceNav: null,          workItem: 'Home'  };
-  if (pathname === '/work/inbox')   return { mode: 'work',     serviceNav: null,          workItem: 'Inbox' };
+  if (pathname === '/')                          return { mode: 'work',     serviceNav: null, workItem: 'Home'                 };
+  if (pathname === '/work/inbox')                return { mode: 'work',     serviceNav: null, workItem: 'Inbox'                };
+  if (pathname === '/projects/it-escalations')   return { mode: 'work',     serviceNav: null, workItem: 'IT Escalations Inbox' };
   if (pathname === '/strategy')     return { mode: 'plan',     serviceNav: null,          workItem: null    };
   if (pathname === '/workflow')     return { mode: 'workflow', serviceNav: null,          workItem: null    };
   if (pathname === '/people')       return { mode: 'company',  serviceNav: null,          workItem: null    };
@@ -189,7 +190,6 @@ export default function AsanaService() {
     else                           navigate('/inbox'); // agent2
   }
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [kbExpanded, setKbExpanded] = useState(false);
   const [routedHRTickets, setRoutedHRTickets] = useState([]);
   const [linkedHRTickets, setLinkedHRTickets] = useState({});
   const [searchOpen, setSearchOpen] = useState(false);
@@ -210,19 +210,15 @@ export default function AsanaService() {
     else if (mode === 'company')  navigate('/people');
   }
 
-  const activeKBProject = location.pathname.startsWith('/knowledge-base/')
-    ? location.pathname.replace('/knowledge-base/', '')
-    : null;
-
   function handleSelectServiceNav(label) {
-    if (label === 'Knowledge base') setKbExpanded(true);
     const url = SERVICE_NAV_URL[label];
     if (url) navigate(url);
   }
 
   function handleSelectWorkNav(label) {
-    if (label === 'Home')  navigate('/');
-    if (label === 'Inbox') navigate('/work/inbox');
+    if (label === 'Home')                 navigate('/');
+    if (label === 'Inbox')                navigate('/work/inbox');
+    if (label === 'IT Escalations Inbox') navigate('/projects/it-escalations');
   }
 
   function handleOpenSearch() {
@@ -323,10 +319,6 @@ export default function AsanaService() {
             <ServiceSecondaryNav
               activeItem={activeServiceNav}
               onSelect={handleSelectServiceNav}
-              expandedKB={kbExpanded || activeServiceNav === 'Knowledge base'}
-              onToggleKB={() => setKbExpanded(v => !v)}
-              activeKBProject={activeKBProject}
-              onSelectKBProject={(id) => navigate(`/knowledge-base/${id}`)}
               role={role}
             />
           )}
@@ -346,7 +338,7 @@ export default function AsanaService() {
       >
         <Routes>
           <Route path="/" element={
-            <HomeView onOpenServiceMode={() => navigate('/tickets')} />
+            <UnifiedHomeView defaultTab="work" hideTabs onOpenServiceMode={() => navigate('/tickets')} />
           } />
           <Route path="/inbox" element={
             <InboxView defaultTab="Service" />
@@ -476,11 +468,13 @@ export default function AsanaService() {
             />
           } />
           {/* Admin 2 routes */}
-          <Route path="/home"         element={<UnifiedHomeView defaultTab="service" onOpenServiceMode={() => navigate('/tickets')} />} />
+          <Route path="/home"         element={<Admin2HomeView />} />
           <Route path="/workload"     element={<DashboardView initialTab="Team" hideTabs={true} />} />
           <Route path="/escalations"  element={<EscalationsView />} />
           <Route path="/my-approvals" element={<MyApprovalsView />} />
           <Route path="/requests"     element={<RequestsView />} />
+          {/* Work mode project routes */}
+          <Route path="/projects/it-escalations" element={<ITEscalationsProject />} />
           <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
           <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
           <Route path="/people" element={<EmptyModeView mode="People" />} />

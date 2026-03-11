@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Pill from './Pill';
 import { PRIORITY_COLORS, STATUS_BORDER, PRIORITY_OPTIONS, STATUS_OPTIONS, PillStatusIcon } from './TicketDetailHeader';
+import WorkflowStepsPanel from './WorkflowStepsPanel';
 
 // ─── SLA ring icon ────────────────────────────────────────────────────────────
 
@@ -286,7 +287,9 @@ export default function TicketInfoSidebar({
   priorityDropdownOpen, setPriorityDropdownOpen,
   onStatusChange, onPriorityChange,
   readOnly = false,
+  steps, onLinkedTicketClick, onStepCreateTask, onStepComplete,
 }) {
+  const [sidebarTab, setSidebarTab] = useState('details');
   const [attachmentsOpen, setAttachmentsOpen] = useState(true);
   const [localAssignee, setLocalAssignee] = useState(ticket.assignee);
   const [assigneeDropdownOpen, setAssigneeDropdownOpen] = useState(false);
@@ -384,7 +387,46 @@ export default function TicketInfoSidebar({
         )}
       </div>
 
+      {/* ── Tabs (Details / Workflow) — only when ticket has workflow steps ── */}
+      {steps?.length > 0 && (
+        <div className="shrink-0 flex" style={{ borderBottom: '1px solid #EDEAE9', padding: '0 20px', gap: 24 }}>
+          {['details', 'workflow'].map(tab => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setSidebarTab(tab)}
+              style={{
+                background: 'none',
+                border: 'none',
+                borderBottom: sidebarTab === tab ? '2px solid #1E1F21' : '2px solid transparent',
+                padding: '10px 0',
+                fontSize: 13,
+                fontWeight: sidebarTab === tab ? 600 : 400,
+                color: sidebarTab === tab ? '#1E1F21' : '#6D6E6F',
+                cursor: 'pointer',
+                textTransform: 'capitalize',
+              }}
+            >
+              {tab === 'details' ? 'Details' : 'Workflow'}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Workflow tab content ── */}
+      {steps?.length > 0 && sidebarTab === 'workflow' && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <WorkflowStepsPanel
+            initialSteps={steps}
+            onLinkedTicketClick={onLinkedTicketClick}
+            onStepCreateTask={onStepCreateTask}
+            onStepComplete={onStepComplete}
+          />
+        </div>
+      )}
+
       {/* ── Scrollable sections ── */}
+      {(!(steps?.length > 0) || sidebarTab === 'details') && (
       <div className="flex-1 min-h-0 overflow-y-auto" style={{ overscrollBehavior: 'none' }}>
 
         {/* Submitter */}
@@ -602,6 +644,7 @@ export default function TicketInfoSidebar({
         <Section title="Timeline" defaultOpen={false} />
 
       </div>
+      )}
     </div>
   );
 }

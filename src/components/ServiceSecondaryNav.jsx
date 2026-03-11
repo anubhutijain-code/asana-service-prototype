@@ -1,7 +1,6 @@
 // ─── ServiceSecondaryNav ──────────────────────────────────────────────────────
 
 import { useState } from 'react';
-import { KB_PROJECTS } from '../data/knowledgeBase';
 
 // ── Icons (from Asana icon library) ───────────────────────────────────────────
 
@@ -77,6 +76,14 @@ function HomeIcon({ className }) {
   );
 }
 
+function ProjectsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
+      <path d="M0.999512 10C0.999512 11.103 1.89651 12 2.99951 12H8.99951C10.1025 12 10.9995 11.103 10.9995 10V3C10.9995 1.897 10.1025 1 8.99951 1H7.99951C7.99951 0.4485 7.55051 0 6.99951 0H4.99951C4.44801 0 3.99951 0.4485 3.99951 1H2.99951C1.89651 1 0.999512 1.897 0.999512 3V10ZM4.99951 1H6.99951V2H4.99951V1ZM1.99951 3C1.99951 2.4485 2.44801 2 2.99951 2H3.99951C3.99951 2.5515 4.44801 3 4.99951 3H6.99951C7.55051 3 7.99951 2.5515 7.99951 2H8.99951C9.55101 2 9.99951 2.4485 9.99951 3V10C9.99951 10.5515 9.55101 11 8.99951 11H2.99951C2.44801 11 1.99951 10.5515 1.99951 10V3ZM5.74951 5.5C5.74951 5.36739 5.80219 5.24021 5.89596 5.14645C5.98973 5.05268 6.1169 5 6.24951 5H7.99951C8.13212 5 8.2593 5.05268 8.35307 5.14645C8.44683 5.24021 8.49951 5.36739 8.49951 5.5C8.49951 5.63261 8.44683 5.75979 8.35307 5.85355C8.2593 5.94732 8.13212 6 7.99951 6H6.24951C6.1169 6 5.98973 5.94732 5.89596 5.85355C5.80219 5.75979 5.74951 5.63261 5.74951 5.5ZM5.74951 7.5C5.74951 7.36739 5.80219 7.24021 5.89596 7.14645C5.98973 7.05268 6.1169 7 6.24951 7H7.99951C8.13212 7 8.2593 7.05268 8.35307 7.14645C8.44683 7.24021 8.49951 7.36739 8.49951 7.5C8.49951 7.63261 8.44683 7.75979 8.35307 7.85355C8.2593 7.94732 8.13212 8 7.99951 8H6.24951C6.1169 8 5.98973 7.94732 5.89596 7.85355C5.80219 7.75979 5.74951 7.63261 5.74951 7.5ZM3.49951 5.5C3.49951 5.22386 3.72337 5 3.99951 5C4.27566 5 4.49951 5.22386 4.49951 5.5C4.49951 5.77614 4.27566 6 3.99951 6C3.72337 6 3.49951 5.77614 3.49951 5.5ZM3.49951 7.5C3.49951 7.22386 3.72337 7 3.99951 7C4.27566 7 4.49951 7.22386 4.49951 7.5C4.49951 7.77614 4.27566 8 3.99951 8C3.72337 8 3.49951 7.77614 3.49951 7.5Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
 function WorkloadIcon({ className }) {
   return (
     <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
@@ -136,13 +143,6 @@ function ChevronRightIcon({ expanded }) {
   );
 }
 
-function DiamondIcon({ className }) {
-  return (
-    <svg viewBox="0 0 10 10" className={className} fill="none" aria-hidden="true" width="8" height="8">
-      <path d="M5 1L9 5L5 9L1 5L5 1Z" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 function MegaphoneIcon() {
   return (
@@ -192,7 +192,7 @@ function NavItem({ label, Icon, badge, active, onClick }) {
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
         ].join(' ')}
       >
-        <Icon className="w-4 h-4 shrink-0" />
+        <Icon className="w-4 h-4 shrink-0 text-icon" />
         <span className="flex-1 truncate">{label}</span>
         {badge != null && (
           <span className="text-[11px] font-medium text-text-disabled tabular-nums">{badge}</span>
@@ -219,7 +219,7 @@ function ExpandableNavItem({ label, Icon, badge, active, expanded, onToggle, chi
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
           ].join(' ')}
         >
-          <Icon className="w-4 h-4 shrink-0" />
+          <Icon className="w-4 h-4 shrink-0 text-icon" />
           <span className="flex-1 truncate">{label}</span>
           {badge != null && (
             <span className="text-[11px] font-medium text-text-disabled tabular-nums mr-1">{badge}</span>
@@ -232,29 +232,6 @@ function ExpandableNavItem({ label, Icon, badge, active, expanded, onToggle, chi
   );
 }
 
-function KBSubItem({ label, active, onClick }) {
-  return (
-    <div className="px-2 py-[2px]">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-current={active ? 'page' : undefined}
-        className={[
-          'w-full flex items-center gap-2 h-8',
-          'text-left text-[13px] leading-5 whitespace-nowrap overflow-hidden cursor-pointer border-0',
-          'rounded-[8px] transition-colors duration-100',
-          active ? 'bg-[var(--background-active)] text-text font-medium' : 'bg-transparent text-text-weak',
-          'hover:bg-[var(--background-hover)] hover:text-text',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500',
-        ].join(' ')}
-        style={{ paddingLeft: 28 }}
-      >
-        <DiamondIcon className="shrink-0" />
-        <span className="flex-1 truncate">{label}</span>
-      </button>
-    </div>
-  );
-}
 
 function QueueSubItem({ label, badge, active, onClick }) {
   return (
@@ -284,7 +261,7 @@ function QueueSubItem({ label, badge, active, onClick }) {
 
 // ── Nav content per role ───────────────────────────────────────────────────────
 
-function Agent2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject }) {
+function Agent2NavContent({ activeItem, onSelect }) {
   const NAV_SECTIONS = [
     [{ label: 'Inbox', Icon: InboxIcon, badge: 4 }],
     [
@@ -310,13 +287,8 @@ function Agent2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
         </div>
       ))}
       <hr className="my-1 border-border" />
-      <ExpandableNavItem label="Knowledge base" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} expanded={expandedKB} onToggle={onToggleKB}>
-        {KB_PROJECTS.map(proj => (
-          <KBSubItem key={proj.id} label={proj.name}
-            active={activeKBProject === proj.id} onClick={() => onSelectKBProject(proj.id)} />
-        ))}
-      </ExpandableNavItem>
+      <NavItem label="Knowledge" Icon={LightBulbIcon}
+        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       {[{ label: 'Automations', Icon: AutomationIcon }, { label: 'Settings', Icon: SettingsIcon }].map(({ label, Icon }) => (
         <NavItem key={label} label={label} Icon={Icon}
           active={activeItem === label} onClick={() => onSelect(label)} />
@@ -325,7 +297,7 @@ function Agent2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
   );
 }
 
-function AdminNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject }) {
+function AdminNavContent({ activeItem, onSelect }) {
   return (
     <>
       <SectionLabel label="Queues" onAdd={() => onSelect('Create Queue')} />
@@ -334,16 +306,11 @@ function AdminNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeK
 
       <SectionLabel label="Insights" />
       <NavItem label="Dashboard" Icon={DashboardIcon} active={activeItem === 'Dashboard'} onClick={() => onSelect('Dashboard')} />
-      <NavItem label="Optimize" Icon={OptimizeIcon} active={activeItem === 'Optimize'} onClick={() => onSelect('Optimize')} />
+      <NavItem label="Optimize" Icon={OptimizeIcon} active={activeItem === 'Optimize V2' || activeItem === 'Optimize'} onClick={() => onSelect('Optimize V2')} />
 
       <SectionLabel label="Resources" />
-      <ExpandableNavItem label="Knowledge base" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} expanded={expandedKB} onToggle={onToggleKB}>
-        {KB_PROJECTS.map(proj => (
-          <KBSubItem key={proj.id} label={proj.name}
-            active={activeKBProject === proj.id} onClick={() => onSelectKBProject(proj.id)} />
-        ))}
-      </ExpandableNavItem>
+      <NavItem label="Knowledge" Icon={LightBulbIcon}
+        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       <NavItem label="Assets" Icon={AssetsIcon} badge={5} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
 
       <SectionLabel label="Configure" />
@@ -354,7 +321,7 @@ function AdminNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeK
 }
 
 // ── Agent: workbench model ─────────────────────────────────────────────────────
-function AgentNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject }) {
+function AgentNavContent({ activeItem, onSelect }) {
   return (
     <>
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
@@ -365,20 +332,15 @@ function AgentNavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeK
       <NavItem label="HR" Icon={TicketsIcon} badge={9} active={activeItem === 'HR Tickets' || activeItem === 'HR Unassigned' || activeItem === 'HR All Active'} onClick={() => onSelect('HR Tickets')} />
 
       <SectionLabel label="Reference" />
-      <ExpandableNavItem label="Knowledge base" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} expanded={expandedKB} onToggle={onToggleKB}>
-        {KB_PROJECTS.map(proj => (
-          <KBSubItem key={proj.id} label={proj.name}
-            active={activeKBProject === proj.id} onClick={() => onSelectKBProject(proj.id)} />
-        ))}
-      </ExpandableNavItem>
+      <NavItem label="Knowledge" Icon={LightBulbIcon}
+        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       <NavItem label="Assets" Icon={AssetsIcon} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
     </>
   );
 }
 
 // ── Agent 3: home-first model ──────────────────────────────────────────────────
-function Agent3NavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject }) {
+function Agent3NavContent({ activeItem, onSelect }) {
   return (
     <>
       <NavItem label="Home" Icon={HomeIcon} active={activeItem === 'Agent Home' || activeItem === 'Home'} onClick={() => onSelect('Agent Home')} />
@@ -391,27 +353,22 @@ function Agent3NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
       <NavItem label="All tickets" Icon={TicketsIcon} badge={20} active={activeItem === 'All Tickets'} onClick={() => onSelect('All Tickets')} />
 
       <SectionLabel label="Reference" />
-      <ExpandableNavItem label="Knowledge base" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} expanded={expandedKB} onToggle={onToggleKB}>
-        {KB_PROJECTS.map(proj => (
-          <KBSubItem key={proj.id} label={proj.name}
-            active={activeKBProject === proj.id} onClick={() => onSelectKBProject(proj.id)} />
-        ))}
-      </ExpandableNavItem>
+      <NavItem label="Knowledge" Icon={LightBulbIcon}
+        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       <NavItem label="Assets" Icon={AssetsIcon} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
     </>
   );
 }
 
 // ── Admin 2: command center model ─────────────────────────────────────────────
-function Admin2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject }) {
+function Admin2NavContent({ activeItem, onSelect }) {
   const [expandedUnassigned, setExpandedUnassigned] = useState(
     activeItem === 'IT Unassigned' || activeItem === 'HR Unassigned'
   );
   const unassignedActive = activeItem === 'IT Unassigned' || activeItem === 'HR Unassigned';
   return (
     <>
-      <NavItem label="Home" Icon={HomeIcon} active={activeItem === 'Home'} onClick={() => onSelect('Home')} />
+      <NavItem label="Overview" Icon={ProjectsIcon} active={activeItem === 'Home'} onClick={() => onSelect('Home')} />
 
       <SectionLabel label="Triage" />
       <NavItem label="Escalations" Icon={EscalationIcon} badge={3} active={activeItem === 'Escalations'} onClick={() => onSelect('Escalations')} />
@@ -425,19 +382,13 @@ function Admin2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
 
       <SectionLabel label="Insights" />
       <NavItem label="Dashboard"  Icon={DashboardIcon}   active={activeItem === 'Dashboard'}  onClick={() => onSelect('Dashboard')} />
-      <NavItem label="Workload"   Icon={WorkloadIcon}    active={activeItem === 'Workload'}    onClick={() => onSelect('Workload')} />
-      <NavItem label="Optimize"    Icon={OptimizeIcon}    active={activeItem === 'Optimize'}    onClick={() => onSelect('Optimize')} />
-      <NavItem label="Optimize V2" Icon={OptimizeIcon}    active={activeItem === 'Optimize V2'} onClick={() => onSelect('Optimize V2')} />
+<NavItem label="Optimize" Icon={OptimizeIcon} active={activeItem === 'Optimize V2' || activeItem === 'Optimize'} onClick={() => onSelect('Optimize V2')} />
 
       <SectionLabel label="Resources" />
       <NavItem label="Automations" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />
-      <ExpandableNavItem label="Knowledge base" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} expanded={expandedKB} onToggle={onToggleKB}>
-        {KB_PROJECTS.map(proj => (
-          <KBSubItem key={proj.id} label={proj.name}
-            active={activeKBProject === proj.id} onClick={() => onSelectKBProject(proj.id)} />
-        ))}
-      </ExpandableNavItem>
+      <NavItem label="Knowledge" Icon={LightBulbIcon}
+        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
+      <NavItem label="Assets" Icon={AssetsIcon} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
       <NavItem label="Settings" Icon={SettingsIcon} active={activeItem === 'Settings'} onClick={() => onSelect('Settings')} />
     </>
   );
@@ -445,11 +396,8 @@ function Admin2NavContent({ activeItem, onSelect, expandedKB, onToggleKB, active
 
 // ── ServiceSecondaryNav ────────────────────────────────────────────────────────
 
-export default function ServiceSecondaryNav({
-  activeItem, onSelect, expandedKB, onToggleKB,
-  activeKBProject, onSelectKBProject, role,
-}) {
-  const sharedProps = { activeItem, onSelect, expandedKB, onToggleKB, activeKBProject, onSelectKBProject };
+export default function ServiceSecondaryNav({ activeItem, onSelect, role }) {
+  const sharedProps = { activeItem, onSelect };
 
   return (
     <aside

@@ -209,25 +209,25 @@ function PersonCell({ person }) {
 // Columns: Ticket # (120) · Name (280) · Issue Type (150) · Status (175) ·
 //          Last Updated (155) · Priority (130) · Employee (165) · Assigned to (flex)
 
-const COL  = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
-const CELL = 'px-6';
-const divStyle = {};
+const COL  = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
+const CELL = 'px-2 flex items-center';
+const divStyle = { borderRight: '1px solid var(--border)' };
 
 function TableHeader() {
   return (
     <div
-      className="flex items-center w-full bg-white sticky top-0 z-[2]"
+      className="flex items-stretch w-full bg-white sticky top-0 z-[2]"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
-      <div className={`${COL} sticky left-0       bg-white z-[3] w-[120px] shrink-0`}>Case number</div>
-      <div className={`${COL} sticky left-[120px] bg-white z-[3] w-[280px] shrink-0`}>Name</div>
-      <div className={`${COL} w-[150px] shrink-0`}>Issue type</div>
-      <div className={`${COL} w-[175px] shrink-0`}>Status</div>
-      <div className={`${COL} w-[155px] shrink-0`}>Last updated</div>
-      <div className={`${COL} w-[101px] shrink-0`}>SLA</div>
-      <div className={`${COL} w-[130px] shrink-0`}>Priority</div>
-      <div className={`${COL} w-[165px] shrink-0`}>Employee</div>
-      <div className={`${COL} w-[165px] shrink-0`}>Assigned to</div>
+      <div className={`${COL} sticky left-0       bg-white z-[3] w-[120px] shrink-0`} style={divStyle}>Case number</div>
+      <div className={`${COL} sticky left-[120px] bg-white z-[3] w-[280px] shrink-0`} style={divStyle}>Name</div>
+      <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Issue type</div>
+      <div className={`${COL} w-[175px] shrink-0`} style={divStyle}>Status</div>
+      <div className={`${COL} w-[155px] shrink-0`} style={divStyle}>Last updated</div>
+      <div className={`${COL} w-[101px] shrink-0`} style={divStyle}>SLA</div>
+      <div className={`${COL} w-[130px] shrink-0`} style={divStyle}>Priority</div>
+      <div className={`${COL} w-[165px] shrink-0`} style={divStyle}>Employee</div>
+      <div className={`${COL} w-[165px] shrink-0`} style={divStyle}>Assigned to</div>
       <div className={`${COL} flex-1 min-w-[165px]`}>Requested by</div>
     </div>
   );
@@ -277,7 +277,7 @@ function TableRow({ ticket, onClick }) {
       <div className={`${CELL} w-[165px] shrink-0 overflow-hidden flex items-center`} style={divStyle}>
         <PersonCell person={ticket.assignee} />
       </div>
-      <div className={`${CELL} flex-1 min-w-[165px] overflow-hidden flex items-center`} style={divStyle}>
+      <div className={`${CELL} flex-1 min-w-[165px] overflow-hidden`}>
         <PersonCell person={ticket.requester ?? ticket.employee} />
       </div>
     </div>
@@ -330,16 +330,16 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
     <div className="flex flex-col h-full overflow-hidden bg-background-weak">
 
       {/* ── Stat cards ── */}
-      <div className="shrink-0 px-8 pt-8 pb-6">
+      <div className="shrink-0 px-6 pt-8 pb-6">
         <div className="flex gap-4">
           {HR_STATS.map(s => <StatCard key={s.label} {...s} />)}
         </div>
       </div>
 
       {/* ── Title + tabs + search ── */}
-      <div className="shrink-0 px-8">
+      <div className="shrink-0 px-6">
 
-        <h2 className="text-2xl font-semibold text-text mb-4">Case feed</h2>
+        <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 16px' }}>Case feed</h2>
 
         {/* Tab bar */}
         <div className="flex border-b border-border gap-6">
@@ -416,7 +416,7 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
       </div>
 
       {/* ── Table ── */}
-      <div className="flex-1 min-h-0 overflow-hidden px-8 pb-8">
+      <div className="flex-1 min-h-0 overflow-hidden px-6 pb-6">
         <div
           className="h-full overflow-auto"
           style={{ overscrollBehavior: 'none' }}

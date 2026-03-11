@@ -47,11 +47,11 @@ const MDM_BADGE = {
 // ─── Shared typography ────────────────────────────────────────────────────────
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
-const typoCell = { fontFamily: SFT, fontSize: '13px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
+const typoCell = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
 const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
-const COL = 'text-xs font-medium text-text-weak px-6 py-3 text-left whitespace-nowrap';
-const CELL = 'px-6 flex items-center';
-const divStyle = {};
+const COL = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
+const CELL = 'px-2 flex items-center';
+const divStyle = { borderRight: '1px solid var(--border)' };
 const AVATAR = { width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' };
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -216,33 +216,30 @@ function FilterChip({ label, options, value, onChange }) {
 
 // ─── Table header ─────────────────────────────────────────────────────────────
 
-function TableHeader({ allSelected, onSelectAll }) {
+function TableHeader() {
   return (
-    <div className="flex items-center w-full bg-white sticky top-0 z-[2]"
+    <div className="flex items-stretch w-full bg-white sticky top-0 z-[2]"
          style={{ borderBottom: '1px solid var(--border)' }}>
-      <div className={`${COL} sticky left-0 bg-white z-[3] w-[48px] shrink-0 flex items-center justify-center`} style={divStyle}>
-        <input type="checkbox" checked={allSelected} onChange={onSelectAll}
-               style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--text)' }} />
-      </div>
-      <div className={`${COL} sticky left-[48px] bg-white z-[3] w-[210px] shrink-0`} style={divStyle}>Asset</div>
-      <div className={`${COL} w-[140px] shrink-0`} style={divStyle}>Status</div>
-      <div className={`${COL} w-[160px] shrink-0`} style={divStyle}>Model</div>
-      <div className={`${COL} w-[90px] shrink-0`} style={divStyle}>OS</div>
-      <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Location</div>
-      <div className={`${COL} w-[130px] shrink-0`} style={divStyle}>Compliance</div>
-      <div className={`${COL} w-[110px] shrink-0`} style={divStyle}>MDM Status</div>
-      <div className={`${COL} w-[110px] shrink-0`} style={divStyle}>EOL Date</div>
+      <div className={`${COL} w-[44px] shrink-0 justify-center`}>#</div>
+      <div className={`${COL} sticky left-[44px] bg-white z-[3] w-[210px] shrink-0`} style={divStyle}>Asset</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Status</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Model</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>OS</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Location</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Compliance</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>MDM Status</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>EOL Date</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Warranty End</div>
-      <div className={`${COL} w-[160px] shrink-0`} style={divStyle}>Assignee</div>
+      <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Assignee</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Last seen</div>
-      <div className={`${COL} flex-1 min-w-[80px]`} style={divStyle}>Age</div>
+      <div className={`${COL} flex-1 min-w-[80px]`}>Age</div>
     </div>
   );
 }
 
 // ─── Table row ────────────────────────────────────────────────────────────────
 
-function TableRow({ asset, selected, onSelect, onOpen }) {
+function TableRow({ asset, index, onOpen }) {
   const OsIcon = OS_ICONS[asset.os];
   const { bg: sBg, color: sColor } = STATUS_BADGE[asset.status] ?? STATUS_BADGE['Inactive'];
   const { bg: mBg, color: mColor } = MDM_BADGE[asset.mdmStatus] ?? MDM_BADGE['Inactive'];
@@ -254,53 +251,49 @@ function TableRow({ asset, selected, onSelect, onOpen }) {
       className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
       style={{ height: 56, borderBottom: '1px solid var(--border)' }}
     >
-      {/* Checkbox */}
-      <div className={`${CELL} sticky left-0 z-[1] bg-background-weak group-hover:bg-background-medium w-[48px] shrink-0 justify-center`} style={divStyle}>
-        <input type="checkbox" checked={selected} onClick={e => e.stopPropagation()}
-               onChange={e => { e.stopPropagation(); onSelect(e.target.checked); }}
-               style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--text)' }} />
-      </div>
+      {/* # */}
+      <div className={`${CELL} w-[44px] shrink-0 justify-center`} style={{ ...typoMeta, fontSize: 11 }}>{index + 1}</div>
       {/* Asset name + type */}
-      <div className={`${CELL} sticky left-[48px] z-[1] bg-background-weak group-hover:bg-background-medium w-[210px] shrink-0`} style={divStyle}>
+      <div className={`${CELL} sticky left-[44px] z-[1] bg-background-weak group-hover:bg-background-medium w-[210px] shrink-0`} style={divStyle}>
         <div>
           <div style={{ ...typoCell, fontWeight: 500 }} className="truncate max-w-[180px]">{asset.name}</div>
           <div style={typoMeta}>{asset.type}</div>
         </div>
       </div>
       {/* Status */}
-      <div className={`${CELL} w-[140px] shrink-0`} style={divStyle}>
+      <div className={`${CELL} w-[120px] shrink-0`} style={divStyle}>
         <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: sBg, color: sColor, whiteSpace: 'nowrap' }}>
           {asset.status}
         </span>
       </div>
       {/* Model */}
-      <div className={`${CELL} w-[160px] shrink-0`} style={{ ...divStyle, ...typoCell }}>
+      <div className={`${CELL} w-[120px] shrink-0`} style={{ ...divStyle, ...typoCell }}>
         <div>
-          <div className="truncate max-w-[140px]" style={{ fontSize: 13 }}>{asset.model}</div>
+          <div className="truncate max-w-[100px]" style={{ fontSize: 13 }}>{asset.model}</div>
           <div style={typoMeta}>{asset.manufacturer}</div>
         </div>
       </div>
       {/* OS */}
-      <div className={`${CELL} w-[90px] shrink-0 gap-1.5`} style={{ ...divStyle, ...typoMeta }}>
+      <div className={`${CELL} w-[120px] shrink-0 gap-1.5`} style={{ ...divStyle, ...typoMeta }}>
         {OsIcon && <OsIcon />} {asset.os}
       </div>
       {/* Location */}
-      <div className={`${CELL} w-[150px] shrink-0`} style={{ ...divStyle, ...typoCell, fontSize: 12 }}>
-        <span className="truncate max-w-[130px]">{asset.location}</span>
+      <div className={`${CELL} w-[120px] shrink-0`} style={{ ...divStyle, ...typoCell, fontSize: 12 }}>
+        <span className="truncate max-w-[100px]">{asset.location}</span>
       </div>
       {/* Compliance */}
-      <div className={`${CELL} w-[130px] shrink-0 gap-1.5`} style={{ ...divStyle, ...typoCell, fontSize: 12 }}>
+      <div className={`${CELL} w-[120px] shrink-0 gap-1.5`} style={{ ...divStyle, ...typoCell, fontSize: 12 }}>
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: compColor, flexShrink: 0, display: 'inline-block' }} />
         {asset.compliance}
       </div>
       {/* MDM Status */}
-      <div className={`${CELL} w-[110px] shrink-0`} style={divStyle}>
+      <div className={`${CELL} w-[120px] shrink-0`} style={divStyle}>
         <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: mBg, color: mColor }}>
           {asset.mdmStatus}
         </span>
       </div>
       {/* EOL Date */}
-      <div className={`${CELL} w-[110px] shrink-0`} style={{ ...divStyle, ...typoCell, fontSize: 12, color: asset.eolDate !== '--' ? 'var(--danger-text)' : 'var(--text-weak)' }}>
+      <div className={`${CELL} w-[120px] shrink-0`} style={{ ...divStyle, ...typoCell, fontSize: 12, color: asset.eolDate !== '--' ? 'var(--danger-text)' : 'var(--text-weak)' }}>
         {asset.eolDate}
       </div>
       {/* Warranty End */}
@@ -308,11 +301,11 @@ function TableRow({ asset, selected, onSelect, onOpen }) {
         {asset.warrantyEnd}
       </div>
       {/* Assignee */}
-      <div className={`${CELL} w-[160px] shrink-0 gap-2`} style={{ ...divStyle, ...typoCell, fontSize: 13 }}>
+      <div className={`${CELL} w-[120px] shrink-0 gap-2`} style={{ ...divStyle, ...typoCell, fontSize: 13 }}>
         {asset.assignee
           ? <>
               <Avatar name={asset.assignee.name} size={24} bg={asset.assignee.bg ? `#${asset.assignee.bg}` : undefined} />
-              <span className="truncate max-w-[120px]">{asset.assignee.name}</span>
+              <span className="truncate max-w-[80px]">{asset.assignee.name}</span>
             </>
           : <span style={{ color: 'var(--text-disabled)', fontSize: 12 }}>Unassigned</span>
         }
@@ -322,7 +315,7 @@ function TableRow({ asset, selected, onSelect, onOpen }) {
         {asset.lastSeen}
       </div>
       {/* Age */}
-      <div className={`${CELL} flex-1 min-w-[80px]`} style={{ ...divStyle, ...typoMeta, fontSize: 12 }}>
+      <div className={`${CELL} flex-1 min-w-[80px]`} style={{ ...typoMeta, fontSize: 12 }}>
         {asset.age}
       </div>
     </div>
@@ -507,7 +500,6 @@ function AssetDetail({ asset, onClose }) {
 export default function AssetsView() {
   const [search, setSearch]   = useState('');
   const [filters, setFilters] = useState([]);
-  const [selected, setSelected] = useState(new Set());
   const [slideOver, setSlideOver] = useState(null);
 
   // KPI counts
@@ -525,33 +517,13 @@ export default function AssetsView() {
     : ASSETS;
   const filtered = applyFilters(searchFiltered, filters, ASSET_ACCESSORS);
 
-  const allSelected = filtered.length > 0 && filtered.every(a => selected.has(a.id));
-
-  function toggleSelectAll() {
-    if (allSelected) {
-      const next = new Set(selected);
-      filtered.forEach(a => next.delete(a.id));
-      setSelected(next);
-    } else {
-      const next = new Set(selected);
-      filtered.forEach(a => next.add(a.id));
-      setSelected(next);
-    }
-  }
-
-  function toggleSelect(id, checked) {
-    const next = new Set(selected);
-    checked ? next.add(id) : next.delete(id);
-    setSelected(next);
-  }
-
   const locations = [...new Set(ASSETS.map(a => a.location))].sort();
 
   return (
     <div className="relative flex flex-col h-full overflow-hidden bg-background-weak">
 
       {/* ── KPI bar ──────────────────────────────────────────────────────── */}
-      <div className="shrink-0 px-8 pt-8 pb-5">
+      <div className="shrink-0 px-6 pt-8 pb-5">
         <div className="flex gap-4">
           <AssetKpiCard value={unassigned}   label="Unassigned assets" />
           <AssetKpiCard value={eolCount}     label="Assets reached EOL" />
@@ -561,7 +533,7 @@ export default function AssetsView() {
       </div>
 
       {/* ── Filter bar ───────────────────────────────────────────────────── */}
-      <div className="shrink-0 px-8 pb-4">
+      <div className="shrink-0 px-6 pb-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           {/* Left: search */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -615,17 +587,16 @@ export default function AssetsView() {
       </div>
 
       {/* ── Table ────────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 overflow-hidden px-8 pb-8">
+      <div className="flex-1 min-h-0 overflow-hidden px-6 pb-6">
         <div className="h-full overflow-auto" style={{ overscrollBehavior: 'none' }}>
           <div style={{ minWidth: '100%', width: 'max-content' }}>
-            <TableHeader allSelected={allSelected} onSelectAll={toggleSelectAll} />
+            <TableHeader />
             {filtered.length > 0
-              ? filtered.map(asset => (
+              ? filtered.map((asset, i) => (
                   <TableRow
                     key={asset.id}
                     asset={asset}
-                    selected={selected.has(asset.id)}
-                    onSelect={checked => toggleSelect(asset.id, checked)}
+                    index={i}
                     onOpen={() => setSlideOver(asset)}
                   />
                 ))
@@ -645,71 +616,7 @@ export default function AssetsView() {
         {slideOver && <AssetDetail asset={slideOver} onClose={() => setSlideOver(null)} />}
       </RightPanelOverlay>
 
-      {/* ── Floating bulk action pill ─────────────────────────────────── */}
-      {selected.size > 0 && (
-        <div style={{
-          position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 20, pointerEvents: 'none',
-        }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 2,
-            background: '#1E1F21', borderRadius: 999, padding: '0 6px 0 18px',
-            height: 48, boxShadow: '0 4px 16px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2)',
-            pointerEvents: 'auto', whiteSpace: 'nowrap',
-          }}>
-            {/* Count */}
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'white', fontFamily: SFT, marginRight: 10 }}>
-              {selected.size} {selected.size === 1 ? 'asset' : 'assets'} selected
-            </span>
 
-            {/* Divider */}
-            <span style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.15)', flexShrink: 0, margin: '0 4px' }} />
-
-            {/* Action buttons */}
-            {[
-              { label: 'Reassign', icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> },
-              { label: 'Export',   icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg> },
-              { label: 'Mark EOL', icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 1v3M11 1v3M2 7h12"/></svg> },
-              { label: 'Delete',   icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h10M6 4V2h4v2M5 4v9h6V4"/><path d="M7 7v4M9 7v4"/></svg> },
-              { label: 'More',     icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><circle cx="4" cy="8" r="1.2"/><circle cx="8" cy="8" r="1.2"/><circle cx="12" cy="8" r="1.2"/></svg> },
-            ].map(({ label, icon }) => (
-              <button
-                key={label}
-                type="button"
-                title={label}
-                style={{
-                  width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: 8, border: 'none', background: 'transparent',
-                  color: 'rgba(255,255,255,0.75)', cursor: 'pointer', transition: 'background 0.1s, color 0.1s',
-                  flexShrink: 0,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
-              >
-                {icon}
-              </button>
-            ))}
-
-            {/* Close */}
-            <button
-              type="button"
-              title="Clear selection"
-              onClick={() => setSelected(new Set())}
-              style={{
-                width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                borderRadius: 8, border: 'none', background: 'transparent',
-                color: 'rgba(255,255,255,0.5)', cursor: 'pointer', marginLeft: 2,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
-            >
-              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M3 3l10 10M13 3L3 13" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
 
     </div>
   );

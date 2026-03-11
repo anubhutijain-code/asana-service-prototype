@@ -257,7 +257,7 @@ export default function AgentMyTicketsView() {
       }}>
         {/* Header */}
         <div style={{ padding: '24px 16px 16px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 18, fontWeight: 500, color: 'var(--text)', letterSpacing: '0.38px', margin: 0 }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
             My tickets
           </h2>
         </div>

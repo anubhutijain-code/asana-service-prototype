@@ -371,11 +371,11 @@ function TeamWorkloadCard({ agents, todayIndex }) {
       </div>
 
       {/* Timeline — left fixed column + right scrollable (identical to TeamTab) */}
-      <div style={{ display: 'flex', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', overflow: 'hidden', padding: '0 24px' }}>
 
         {/* Left column */}
-        <div style={{ width: 140, flexShrink: 0, borderRight: '1px solid var(--border)' }}>
-          <div style={{ height: 32, background: 'var(--background-medium)', borderBottom: '1px solid var(--border)' }} />
+        <div style={{ width: 200, flexShrink: 0, borderRight: '1px solid var(--border)' }}>
+          <div style={{ height: 32, background: 'white', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>Agent</div>
           {agents.map((agent, i) => (
             <div key={agent.id} style={{
               height: chartRowH,
@@ -385,7 +385,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
               <div style={{ width: 26, height: 26, borderRadius: '50%', background: agent.color, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff' }}>
                 {agent.initials}
               </div>
-              <p style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '14px' }}>
+              <p style={{ fontSize: 14, fontFamily: SFT, color: 'var(--text)', margin: 0, whiteSpace: 'nowrap', lineHeight: '22px', letterSpacing: '-0.15px' }}>
                 {agent.name}
               </p>
             </div>
@@ -400,7 +400,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
             <div style={{ position: 'absolute', left: todayX, top: 0, bottom: 0, width: 1, background: 'var(--selected-background-strong)', opacity: 0.4, zIndex: 2, pointerEvents: 'none' }} />
 
             {/* Date header */}
-            <div style={{ height: 32, borderBottom: '1px solid var(--border)', background: 'var(--background-medium)', position: 'relative' }}>
+            <div style={{ height: 32, borderBottom: '1px solid var(--border)', background: 'white', position: 'relative' }}>
               {WEEK_STARTS.map(ws => (
                 <span key={ws.label} style={{ position: 'absolute', left: ws.index * PX_PER_DAY + 4, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--text-weak)', fontFamily: SFT, whiteSpace: 'nowrap' }}>
                   {ws.label}
@@ -413,7 +413,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
 
             {/* Agent chart rows */}
             {agents.map((agent, i) => (
-              <div key={agent.id} style={{ borderBottom: i < agents.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div key={agent.id} style={{ height: chartRowH, borderBottom: i < agents.length - 1 ? '1px solid var(--border)' : 'none', overflow: 'hidden' }}>
                 <AreaChart
                   data={agent.daily.map((v, idx) => ({
                     idx,
@@ -563,7 +563,7 @@ function InsightRow({ insight, divider = true, onClick }) {
           {insight.ticketCount} tickets
         </span>
       </div>
-      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 4px', lineHeight: '20px' }}>
+      <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text)', margin: '0 0 4px', lineHeight: '22px', fontFamily: SFT, letterSpacing: '-0.15px' }}>
         {insight.gap}
       </p>
       <div style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, lineHeight: '18px' }}>
@@ -588,7 +588,7 @@ function AIPerformanceCard() {
         </p>
 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
-          <span style={{ fontFamily: '"SF Pro Display"', fontSize: 36, fontWeight: 500, color: 'var(--text)', lineHeight: 1, letterSpacing: '0.38px' }}>
+          <span style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', fontFeatureSettings: "'liga' off, 'clig' off" }}>
             {pct}%
           </span>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--success-text)', lineHeight: '18px' }}>↑ {diff}pp</span>
@@ -669,7 +669,7 @@ function KpiStatCard({ label, value, sub, color }) {
       }}
     >
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 38, fontWeight: 500, color: color ?? 'var(--text)', lineHeight: 1, letterSpacing: '0.38px', margin: '0 0 6px', fontFeatureSettings: "'liga' off" }}>{value}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: color ?? 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>{sub}</p>
     </div>
   );
@@ -705,20 +705,20 @@ export default function Admin2HomeView({ hideGreeting = false }) {
         )}
 
         {/* ── AI Summary ───────────────────────────────────────────────── */}
-        <div style={{ padding: hideGreeting ? '28px 32px 0' : '0 32px', marginBottom: 16 }}>
+        <div style={{ padding: hideGreeting ? '28px 32px 0' : '0 32px', marginBottom: 24 }}>
           <AiSummaryCard />
         </div>
 
         {/* ── KPI cards ────────────────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 14, padding: '0 32px', marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 24, padding: '0 32px', marginBottom: 24 }}>
           {kpis.map(k => (
             <KpiStatCard key={k.label} label={k.label} value={k.value} sub={k.sub} color={k.color} />
           ))}
         </div>
 
         {/* ── Bottom cards ─────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 32px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '0 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
             <IntegrationsCard />
             <OptimizationsCard />
             <TicketTopicsCard />

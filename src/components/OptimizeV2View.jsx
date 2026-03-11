@@ -18,6 +18,13 @@ const FILTERS = [
   { id: 'cx',      label: 'AI CX ratings' },
 ];
 
+const SECTIONS = [
+  { id: 'content', label: 'Content gaps'  },
+  { id: 'action',  label: 'Action gaps'   },
+  { id: 'data',    label: 'Data gaps'     },
+  { id: 'cx',      label: 'AI CX ratings' },
+];
+
 // ─── Gap card (Automations-style) ─────────────────────────────────────────────
 
 function GapCardV2({ item, status, selected, onSelect }) {
@@ -78,13 +85,9 @@ function GapCardV2({ item, status, selected, onSelect }) {
         {item.suggestion}
       </p>
 
-      {/* Footer: status + chevron */}
+      {/* Footer: status */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <StatusBadge status={status} />
-        <div style={{ flex: 1 }} />
-        <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-          <path d="M4 2l4 4-4 4"/>
-        </svg>
       </div>
     </div>
   );
@@ -97,14 +100,9 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [statuses, setStatuses] = useState({});
 
-  // Flatten all items with their tab id attached
   const allItems = Object.entries(OPTIMIZE_GAPS).flatMap(([tabId, items]) =>
     items.map(item => ({ ...item, _tabId: tabId }))
   );
-
-  const filtered = activeFilter === 'all'
-    ? allItems
-    : (OPTIMIZE_GAPS[activeFilter] ?? []).map(item => ({ ...item, _tabId: activeFilter }));
 
   const activeTabConfig = TABS.find(t => t.id === (selectedItem?._tabId ?? activeFilter)) ?? TABS[0];
 
@@ -122,7 +120,7 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
 
       {/* Page header */}
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text)', margin: '0 0 4px', letterSpacing: '-0.3px', fontFamily: SFT }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 4px' }}>
           Optimize
         </h1>
         <p style={{ fontSize: 13, color: 'var(--text-weak)', margin: 0, fontFamily: SFT }}>
@@ -148,24 +146,48 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
         })}
       </div>
 
-      {/* Card grid */}
-      {filtered.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {filtered.map(item => (
-            <GapCardV2
-              key={item.id}
-              item={item}
-              status={statuses[item.id]}
-              selected={selectedItem?.id === item.id}
-              onSelect={item => setSelectedItem(item)}
-            />
-          ))}
-        </div>
-      ) : (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-disabled)', fontSize: 14, fontFamily: SFT }}>
-          No gaps in this category.
-        </div>
-      )}
+      {/* Sectioned card grid */}
+      {(() => {
+        const visibleSections = SECTIONS
+          .map(s => ({
+            ...s,
+            items: (activeFilter === 'all' ? (OPTIMIZE_GAPS[s.id] ?? []) : (s.id === activeFilter ? (OPTIMIZE_GAPS[s.id] ?? []) : []))
+              .map(item => ({ ...item, _tabId: s.id })),
+          }))
+          .filter(s => s.items.length > 0);
+
+        if (visibleSections.length === 0) {
+          return (
+            <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-disabled)', fontSize: 14, fontFamily: SFT }}>
+              No gaps in this category.
+            </div>
+          );
+        }
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+            {visibleSections.map(section => (
+              <div key={section.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{section.label}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-disabled)', fontFamily: SFT }}>{section.items.length}</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+                  {section.items.map(item => (
+                    <GapCardV2
+                      key={item.id}
+                      item={item}
+                      status={statuses[item.id]}
+                      selected={selectedItem?.id === item.id}
+                      onSelect={item => setSelectedItem(item)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Side panel overlay (same as original) */}
       <RightPanelOverlay

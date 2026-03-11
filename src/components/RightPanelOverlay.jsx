@@ -19,7 +19,7 @@ export default function RightPanelOverlay({ open, onClose, width = 'min(700px, 5
     >
       {/* Scrim */}
       <div
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.06)' }}
+        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.22)' }}
         onClick={onClose}
       />
 

@@ -46,6 +46,48 @@ function ServiceIcon({ className }) {
   );
 }
 
+// ── Filled icon variants (active/selected state) ─────────────────────────────
+
+function ServiceIconFilled({ className }) {
+  return (
+    <svg viewBox="35 254 16 17" className={className} aria-hidden="true" focusable="false">
+      <path d="M48.999 255H36.999C35.896 255 34.999 255.897 34.999 257V264C34.999 265.103 35.896 266 36.999 266H42.499V269H38.499C38.3664 269 38.2392 269.053 38.1455 269.146C38.0517 269.24 37.999 269.367 37.999 269.5C37.999 269.633 38.0517 269.76 38.1455 269.854C38.2392 269.947 38.3664 270 38.499 270H47.499C47.6316 270 47.7588 269.947 47.8526 269.854C47.9463 269.76 47.999 269.633 47.999 269.5C47.999 269.367 47.9463 269.24 47.8526 269.146C47.7588 269.053 47.6316 269 47.499 269H43.499V266H48.999C50.102 266 50.999 265.103 50.999 264V257C50.999 255.897 50.102 255 48.999 255Z" />
+    </svg>
+  );
+}
+
+function CheckCircleIconFilled({ className }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} aria-hidden="true" focusable="false">
+      <path d="M7.99951 -0.0314941C3.58851 -0.0314941 -0.000488281 3.55751 -0.000488281 7.96851C-0.000488281 12.3795 3.58851 15.9685 7.99951 15.9685C12.4105 15.9685 15.9995 12.3795 15.9995 7.96851C15.9995 3.55751 12.4105 -0.0314941 7.99951 -0.0314941ZM11.6625 6.60951L6.98501 11.2855C6.91546 11.3553 6.83278 11.4107 6.74173 11.4485C6.65069 11.4862 6.55308 11.5056 6.45451 11.5055C6.26251 11.5055 6.07051 11.432 5.92451 11.2855L3.99701 9.35851C3.9242 9.2896 3.86594 9.2068 3.82567 9.115C3.78541 9.02319 3.76396 8.92424 3.76259 8.82401C3.76122 8.72377 3.77996 8.62428 3.8177 8.5314C3.85544 8.43853 3.91141 8.35417 3.98231 8.2833C4.05322 8.21243 4.13761 8.1565 4.23049 8.1188C4.32338 8.0811 4.42289 8.06241 4.52312 8.06383C4.62336 8.06525 4.7223 8.08675 4.81408 8.12705C4.90587 8.16736 4.98864 8.22566 5.05751 8.29851L6.45401 9.69451L10.6015 5.54951C10.6707 5.47784 10.7534 5.42067 10.8449 5.38132C10.9364 5.34197 11.0348 5.32123 11.1344 5.32032C11.2339 5.31941 11.3327 5.33834 11.4249 5.37601C11.5171 5.41367 11.6008 5.46932 11.6713 5.53971C11.7418 5.61009 11.7975 5.69381 11.8352 5.78596C11.873 5.87811 11.892 5.97687 11.8912 6.07645C11.8904 6.17603 11.8697 6.27446 11.8305 6.36598C11.7912 6.4575 11.7341 6.54029 11.6625 6.60951Z" />
+    </svg>
+  );
+}
+
+function PlanIconFilled({ className }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} aria-hidden="true" focusable="false">
+      <path d="M9.76756 1.7085C9.37606 1.1085 8.71556 0.75 8.00006 0.75C7.28456 0.75 6.62406 1.108 6.23306 1.708L0.348053 10.7215C-0.0849465 11.3845 -0.118447 12.196 0.258553 12.8925C0.634051 13.586 1.32806 14 2.11506 14H13.8846C14.6716 14 15.3656 13.586 15.7411 12.8925C16.1181 12.196 16.0851 11.3845 15.6516 10.7215L9.76756 1.7085Z" />
+    </svg>
+  );
+}
+
+function WorkflowIconFilled({ className }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} aria-hidden="true" focusable="false">
+      <path d="M11.5 6H13.5C14.327 6 15 5.327 15 4.5V2.5C15 1.673 14.327 1 13.5 1H11.5C10.673 1 10 1.673 10 2.5V3H6.202C5.966 1.722 4.845 0.75 3.5 0.75C2.77094 0.750926 2.072 1.04095 1.55648 1.55648C1.04095 2.072 0.750926 2.77094 0.75 3.5C0.75 4.845 1.722 5.966 3 6.202V10H2.5C1.673 10 1 10.673 1 11.5V13.5C1 14.327 1.673 15 2.5 15H4.5C5.327 15 6 14.327 6 13.5V13H13.293L11.6465 14.6465C11.5527 14.7403 11.5001 14.8674 11.5001 15C11.5001 15.1326 11.5527 15.2597 11.6465 15.3535C11.7403 15.4473 11.8674 15.4999 12 15.4999C12.1326 15.4999 12.2597 15.4473 12.3535 15.3535L14.8535 12.8535C14.9 12.8071 14.9368 12.752 14.962 12.6913C14.9872 12.6307 15.0001 12.5657 15.0001 12.5C15.0001 12.4343 14.9872 12.3693 14.962 12.3087C14.9368 12.248 14.9 12.1929 14.8535 12.1465L12.3535 9.6465C12.2597 9.55275 12.1326 9.50008 12 9.50008C11.8674 9.50008 11.7403 9.55275 11.6465 9.6465C11.5527 9.74025 11.5001 9.86741 11.5001 10C11.5001 10.1326 11.5527 10.2597 11.6465 10.3535L13.293 12H6V11.5C6 10.673 5.327 10 4.5 10H4V6.202C4.54634 6.09997 5.04904 5.83504 5.44204 5.44204C5.83504 5.04904 6.09997 4.54634 6.202 4H10V4.5C10 5.327 10.673 6 11.5 6ZM11 2.5C11 2.36739 11.0527 2.24021 11.1464 2.14645C11.2402 2.05268 11.3674 2 11.5 2H13.5C13.6326 2 13.7598 2.05268 13.8536 2.14645C13.9473 2.24021 14 2.36739 14 2.5V4.5C14 4.63261 13.9473 4.75979 13.8536 4.85355C13.7598 4.94732 13.6326 5 13.5 5H11.5C11.3674 5 11.2402 4.94732 11.1464 4.85355C11.0527 4.75979 11 4.63261 11 4.5V2.5ZM4.5 11C4.63261 11 4.75979 11.0527 4.85355 11.1464C4.94732 11.2402 5 11.3674 5 11.5V13.5C5 13.6326 4.94732 13.7598 4.85355 13.8536C4.75979 13.9473 4.63261 14 4.5 14H2.5C2.36739 14 2.24021 13.9473 2.14645 13.8536C2.05268 13.7598 2 13.6326 2 13.5V11.5C2 11.3674 2.05268 11.2402 2.14645 11.1464C2.24021 11.0527 2.36739 11 2.5 11H4.5ZM3.5 5.25C2.535 5.25 1.75 4.465 1.75 3.5C1.75 2.535 2.535 1.75 3.5 1.75C4.465 1.75 5.25 2.535 5.25 3.5C5.25 4.465 4.465 5.25 3.5 5.25Z" />
+    </svg>
+  );
+}
+
+function CompanyIconFilled({ className }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} aria-hidden="true" focusable="false">
+      <path d="M16 13.515V14.48C16 14.6126 15.9473 14.7398 15.8536 14.8336C15.7598 14.9273 15.6326 14.98 15.5 14.98H5.5C5.36739 14.98 5.24021 14.9273 5.14645 14.8336C5.05268 14.7398 5 14.6126 5 14.48V13.515C5.00119 12.5777 5.37408 11.6792 6.03687 11.0165C6.69966 10.3538 7.59824 9.98107 8.5355 9.98001H12.464C14.4135 9.98001 16 11.5655 16 13.515ZM10.5 8.73001C12.568 8.73001 14.25 7.04751 14.25 4.98001C14.25 2.91151 12.568 1.23001 10.5 1.23001C8.432 1.23001 6.75 2.91151 6.75 4.98001C6.75 7.04751 8.432 8.73001 10.5 8.73001ZM6.43 1.34801C5.86395 1.20115 5.27124 1.18984 4.7 1.31501C3.244 1.62751 2.08 2.81501 1.8135 4.28051C1.71173 4.82255 1.73059 5.38036 1.86875 5.91429C2.00691 6.44822 2.26097 6.94517 2.61288 7.36982C2.96479 7.79447 3.40591 8.1364 3.9049 8.37131C4.40388 8.60622 4.94848 8.72835 5.5 8.72901C5.82 8.72901 6.1305 8.68751 6.4265 8.61101C6.781 8.51901 6.9175 8.10251 6.6975 7.80951C6.08235 6.99449 5.7497 6.00112 5.75 4.98001C5.75 3.91701 6.1 2.93701 6.6905 2.14551C6.906 1.85651 6.779 1.44051 6.4305 1.34901L6.43 1.34801ZM4.526 9.98001H3.5355C2.59791 9.98001 1.69872 10.3524 1.0357 11.0154C0.37268 11.6783 0.000132596 12.5774 0 13.515L0 14.48C0 14.6126 0.0526784 14.7398 0.146447 14.8336C0.240215 14.9273 0.367392 14.98 0.5 14.98H3.5C3.63261 14.98 3.75979 14.9273 3.85355 14.8336C3.94732 14.7398 4 14.6126 4 14.48V13.515C4 12.4865 4.345 11.5375 4.925 10.7765C5.174 10.449 4.9375 9.98001 4.526 9.98001Z" />
+    </svg>
+  );
+}
+
 function PlusIcon({ className }) {
   return (
     <svg viewBox="34 834 8 8" className={className} aria-hidden="true" focusable="false">
@@ -65,11 +107,11 @@ function InboxIcon({ className }) {
 // ── Nav data ───────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: 'service',  label: 'Service',  Icon: ServiceIcon,     badge: null },
-  { id: 'work',     label: 'Work',     Icon: CheckCircleIcon, badge: null },
-  { id: 'plan',     label: 'Strategy', Icon: PlanIcon,        badge: null },
-  { id: 'workflow', label: 'Workflow', Icon: WorkflowIcon,    badge: null },
-  { id: 'company',  label: 'People',   Icon: CompanyIcon,     badge: null },
+  { id: 'service',  label: 'Service',  Icon: ServiceIcon,     IconFilled: ServiceIconFilled,     badge: null },
+  { id: 'work',     label: 'Work',     Icon: CheckCircleIcon, IconFilled: CheckCircleIconFilled, badge: null },
+  { id: 'plan',     label: 'Strategy', Icon: PlanIcon,        IconFilled: PlanIconFilled,        badge: null },
+  { id: 'workflow', label: 'Workflow', Icon: WorkflowIconFilled, IconFilled: WorkflowIcon,        badge: null },
+  { id: 'company',  label: 'People',   Icon: CompanyIcon,     IconFilled: CompanyIconFilled,     badge: null },
 ];
 
 const ROLES = [
@@ -81,7 +123,8 @@ const ROLES = [
 
 // ── NavItem ────────────────────────────────────────────────────────────────────
 
-function NavItem({ id, label, Icon, badge, active, onClick }) {
+function NavItem({ id, label, Icon, IconFilled, badge, active, onClick }) {
+  const DisplayIcon = (active && IconFilled) ? IconFilled : Icon;
   return (
     <button
       type="button"
@@ -92,7 +135,7 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
         'group w-full flex flex-col items-center justify-center gap-1 py-2 px-1.5',
         'cursor-pointer border-0 bg-transparent',
         'transition-colors duration-150',
-        active ? 'text-text' : 'text-icon hover:text-text',
+        'text-icon hover:text-text',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
       ].join(' ')}
     >
@@ -100,7 +143,7 @@ function NavItem({ id, label, Icon, badge, active, onClick }) {
         'relative flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors duration-150',
         active ? 'bg-[var(--background-active)]' : 'group-hover:bg-[var(--background-hover)]',
       ].join(' ')}>
-        <Icon className="w-4 h-4 fill-current shrink-0" />
+        <DisplayIcon className="w-4 h-4 fill-current shrink-0" />
         {badge != null && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5
                            bg-creation text-white text-[9px] font-bold leading-none
@@ -155,12 +198,13 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
   return (
     <aside className="flex flex-col w-16 h-full bg-background-strong shrink-0" aria-label="Mode navigation">
       <nav className="flex flex-col gap-0.5 flex-1 pt-2 px-1.5 overflow-y-auto">
-        {NAV_ITEMS.map(({ id, label, Icon, badge }) => (
+        {NAV_ITEMS.map(({ id, label, Icon, IconFilled, badge }) => (
           <NavItem
             key={id}
             id={id}
             label={label}
             Icon={Icon}
+            IconFilled={IconFilled}
             badge={badge}
             active={active === id}
             onClick={onSelect}
