@@ -4,6 +4,7 @@ import RightPanelOverlay from './RightPanelOverlay';
 import Avatar from './ui/Avatar';
 import { ASSETS } from '../data/assets';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
+import { SFT, LIGA } from '../constants/typography';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const ASSET_FIELDS = [
@@ -45,14 +46,11 @@ const MDM_BADGE = {
 };
 
 // ─── Shared typography ────────────────────────────────────────────────────────
-const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const typoCell = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
 const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
 const COL = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
 const CELL = 'px-2 flex items-center';
 const divStyle = { borderRight: '1px solid var(--border)' };
-const AVATAR = { width: 24, height: 24, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' };
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -152,66 +150,6 @@ function NonCompliantIcon(stroke) {
 }
 function TotalIcon(stroke) {
   return <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke={stroke} strokeWidth="1.5"><rect x="3" y="4" width="14" height="10" rx="1.5"/><path d="M3 8h14M6 4v10M3 15h14" strokeLinecap="round"/></svg>;
-}
-
-// ─── Filter chip with dropdown ────────────────────────────────────────────────
-
-function FilterChip({ label, options, value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  function handleBlur(e) {
-    if (!ref.current.contains(e.relatedTarget)) setOpen(false);
-  }
-
-  return (
-    <div ref={ref} tabIndex="-1" onBlur={handleBlur} style={{ position: 'relative' }}>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5, height: 28, padding: '0 10px',
-          fontSize: 12, fontFamily: SFT, borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap',
-          border: `1px solid ${value ? 'var(--selected-background-strong)' : 'var(--border)'}`,
-          background: value ? 'var(--selected-background)' : 'var(--background-weak)',
-          color: value ? 'var(--selected-text)' : 'var(--text-weak)',
-          transition: 'all 0.1s',
-        }}
-      >
-        {value || label}
-        {value
-          ? <span
-              onMouseDown={e => { e.preventDefault(); e.stopPropagation(); onChange(null); setOpen(false); }}
-              style={{ marginLeft: 2, lineHeight: 1, opacity: 0.7, cursor: 'pointer' }}
-            >×</span>
-          : <ChevronIcon />
-        }
-      </button>
-      {open && (
-        <div style={{
-          position: 'absolute', top: '100%', left: 0, marginTop: 4,
-          background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 8,
-          boxShadow: 'var(--shadow-md)', zIndex: 30, minWidth: 160, paddingBlock: 4,
-        }}>
-          {options.map(opt => (
-            <button
-              key={opt}
-              type="button"
-              onMouseDown={e => { e.preventDefault(); onChange(opt); setOpen(false); }}
-              style={{
-                display: 'block', width: '100%', textAlign: 'left', padding: '7px 14px',
-                fontSize: 13, fontFamily: SFT, color: opt === value ? 'var(--text)' : 'var(--text-weak)',
-                fontWeight: opt === value ? 500 : 400,
-                background: opt === value ? 'var(--background-medium)' : 'transparent', border: 'none', cursor: 'pointer',
-              }}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ─── Table header ─────────────────────────────────────────────────────────────

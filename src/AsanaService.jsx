@@ -13,7 +13,7 @@ import CreateQueueWizard from './components/CreateQueueWizard';
 import AssetsView from './components/AssetsView';
 import KnowledgeBaseView from './components/KnowledgeBaseView';
 import DashboardView from './components/DashboardView';
-import SettingsView from './components/SettingsView';
+import SettingsView, { SettingsLandingPage } from './components/SettingsView';
 import OptimizeView from './components/OptimizeView';
 import OptimizeV2View from './components/OptimizeV2View';
 import UnifiedHomeView from './components/UnifiedHomeView';
@@ -24,7 +24,9 @@ import EscalationsView from './components/EscalationsView';
 import AgentMyTicketsView from './components/AgentMyTicketsView';
 import CollaboratingView from './components/CollaboratingView';
 import AgentHomeView from './components/AgentHomeView';
+import AgentPerformanceView from './components/AgentPerformanceView';
 import ITEscalationsProject from './components/ITEscalationsProject';
+import ArticleDetailView from './components/ArticleDetailView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
 // ModeSidebar    = w-16 = 4rem    = 64px
@@ -62,7 +64,7 @@ function getRouteState(pathname) {
   if (pathname === '/create-queue') return { mode: 'service',  serviceNav: 'Create Queue', workItem: null    };
   if (pathname === '/knowledge-base' || pathname.startsWith('/knowledge-base/'))
     return { mode: 'service', serviceNav: 'Knowledge base', workItem: null };
-  if (pathname === '/settings')
+  if (pathname === '/settings' || pathname.startsWith('/settings/'))
     return { mode: 'service', serviceNav: 'Settings', workItem: null };
   if (pathname === '/my-queue')
     return { mode: 'service', serviceNav: 'My Queue', workItem: null };
@@ -79,6 +81,8 @@ function getRouteState(pathname) {
     return { mode: 'service', serviceNav: 'Collaborating', workItem: null };
   if (pathname === '/agent-home')
     return { mode: 'service', serviceNav: 'Agent Home', workItem: null };
+  if (pathname === '/my-performance')
+    return { mode: 'service', serviceNav: 'My Performance', workItem: null };
   if (pathname === '/all-tickets')
     return { mode: 'service', serviceNav: 'All Tickets', workItem: null };
   if (pathname === '/it-unassigned')
@@ -131,6 +135,12 @@ function HRTicketsRouteWrapper(props) {
   );
 }
 
+// ── Wrapper: mounts SettingsView at /settings/:queueId ───────────────────────
+function SettingsRouteWrapper() {
+  const { queueId } = useParams();
+  return <SettingsView queueId={queueId} />;
+}
+
 // ── Service nav label → URL ───────────────────────────────────────────────────
 const SERVICE_NAV_URL = {
   'Inbox':           '/inbox',
@@ -152,6 +162,7 @@ const SERVICE_NAV_URL = {
   'My Tickets':      '/my-tickets',
   'Collaborating':   '/collaborating',
   'Agent Home':      '/agent-home',
+  'My Performance':  '/my-performance',
   'All Tickets':     '/all-tickets',
   'IT Unassigned':   '/it-unassigned',
   'IT All Active':   '/it-all-active',
@@ -380,15 +391,17 @@ export default function AsanaService() {
           } />
           <Route path="/automations" element={<AutomationsView />} />
           <Route path="/assets" element={<AssetsView />} />
-          <Route path="/knowledge-base/:projectId" element={<KnowledgeBaseView />} />
-          <Route path="/knowledge-base" element={<KnowledgeBaseView />} />
+          <Route path="/knowledge-base/:projectId/:articleId" element={<ArticleDetailView role={role} />} />
+          <Route path="/knowledge-base/:projectId" element={<KnowledgeBaseView role={role} />} />
+          <Route path="/knowledge-base" element={<KnowledgeBaseView role={role} />} />
           <Route path="/create-queue" element={
             <CreateQueueWizard onDone={() => navigate('/tickets')} />
           } />
           <Route path="/dashboard" element={<DashboardView />} />
           <Route path="/optimize" element={<OptimizeView onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
           <Route path="/optimize-v2" element={<OptimizeV2View onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
-          <Route path="/settings" element={<SettingsView />} />
+          <Route path="/settings/:queueId" element={<SettingsRouteWrapper />} />
+          <Route path="/settings" element={<SettingsLandingPage />} />
           <Route path="/my-queue" element={
             <TicketsDashboard
               onRouteToHR={handleAddHRTicket}
@@ -457,6 +470,7 @@ export default function AsanaService() {
           } />
           {/* Agent 3 routes */}
           <Route path="/agent-home" element={<AgentHomeView />} />
+          <Route path="/my-performance" element={<AgentPerformanceView />} />
           <Route path="/all-tickets" element={
             <TicketsDashboard
               initialTab="All Tickets"

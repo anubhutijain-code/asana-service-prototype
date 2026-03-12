@@ -23,6 +23,56 @@ export const PEOPLE = {
 // Logged-in user — drives the "My Tickets" tab
 export const CURRENT_USER = PEOPLE.steve;
 
+// ─── Reusable workflow step sets ───────────────────────────────────────────────
+const S_ACCESS_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',               status: 'completed', completedAt: 'today' },
+  { id: 's2', type: 'agent', label: 'Verify approval',       team: 'IT Agent',             status: 'active'    },
+  { id: 's3', type: 'agent', label: 'Provision access',      team: 'AI Provisioning Agent', status: 'pending'   },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'Communications Agent',  status: 'pending'   },
+];
+const S_ACCESS_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',                status: 'completed', completedAt: 'completed' },
+  { id: 's2', type: 'agent', label: 'Verify approval',       team: 'IT Agent',              status: 'completed', completedAt: 'completed' },
+  { id: 's3', type: 'agent', label: 'Provision access',      team: 'AI Provisioning Agent', status: 'completed', completedAt: 'completed' },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'Communications Agent',  status: 'completed', completedAt: 'completed' },
+];
+const S_HARDWARE_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',    status: 'completed', completedAt: 'today' },
+  { id: 's2', type: 'agent', label: 'Diagnosis',             team: 'IT Agent',  status: 'active'    },
+  { id: 's3', type: 'agent', label: 'Resolution / repair',   team: 'IT Agent',  status: 'pending'   },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'pending'   },
+];
+const S_HARDWARE_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',    status: 'completed', completedAt: 'completed' },
+  { id: 's2', type: 'agent', label: 'Diagnosis',             team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+  { id: 's3', type: 'agent', label: 'Resolution / repair',   team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+];
+const S_GENERAL_NOTSTARTED = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',    status: 'active'  },
+  { id: 's2', type: 'agent', label: 'Investigation',         team: 'IT Agent',  status: 'pending' },
+  { id: 's3', type: 'agent', label: 'Resolution',            team: 'IT Agent',  status: 'pending' },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'pending' },
+];
+const S_GENERAL_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',    status: 'completed', completedAt: 'today' },
+  { id: 's2', type: 'agent', label: 'Investigation',         team: 'IT Agent',  status: 'active'    },
+  { id: 's3', type: 'agent', label: 'Resolution',            team: 'IT Agent',  status: 'pending'   },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'pending'   },
+];
+const S_GENERAL_ONHOLD = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',    status: 'completed', completedAt: 'completed' },
+  { id: 's2', type: 'agent', label: 'Investigation',         team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+  { id: 's3', type: 'agent', label: 'Pending action',        team: 'IT Agent',  status: 'active'    },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'pending'   },
+];
+const S_GENERAL_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage',       team: 'IT Bot',    status: 'completed', completedAt: 'completed' },
+  { id: 's2', type: 'agent', label: 'Investigation',         team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+  { id: 's3', type: 'agent', label: 'Resolution',            team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+  { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
+];
+
 export const TICKETS = [
   {
     id: 'TICKET-95',
@@ -84,6 +134,13 @@ export const TICKETS = [
     sla: '1d', slaType: 'normal', assignee: PEOPLE.steve, requester: PEOPLE.jordan,
     submitter: { name: 'Jordan Park', email: 'j.park@acme.com', location: 'Austin', org: 'Finance', deviceId: 'MBP-7821' },
     category: 'Software Access',
+    steps: [
+      { id: 's1', type: 'agent',  label: 'Intake & triage',              team: 'IT Bot',    status: 'completed', completedAt: 'Feb 24, 7:15am', outcomeNote: 'Classified as Software Access — M365 licence tier mismatch post-department transfer. Assigned to Steve Smith.' },
+      { id: 's2', type: 'agent',  label: 'Investigate licence mismatch', team: 'Steve Smith', status: 'completed', completedAt: '1 hour ago', outcomeNote: 'Confirmed E1 vs E3 mismatch. Root cause: identity sync applied Marketing template. HR confirmation required before upgrade.' },
+      { id: 's3', type: 'linked', label: 'HR: confirm department transfer', team: 'HR',       status: 'active',    linkedTicket: { id: 'HR-118', name: 'Confirm department transfer: Jordan Park (Marketing → Finance)', status: 'Open' } },
+      { id: 's4', type: 'agent',  label: 'Apply E3 licence upgrade',     team: 'AI Provisioning Agent', status: 'pending', assignee: { type: 'ai', name: 'AI Provisioning Agent' } },
+      { id: 's5', type: 'agent',  label: 'Notify & resolve',             team: 'Communications Agent',  status: 'pending', assignee: { type: 'ai', name: 'Communications Agent' } },
+    ],
     aiSummary: 'Jordan Park recently transferred from Marketing to Finance but their Microsoft 365 license was auto-downgraded from E3 to E1 by the identity management sync. They are blocked from Power BI and advanced Excel features required for Finance reporting. IT can apply the license correction but needs HR to formally confirm the department transfer before authorising the E3 tier upgrade.',
     initTranscript: [
       { type: 'outbound', isAi: true, text: "Hi Jordan! I'm the Asana IT Bot. How can I help you today?", senderLabel: 'IT Bot', time: 'Feb 24, 7:12am' },
@@ -110,9 +167,15 @@ export const TICKETS = [
     sla: '2d', slaType: 'normal', assignee: null, requester: PEOPLE.anj,
     submitter: { name: 'Anjelica Silva', email: 'a.silva@acme.com', location: 'San Francisco', org: 'Operations', deviceId: null },
     category: 'Payroll',
+    steps: [
+      { id: 's1', type: 'agent',  label: 'Intake & triage',         team: 'IT Bot',   status: 'completed', completedAt: 'just now', outcomeNote: 'Classified as Payroll discrepancy. Routing to HR team.' },
+      { id: 's2', type: 'linked', label: 'HR: review overtime hours', team: 'HR',       status: 'active',    linkedTicket: { id: 'HR-119', name: 'Payroll discrepancy — overtime pay missing: Anjelica Silva', status: 'Open' } },
+      { id: 's3', type: 'agent',  label: 'Payroll correction',       team: 'Payroll',  status: 'pending' },
+      { id: 's4', type: 'agent',  label: 'Confirm & close',          team: 'IT Agent', status: 'pending' },
+    ],
     aiSummary: 'Anjelica Silva from Operations has reported a payroll discrepancy — approximately $340 in overtime pay is missing from last week\'s paycheck. She has flagged this as urgent due to an upcoming rent payment and followed up once already without a response.',
   },
-  { id: 'TICKET-67', date: 'Feb 23, 2026', name: 'Help Updating MacBook to Latest macOS',            hasImage: false, priority: 'Low',      status: 'Not started',   updated: '5 mins ago',  sla: '4d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.pat    },
+  { id: 'TICKET-67', date: 'Feb 23, 2026', name: 'Help Updating MacBook to Latest macOS',            hasImage: false, priority: 'Low',      status: 'Not started',   updated: '5 mins ago',  sla: '4d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.pat,    steps: S_GENERAL_NOTSTARTED },
   {
     id: 'TICKET-66', date: 'Feb 22, 2026', name: 'Urgent Request for SFDC License Access',
     hasImage: true, priority: 'Critical', status: 'On hold', updated: '1 day ago',
@@ -184,20 +247,20 @@ export const TICKETS = [
       { type: 'inbound', text: "Done — license provisioned. Martin should have access within 15 minutes.", name: 'Priya Singh', time: '5 mins ago', bg: 'b58a7a', fg: 'ffffff', initials: 'PS' },
     ],
   },
-  { id: 'TICKET-65', date: 'Feb 20, 2026', name: 'Phone Not Connecting to WiFi in Vancouver Office',  hasImage: true,  priority: 'Medium',   status: 'Investigating', updated: '3 days ago',  sla: '−45m', slaType: 'overdue', assignee: PEOPLE.ang,    requester: PEOPLE.sarah  },
-  { id: 'TICKET-64', date: 'Feb 19, 2026', name: 'Request View Access to Figma and FigJam',           hasImage: false, priority: 'Low',      status: 'Not started',   updated: '4 days ago',  sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj    },
-  { id: 'TICKET-63', date: 'Feb 18, 2026', name: 'Unable to Connect to WiFi After Troubleshooting',   hasImage: false, priority: 'Critical', status: 'On hold',       updated: '5 days ago',  sla: '−2d',  slaType: 'overdue', assignee: PEOPLE.martin, requester: PEOPLE.sarah  },
-  { id: 'TICKET-62', date: 'Feb 12, 2026', name: 'Report Lost Laptop for Patrick Tuckey',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '11 days ago', sla: '−5d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.pat    },
-  { id: 'TICKET-61', date: 'Feb 12, 2026', name: 'Help Migrating Files From Dropbox to Google Drive', hasImage: false, priority: 'Medium',   status: 'Not started',   updated: '11 days ago', sla: '1d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.ang    },
-  { id: 'TICKET-60', date: 'Feb 12, 2026', name: 'Phone Unable to Connect to Office WiFi',            hasImage: false, priority: 'Medium',   status: 'On hold',       updated: '11 days ago', sla: '6h',   slaType: 'warning', assignee: PEOPLE.ang,    requester: PEOPLE.sarah  },
-  { id: 'TICKET-58', date: 'Feb 10, 2026', name: 'Request for Tool to Test Tickets',                  hasImage: true,  priority: 'Low',      status: 'Resolved',      updated: '13 days ago', sla: '−1d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.martin },
-  { id: 'TICKET-57', date: 'Feb 10, 2026', name: 'Request for Tool to Test Tickets',                  hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '13 days ago', sla: '−1d',  slaType: 'overdue', assignee: PEOPLE.sarah,  requester: PEOPLE.ang    },
-  { id: 'TICKET-56', date: 'Feb 9, 2026',  name: 'Zoom Not Working for Anjelica Silva',               hasImage: false, priority: 'Medium',   status: 'Closed',        updated: '14 days ago', sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj    },
-  { id: 'TICKET-55', date: 'Feb 9, 2026',  name: 'How to record screen on Mac',                       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '14 days ago', sla: '3d',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.ang    },
-  { id: 'TICKET-54', date: 'Feb 7, 2026',  name: 'Printer offline after Windows update',              hasImage: true,  priority: 'Medium',   status: 'Resolved',      updated: '16 days ago', sla: '−3d',  slaType: 'overdue', assignee: PEOPLE.martin, requester: PEOPLE.pat    },
-  { id: 'TICKET-53', date: 'Feb 6, 2026',  name: 'Need access to Jira project for Q1 planning',       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '17 days ago', sla: '1d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.martin },
-  { id: 'TICKET-52', date: 'Feb 5, 2026',  name: 'Outlook calendar not syncing with mobile',          hasImage: false, priority: 'Medium',   status: 'Not started',   updated: '18 days ago', sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj    },
-  { id: 'TICKET-51', date: 'Feb 4, 2026',  name: 'Screen flickering on external monitor',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '19 days ago', sla: '−6h',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.sarah  },
+  { id: 'TICKET-65', date: 'Feb 20, 2026', name: 'Phone Not Connecting to WiFi in Vancouver Office',  hasImage: true,  priority: 'Medium',   status: 'Investigating', updated: '3 days ago',  sla: '−45m', slaType: 'overdue', assignee: PEOPLE.ang,    requester: PEOPLE.sarah,  steps: S_GENERAL_ACTIVE      },
+  { id: 'TICKET-64', date: 'Feb 19, 2026', name: 'Request View Access to Figma and FigJam',           hasImage: false, priority: 'Low',      status: 'Not started',   updated: '4 days ago',  sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_ACCESS_ACTIVE       },
+  { id: 'TICKET-63', date: 'Feb 18, 2026', name: 'Unable to Connect to WiFi After Troubleshooting',   hasImage: false, priority: 'Critical', status: 'On hold',       updated: '5 days ago',  sla: '−2d',  slaType: 'overdue', assignee: PEOPLE.martin, requester: PEOPLE.sarah,  steps: S_GENERAL_ONHOLD      },
+  { id: 'TICKET-62', date: 'Feb 12, 2026', name: 'Report Lost Laptop for Patrick Tuckey',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '11 days ago', sla: '−5d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.pat,    steps: S_HARDWARE_ACTIVE     },
+  { id: 'TICKET-61', date: 'Feb 12, 2026', name: 'Help Migrating Files From Dropbox to Google Drive', hasImage: false, priority: 'Medium',   status: 'Not started',   updated: '11 days ago', sla: '1d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.ang,    steps: S_GENERAL_NOTSTARTED  },
+  { id: 'TICKET-60', date: 'Feb 12, 2026', name: 'Phone Unable to Connect to Office WiFi',            hasImage: false, priority: 'Medium',   status: 'On hold',       updated: '11 days ago', sla: '6h',   slaType: 'warning', assignee: PEOPLE.ang,    requester: PEOPLE.sarah,  steps: S_GENERAL_ONHOLD      },
+  { id: 'TICKET-58', date: 'Feb 10, 2026', name: 'Request for Tool to Test Tickets',                  hasImage: true,  priority: 'Low',      status: 'Resolved',      updated: '13 days ago', sla: '−1d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.martin, steps: S_GENERAL_DONE        },
+  { id: 'TICKET-57', date: 'Feb 10, 2026', name: 'Request for Tool to Test Tickets',                  hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '13 days ago', sla: '−1d',  slaType: 'overdue', assignee: PEOPLE.sarah,  requester: PEOPLE.ang,    steps: S_GENERAL_DONE        },
+  { id: 'TICKET-56', date: 'Feb 9, 2026',  name: 'Zoom Not Working for Anjelica Silva',               hasImage: false, priority: 'Medium',   status: 'Closed',        updated: '14 days ago', sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_HARDWARE_DONE       },
+  { id: 'TICKET-55', date: 'Feb 9, 2026',  name: 'How to record screen on Mac',                       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '14 days ago', sla: '3d',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.ang,    steps: S_GENERAL_DONE        },
+  { id: 'TICKET-54', date: 'Feb 7, 2026',  name: 'Printer offline after Windows update',              hasImage: true,  priority: 'Medium',   status: 'Resolved',      updated: '16 days ago', sla: '−3d',  slaType: 'overdue', assignee: PEOPLE.martin, requester: PEOPLE.pat,    steps: S_HARDWARE_DONE       },
+  { id: 'TICKET-53', date: 'Feb 6, 2026',  name: 'Need access to Jira project for Q1 planning',       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '17 days ago', sla: '1d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.martin, steps: S_ACCESS_DONE         },
+  { id: 'TICKET-52', date: 'Feb 5, 2026',  name: 'Outlook calendar not syncing with mobile',          hasImage: false, priority: 'Medium',   status: 'Not started',   updated: '18 days ago', sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_GENERAL_NOTSTARTED  },
+  { id: 'TICKET-51', date: 'Feb 4, 2026',  name: 'Screen flickering on external monitor',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '19 days ago', sla: '−6h',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.sarah,  steps: S_HARDWARE_ACTIVE     },
 ];
 
 // ─── HR data ───────────────────────────────────────────────────────────────────

@@ -6,9 +6,7 @@ import { useState } from 'react';
 import Toolbar from './Toolbar';
 import BasicTaskView from './BasicTaskView';
 import RightPanelOverlay from './RightPanelOverlay';
-
-const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-const SFD = '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+import { SFT, SFD, LIGA } from '../constants/typography';
 
 // ── Placeholder data ───────────────────────────────────────────────────────────
 
@@ -311,12 +309,7 @@ function Checkbox({ done, onToggle }) {
 }
 
 // ── Typography constants (matches TicketsDashboard) ───────────────────────────
-const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const COL_TEXT = { fontFamily: SFT, fontSize: '14px', fontStyle: 'normal', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', ...LIGA };
-const typoName     = COL_TEXT;
-const typoPriority = COL_TEXT;
-const typoStatus   = COL_TEXT;
-const typoMeta     = COL_TEXT;
 
 // Column widths (px)
 const CW = { name: 'flex-1', assignee: 120, reporter: 130, dept: 110, escalationType: 100, dueDate: 120, status: 120, priority: 120 };
@@ -325,22 +318,6 @@ const CW = { name: 'flex-1', assignee: 120, reporter: 130, dept: 110, escalation
 const InsetLine = () => (
   <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
 );
-
-// ── Column spacers — extend vertical dividers through non-data rows ───────────
-function ColSpacers() {
-  return (
-    <>
-      <div style={{ width: CW.assignee,       flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: CW.reporter,       flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: CW.dept,           flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: CW.escalationType, flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: CW.dueDate,        flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: CW.status,         flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: CW.priority,       flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-      <div style={{ width: 40,                flexShrink: 0, borderLeft: '1px solid var(--border)' }} />
-    </>
-  );
-}
 
 // ── Table header — matches TicketsDashboard ───────────────────────────────────
 // padding: 9px 8px 9px 0 per cell; 24px left padding on container
@@ -390,7 +367,7 @@ function TaskRow({ task, onClick, selected }) {
       {/* Task name col */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, paddingBottom: 8 }}>
         <Checkbox done={done} onToggle={() => setDone(d => !d)} />
-        <span style={{ ...typoName, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: done ? 'var(--text-disabled)' : 'var(--text)' }}>
+        <span style={{ ...COL_TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: done ? 'var(--text-disabled)' : 'var(--text)' }}>
           {task.name}
         </span>
       </div>
@@ -400,25 +377,25 @@ function TaskRow({ task, onClick, selected }) {
         {task.assignee
           ? <>
               <Avi name={task.assignee.name} size={20} bg={task.assignee.bg} />
-              <span style={{ ...typoMeta, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ ...COL_TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {task.assignee.name.split(' ')[0]}
               </span>
             </>
-          : <span style={{ ...typoMeta, color: 'var(--text-disabled)' }}>—</span>
+          : <span style={{ ...COL_TEXT, color: 'var(--text-disabled)' }}>—</span>
         }
       </div>
 
       {/* Customer */}
       <div style={{ width: CW.reporter, flexShrink: 0, padding: '0 8px', borderLeft: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6 }}>
         <Avi name={task.reporter.name} size={20} bg={task.reporter.bg} />
-        <span style={{ ...typoMeta, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ ...COL_TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {task.reporter.name}
         </span>
       </div>
 
       {/* Department */}
       <div style={{ width: CW.dept, flexShrink: 0, padding: '0 8px', borderLeft: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
-        <span style={{ ...typoMeta, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ ...COL_TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {task.reporter.dept}
         </span>
       </div>
@@ -431,8 +408,8 @@ function TaskRow({ task, onClick, selected }) {
       {/* Due date */}
       <div style={{ width: CW.dueDate, flexShrink: 0, padding: '0 8px', borderLeft: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
         {task.dueDate
-          ? <span style={{ ...typoMeta, color: task.dueDateColor }}>{task.dueDate}</span>
-          : <span style={{ ...typoMeta, color: 'var(--text-disabled)' }}>—</span>
+          ? <span style={{ ...COL_TEXT, color: task.dueDateColor }}>{task.dueDate}</span>
+          : <span style={{ ...COL_TEXT, color: 'var(--text-disabled)' }}>—</span>
         }
       </div>
 
@@ -509,7 +486,7 @@ export default function ITEscalationsProject() {
   const [selectedTask, setSelectedTask] = useState(null);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'white' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'white', position: 'relative' }}>
 
       {/* ── Project header ──────────────────────────────────────────── */}
       <div style={{ flexShrink: 0, padding: '16px 24px 0', borderBottom: '1px solid var(--border)' }}>
@@ -651,7 +628,7 @@ export default function ITEscalationsProject() {
       />
 
       {/* ── Table ──────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ flex: 1, overflow: 'hidden' }}>
         <div style={{ height: '100%', overflowY: 'auto', overscrollBehavior: 'none' }}>
           <ProjectTableHeader />
           {SECTIONS.map(s => <Section key={s.id} s={s} onSelectTask={setSelectedTask} selectedTaskId={selectedTask?.id} />)}
@@ -667,18 +644,18 @@ export default function ITEscalationsProject() {
             </button>
           </div>
         </div>
-
-        {/* Task detail overlay */}
-        <RightPanelOverlay open={!!selectedTask} onClose={() => setSelectedTask(null)} width="min(660px, 72%)">
-          {selectedTask && (
-            <BasicTaskView
-              key={selectedTask.id}
-              task={selectedTask}
-              onClose={() => setSelectedTask(null)}
-            />
-          )}
-        </RightPanelOverlay>
       </div>
+
+      {/* Task detail panel — full project height, no scrim */}
+      <RightPanelOverlay open={!!selectedTask} onClose={() => setSelectedTask(null)} width="min(660px, 72%)" noScrim>
+        {selectedTask && (
+          <BasicTaskView
+            key={selectedTask.id}
+            task={selectedTask}
+            onClose={() => setSelectedTask(null)}
+          />
+        )}
+      </RightPanelOverlay>
     </div>
   );
 }

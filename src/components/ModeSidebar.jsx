@@ -1,6 +1,7 @@
 // ─── ModeSidebar ──────────────────────────────────────────────────────────────
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import SettingsModal from './SettingsModal';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -107,18 +108,21 @@ function InboxIcon({ className }) {
 // ── Nav data ───────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: 'service',  label: 'Service',  Icon: ServiceIcon,     IconFilled: ServiceIconFilled,     badge: null },
-  { id: 'work',     label: 'Work',     Icon: CheckCircleIcon, IconFilled: CheckCircleIconFilled, badge: null },
-  { id: 'plan',     label: 'Strategy', Icon: PlanIcon,        IconFilled: PlanIconFilled,        badge: null },
-  { id: 'workflow', label: 'Workflow', Icon: WorkflowIconFilled, IconFilled: WorkflowIcon,        badge: null },
-  { id: 'company',  label: 'People',   Icon: CompanyIcon,     IconFilled: CompanyIconFilled,     badge: null },
+  { id: 'service',  label: 'Service',  Icon: ServiceIcon,        IconFilled: ServiceIconFilled,     badge: null },
+  { id: 'work',     label: 'Work',     Icon: CheckCircleIcon,    IconFilled: CheckCircleIconFilled, badge: null },
+  { id: 'plan',     label: 'Strategy', Icon: PlanIcon,           IconFilled: PlanIconFilled,        badge: null },
+  { id: 'workflow', label: 'Workflow', Icon: WorkflowIconFilled, IconFilled: WorkflowIcon,          badge: null },
+  { id: 'company',  label: 'People',   Icon: CompanyIcon,        IconFilled: CompanyIconFilled,     badge: null },
 ];
 
+// For agent role — only these show in the sidebar; the rest go in "More"
+const AGENT_PRIMARY = new Set(['service', 'company']);
+
 const ROLES = [
-  { id: 'admin',  label: 'Admin'   },
-  { id: 'admin2', label: 'Admin 2' },
-  { id: 'agent',  label: 'Agent'   },
-  { id: 'agent3', label: 'Agent 3' },
+  { id: 'admin2', label: 'Anubhuti Jain', role: 'IT Admin',        initials: 'AJ', color: '#c0856a' },
+  { id: 'admin',  label: 'Priya Sharma',  role: 'Analytics Admin', initials: 'PS', color: '#6a8ec0' },
+  { id: 'agent',  label: 'Marcus Lee',    role: 'IT Agent',        initials: 'ML', color: '#6ac08e' },
+  { id: 'agent3', label: 'Jordan Kim',    role: 'Support Agent',   initials: 'JK', color: '#a06ac0' },
 ];
 
 // ── NavItem ────────────────────────────────────────────────────────────────────
@@ -162,8 +166,11 @@ function NavItem({ id, label, Icon, IconFilled, badge, active, onClick }) {
 export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const avatarRef = useRef(null);
   const dropdownRef = useRef(null);
+
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -178,6 +185,10 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileOpen]);
+
+  function handleMoreItemSelect(id) {
+    onSelect(id);
+  }
 
   function handleAvatarClick() {
     if (avatarRef.current) {
@@ -196,20 +207,70 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
   }
 
   return (
+    <>
     <aside className="flex flex-col w-16 h-full bg-background-strong shrink-0" aria-label="Mode navigation">
       <nav className="flex flex-col gap-0.5 flex-1 pt-2 px-1.5 overflow-y-auto">
-        {NAV_ITEMS.map(({ id, label, Icon, IconFilled, badge }) => (
-          <NavItem
-            key={id}
-            id={id}
-            label={label}
-            Icon={Icon}
-            IconFilled={IconFilled}
-            badge={badge}
-            active={active === id}
-            onClick={onSelect}
-          />
-        ))}
+        {NAV_ITEMS
+          .filter(({ id }) => role !== 'agent' || AGENT_PRIMARY.has(id))
+          .map(({ id, label, Icon, IconFilled, badge }) => (
+            <NavItem
+              key={id}
+              id={id}
+              label={label}
+              Icon={Icon}
+              IconFilled={IconFilled}
+              badge={badge}
+              active={active === id}
+              onClick={onSelect}
+            />
+          ))}
+
+        {/* Expanded secondary items — agent role only */}
+        {role === 'agent' && moreOpen && NAV_ITEMS
+          .filter(({ id }) => !AGENT_PRIMARY.has(id))
+          .map(({ id, label, Icon, IconFilled, badge }) => (
+            <NavItem
+              key={id}
+              id={id}
+              label={label}
+              Icon={Icon}
+              IconFilled={IconFilled}
+              badge={badge}
+              active={active === id}
+              onClick={handleMoreItemSelect}
+            />
+          ))}
+
+        {/* More / Less toggle — agent role only */}
+        {role === 'agent' && (
+          <button
+            type="button"
+            aria-label={moreOpen ? 'Show less' : 'More modes'}
+            onClick={() => setMoreOpen(o => !o)}
+            className={[
+              'group w-full flex flex-col items-center justify-center gap-1 py-2 px-1.5',
+              'cursor-pointer border-0 bg-transparent',
+              'transition-colors duration-150',
+              'text-icon hover:text-text',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+            ].join(' ')}
+          >
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors duration-150 group-hover:bg-[var(--background-hover)]">
+              {moreOpen ? (
+                <svg viewBox="0 0 16 10" width="16" height="10" fill="currentColor" aria-hidden="true">
+                  <path d="M1 8.5L8 1.5L15 8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 16 4" width="16" height="4" fill="currentColor" aria-hidden="true">
+                  <circle cx="2" cy="2" r="1.5" />
+                  <circle cx="8" cy="2" r="1.5" />
+                  <circle cx="14" cy="2" r="1.5" />
+                </svg>
+              )}
+            </div>
+            <span className="text-[10px] font-medium leading-none">{moreOpen ? 'Less' : 'More'}</span>
+          </button>
+        )}
       </nav>
 
       <div className="flex flex-col items-center gap-3 pb-4 pt-2">
@@ -239,26 +300,34 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
           <InboxIcon className="w-4 h-4 fill-current" />
         </button>
 
-        {/* Avatar */}
-        <button
-          ref={avatarRef}
-          type="button"
-          aria-label="My profile"
-          onClick={handleAvatarClick}
-          className="w-7 h-7 rounded-full overflow-hidden border-0
-                     ring-1 ring-transparent hover:ring-[#c0c0c0]
-                     transition-shadow duration-150 cursor-pointer
-                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <img
-            src="https://placehold.co/28x28/c0856a/ffffff?text=U"
-            alt="User avatar"
-            className="w-full h-full object-cover"
-          />
-        </button>
+        {/* Avatar — shows active role's initials + color */}
+        {(() => {
+          const activeRole = ROLES.find(r => r.id === role) || ROLES[0];
+          return (
+            <button
+              ref={avatarRef}
+              type="button"
+              aria-label="My profile"
+              onClick={handleAvatarClick}
+              style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: activeRole.color,
+                border: profileOpen ? '2px solid #6D6E6F' : '2px solid transparent',
+                cursor: 'pointer', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, fontWeight: 700, color: 'white',
+                fontFamily: SFT, transition: 'border-color 150ms',
+              }}
+              onMouseEnter={e => { if (!profileOpen) e.currentTarget.style.borderColor = '#c0c0c0'; }}
+              onMouseLeave={e => { if (!profileOpen) e.currentTarget.style.borderColor = 'transparent'; }}
+            >
+              {activeRole.initials}
+            </button>
+          );
+        })()}
       </div>
 
-      {/* Profile dropdown — portalled to body to escape stacking context */}
+      {/* Profile flyout — portalled to body, two-panel Asana style */}
       {profileOpen && dropdownPos && createPortal(
         <div
           ref={dropdownRef}
@@ -267,24 +336,35 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
             bottom: dropdownPos.bottom,
             left: dropdownPos.left,
             zIndex: 9999,
-            width: 200,
+            width: 360,
             background: 'white',
             border: '1px solid var(--border)',
-            borderRadius: 8,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            borderRadius: 10,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+            display: 'flex',
             overflow: 'hidden',
             fontFamily: SFT,
           }}
         >
-          {/* User info */}
-          <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Anubhuti Jain</div>
-            <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginTop: 1 }}>anubhuti@company.com</div>
-          </div>
-
-          {/* Role options */}
-          <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
-            {ROLES.map(({ id, label }) => {
+          {/* ── Left: Account / roles ─────────────────────────────────────── */}
+          <div style={{
+            width: 148,
+            borderRight: '1px solid var(--border)',
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'var(--background-weak)',
+          }}>
+            <div style={{
+              padding: '12px 12px 6px',
+              fontSize: 10, fontWeight: 600,
+              letterSpacing: '0.06em',
+              color: 'var(--text-disabled)',
+              textTransform: 'uppercase',
+            }}>
+              Account
+            </div>
+            {ROLES.map(({ id, label, role: roleLabel, initials, color }) => {
               const active = role === id;
               return (
                 <button
@@ -293,47 +373,141 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
                   onClick={() => handleRoleSelect(id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    width: '100%', padding: '7px 14px',
-                    background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 13, fontFamily: SFT, textAlign: 'left',
-                    color: active ? 'var(--text)' : 'var(--text-weak)',
-                    fontWeight: active ? 500 : 400,
+                    width: '100%', padding: '7px 10px 7px 12px',
+                    background: active ? 'var(--background-medium)' : 'transparent',
+                    border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: SFT,
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--background-medium)'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <span style={{
-                    width: 14, height: 14, borderRadius: '50%', flexShrink: 0,
-                    border: active ? '4px solid var(--selected-background-strong)' : '1.5px solid var(--border-strong)',
-                    background: 'white',
-                    display: 'inline-block',
-                    boxSizing: 'border-box',
-                  }} />
-                  {label}
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                    background: color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 8, fontWeight: 700, color: 'white',
+                  }}>{initials}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 12, fontWeight: active ? 600 : 400,
+                      color: active ? 'var(--text)' : 'var(--text-weak)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      lineHeight: '15px',
+                    }}>{label}</div>
+                    <div style={{
+                      fontSize: 10, color: 'var(--text-disabled)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      lineHeight: '13px',
+                    }}>{roleLabel}</div>
+                  </div>
+                  {active && (
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: 'var(--text)' }}>
+                      <path d="M2 6.5L5 9.5L11 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          {/* Sign out */}
-          <div style={{ padding: '4px 0' }}>
-            <button
-              type="button"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                width: '100%', padding: '7px 14px',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                fontSize: 13, fontFamily: SFT, color: 'var(--text-weak)', textAlign: 'left',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-            >
-              Sign out
-            </button>
+          {/* ── Right: user + menu ────────────────────────────────────────── */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+
+            {/* User header — shows active role's person */}
+            {(() => {
+              const activeRole = ROLES.find(r => r.id === role) || ROLES[0];
+              const emailMap = {
+                admin2: 'anubhutijain@asana.com',
+                admin:  'priyasharma@asana.com',
+                agent:  'marcuslee@asana.com',
+                agent3: 'jordankim@asana.com',
+              };
+              return (
+                <div style={{
+                  padding: '14px 14px 12px',
+                  borderBottom: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                    background: activeRole.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: 700, color: 'white',
+                  }}>{activeRole.initials}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: '18px' }}>
+                      {activeRole.label}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-weak)', lineHeight: '15px' }}>
+                      {activeRole.role}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-disabled)', lineHeight: '15px' }}>
+                      {emailMap[role]}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Menu items */}
+            <div style={{ flex: 1, padding: '4px 0' }}>
+              {[
+                { label: 'My organization' },
+                { label: 'Invite to Asana' },
+                null,
+                { label: 'Profile' },
+                { label: 'Settings', onClick: () => { setProfileOpen(false); setSettingsOpen(true); } },
+                null,
+                { label: 'Flags' },
+                { label: 'Luna developer tools' },
+                null,
+                { label: 'Add another account' },
+              ].map((item, i) => {
+                if (item === null) return (
+                  <div key={i} style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+                );
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={item.onClick}
+                    style={{
+                      display: 'block', width: '100%', padding: '7px 14px',
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      fontSize: 13, fontFamily: SFT, textAlign: 'left',
+                      color: 'var(--text)',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Log out */}
+            <div style={{ borderTop: '1px solid var(--border)', padding: '4px 0' }}>
+              <button
+                type="button"
+                style={{
+                  display: 'block', width: '100%', padding: '7px 14px',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: 13, fontFamily: SFT, textAlign: 'left',
+                  color: 'var(--text)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                Log out
+              </button>
+            </div>
           </div>
         </div>,
         document.body
       )}
     </aside>
+
+    <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </>
   );
 }

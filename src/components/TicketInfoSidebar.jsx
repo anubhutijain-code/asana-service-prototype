@@ -310,6 +310,32 @@ export default function TicketInfoSidebar({
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white" style={{ borderLeft: '1px solid #EDEAE9' }}>
 
+      {/* ── Tabs (Details / Workflow) — only when ticket has workflow steps ── */}
+      {steps?.length > 0 && (
+        <div className="shrink-0 flex" style={{ borderBottom: '1px solid #EDEAE9', padding: '0 20px', gap: 24 }}>
+          {['details', 'workflow'].map(tab => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setSidebarTab(tab)}
+              style={{
+                background: 'none',
+                border: 'none',
+                borderBottom: sidebarTab === tab ? '2px solid #1E1F21' : '2px solid transparent',
+                padding: '10px 0',
+                fontSize: 13,
+                fontWeight: sidebarTab === tab ? 600 : 400,
+                color: sidebarTab === tab ? '#1E1F21' : '#6D6E6F',
+                cursor: 'pointer',
+                textTransform: 'capitalize',
+              }}
+            >
+              {tab === 'details' ? 'Details' : 'Workflow'}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── Priority / Status / SLA pills strip ── */}
       <div className="shrink-0 flex items-center gap-2" style={{ padding: '10px 16px', borderBottom: '1px solid #EDEAE9' }}>
 
@@ -387,32 +413,6 @@ export default function TicketInfoSidebar({
         )}
       </div>
 
-      {/* ── Tabs (Details / Workflow) — only when ticket has workflow steps ── */}
-      {steps?.length > 0 && (
-        <div className="shrink-0 flex" style={{ borderBottom: '1px solid #EDEAE9', padding: '0 20px', gap: 24 }}>
-          {['details', 'workflow'].map(tab => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setSidebarTab(tab)}
-              style={{
-                background: 'none',
-                border: 'none',
-                borderBottom: sidebarTab === tab ? '2px solid #1E1F21' : '2px solid transparent',
-                padding: '10px 0',
-                fontSize: 13,
-                fontWeight: sidebarTab === tab ? 600 : 400,
-                color: sidebarTab === tab ? '#1E1F21' : '#6D6E6F',
-                cursor: 'pointer',
-                textTransform: 'capitalize',
-              }}
-            >
-              {tab === 'details' ? 'Details' : 'Workflow'}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* ── Workflow tab content ── */}
       {steps?.length > 0 && sidebarTab === 'workflow' && (
         <div className="flex-1 min-h-0 overflow-hidden">
@@ -427,7 +427,7 @@ export default function TicketInfoSidebar({
 
       {/* ── Scrollable sections ── */}
       {(!(steps?.length > 0) || sidebarTab === 'details') && (
-      <div className="flex-1 min-h-0 overflow-y-auto" style={{ overscrollBehavior: 'none' }}>
+      <div className="flex-1 min-h-0 overflow-y-auto" style={{ overscrollBehavior: 'none', background: 'var(--background-weak)' }}>
 
         {/* Submitter */}
         <Section title="Submitter">

@@ -76,6 +76,17 @@ function HomeIcon({ className }) {
   );
 }
 
+function OverviewIcon({ className }) {
+  return (
+    <svg viewBox="0 0 12 12" className={className} fill="currentColor" aria-hidden="true">
+      <rect x="0" y="0" width="5" height="5" rx="1"/>
+      <rect x="7" y="0" width="5" height="5" rx="1"/>
+      <rect x="0" y="7" width="5" height="5" rx="1"/>
+      <rect x="7" y="7" width="5" height="5" rx="1"/>
+    </svg>
+  );
+}
+
 function ProjectsIcon({ className }) {
   return (
     <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
@@ -325,6 +336,7 @@ function AgentNavContent({ activeItem, onSelect }) {
   return (
     <>
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
+      <NavItem label="My performance" Icon={WorkloadIcon} active={activeItem === 'My Performance'} onClick={() => onSelect('My Performance')} />
       <NavItem label="Collaborating" Icon={FollowingIcon} badge={2} active={activeItem === 'Collaborating'} onClick={() => onSelect('Collaborating')} />
 
       <SectionLabel label="Queues" />
@@ -343,7 +355,7 @@ function AgentNavContent({ activeItem, onSelect }) {
 function Agent3NavContent({ activeItem, onSelect }) {
   return (
     <>
-      <NavItem label="Home" Icon={HomeIcon} active={activeItem === 'Agent Home' || activeItem === 'Home'} onClick={() => onSelect('Agent Home')} />
+      <NavItem label="Overview" Icon={OverviewIcon} active={activeItem === 'Agent Home' || activeItem === 'Home'} onClick={() => onSelect('Agent Home')} />
 
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
       <NavItem label="Collaborating" Icon={FollowingIcon} badge={2} active={activeItem === 'Collaborating' || activeItem === 'Following'} onClick={() => onSelect('Collaborating')} />
@@ -362,20 +374,13 @@ function Agent3NavContent({ activeItem, onSelect }) {
 
 // ── Admin 2: command center model ─────────────────────────────────────────────
 function Admin2NavContent({ activeItem, onSelect }) {
-  const [expandedUnassigned, setExpandedUnassigned] = useState(
-    activeItem === 'IT Unassigned' || activeItem === 'HR Unassigned'
-  );
-  const unassignedActive = activeItem === 'IT Unassigned' || activeItem === 'HR Unassigned';
   return (
     <>
       <NavItem label="Overview" Icon={ProjectsIcon} active={activeItem === 'Home'} onClick={() => onSelect('Home')} />
 
       <SectionLabel label="Triage" />
       <NavItem label="Escalations" Icon={EscalationIcon} badge={3} active={activeItem === 'Escalations'} onClick={() => onSelect('Escalations')} />
-      <ExpandableNavItem label="Unassigned" Icon={UnassignedIcon} active={unassignedActive} expanded={expandedUnassigned} onToggle={() => setExpandedUnassigned(v => !v)}>
-        <QueueSubItem label="IT Support" badge={8} active={activeItem === 'IT Unassigned'} onClick={() => onSelect('IT Unassigned')} />
-        <QueueSubItem label="HR"         badge={3} active={activeItem === 'HR Unassigned'} onClick={() => onSelect('HR Unassigned')} />
-      </ExpandableNavItem>
+      <NavItem label="My Tickets" Icon={MyQueueIcon} badge={4} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
       <NavItem label="IT Support" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets'} onClick={() => onSelect('IT Tickets')} />
       <NavItem label="HR"         Icon={TicketsIcon} badge={9}  active={activeItem === 'HR Tickets'} onClick={() => onSelect('HR Tickets')} />
       <NavItem label="Conversations" Icon={InboxIcon} badge={24} active={activeItem === 'Requests'} onClick={() => onSelect('Requests')} />

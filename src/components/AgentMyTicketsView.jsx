@@ -44,6 +44,12 @@ const MY_TICKETS = [
           text: "Thermal issue post-15.3.1 update. Checking Apple's known issues list. May need SMC reset + clean boot. Possibly scheduling hardware inspection if that doesn't resolve it." },
       ],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Intake & classification', team: 'IT Bot', status: 'completed', completedAt: '1h ago', outcomeNote: 'Classified as Hardware > Thermal. Assigned to Sarah Kim. Linked to macOS 15.3.1 known issues.' },
+        { id: 's2', type: 'agent', label: 'Software diagnosis', team: 'Sarah Kim', status: 'active' },
+        { id: 's3', type: 'agent', label: 'SMC reset & thermal test', team: 'Sarah Kim', status: 'pending' },
+        { id: 's4', type: 'agent', label: 'Hardware escalation (if needed)', team: 'Hardware Team', status: 'pending' },
+      ],
     },
   },
   {
@@ -75,6 +81,12 @@ const MY_TICKETS = [
       ],
       initInternal: [],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Intake & classification', team: 'IT Bot', status: 'completed', completedAt: '3h ago', outcomeNote: 'Classified as Software > M365 Sync. Assigned to Sarah Kim.' },
+        { id: 's2', type: 'agent', label: 'Sign-out / sign-in test', team: 'Sarah Kim', status: 'active' },
+        { id: 's3', type: 'agent', label: 'Microsoft 365 token refresh', team: 'Sarah Kim', status: 'pending' },
+        { id: 's4', type: 'agent', label: 'Confirm sync restored', team: 'Sarah Kim', status: 'pending' },
+      ],
     },
   },
   {
@@ -111,6 +123,12 @@ const MY_TICKETS = [
           text: "Confirmed router issue — hotspot test eliminates ISP/device. Sending router config guide for UDP idle timeout. Will close once confirmed resolved." },
       ],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Intake & classification', team: 'IT Bot', status: 'completed', completedAt: 'Yesterday', outcomeNote: 'Classified as Network > VPN. Assigned to Sarah Kim.' },
+        { id: 's2', type: 'agent', label: 'Root cause isolation', team: 'Sarah Kim', status: 'completed', completedAt: 'Yesterday', outcomeNote: 'Hotspot test confirms router UDP idle timeout. Not ISP or device issue.' },
+        { id: 's3', type: 'agent', label: 'Router config guide sent', team: 'Sarah Kim', status: 'active' },
+        { id: 's4', type: 'agent', label: 'Confirm resolved', team: 'Sarah Kim', status: 'pending' },
+      ],
     },
   },
   {
@@ -145,6 +163,11 @@ const MY_TICKETS = [
       ],
       initInternal: [],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Intake & classification', team: 'IT Bot', status: 'completed', completedAt: '2d ago', outcomeNote: 'Classified as Hardware > Printer. Assigned to Sarah Kim.' },
+        { id: 's2', type: 'agent', label: 'Print spooler clear & restart', team: 'Sarah Kim', status: 'completed', completedAt: '2d ago', outcomeNote: 'Spooler cleared, printer restarted. Test page confirmed successful.' },
+        { id: 's3', type: 'agent', label: 'Root cause logged', team: 'Sarah Kim', status: 'completed', completedAt: '2d ago', outcomeNote: 'Corrupt print job from unsupported file format. Added to KB.' },
+      ],
     },
   },
 ];
@@ -305,6 +328,10 @@ export default function AgentMyTicketsView() {
           setPriorityDropdownOpen={setPriorityDropdownOpen}
           onStatusChange={setLocalStatus}
           onPriorityChange={setLocalPriority}
+          steps={selected.ticket.steps}
+          onLinkedTicketClick={() => {}}
+          onStepCreateTask={() => {}}
+          onStepComplete={() => {}}
         />
       </div>
 

@@ -8,7 +8,7 @@
 //   width    — CSS width value string (default 'min(700px, 50%)') OR px number
 //   children — panel content
 
-export default function RightPanelOverlay({ open, onClose, width = 'min(700px, 50%)', children }) {
+export default function RightPanelOverlay({ open, onClose, width = 'min(700px, 50%)', noScrim = false, children }) {
   if (!open) return null;
 
   const cssWidth = typeof width === 'number' ? `${width}px` : width;
@@ -16,15 +16,19 @@ export default function RightPanelOverlay({ open, onClose, width = 'min(700px, 5
   return (
     <div
       style={{ position: 'absolute', inset: 0, zIndex: 40, display: 'flex', justifyContent: 'flex-end' }}
+      onClick={noScrim ? onClose : undefined}
     >
-      {/* Scrim */}
-      <div
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.22)' }}
-        onClick={onClose}
-      />
+      {/* Scrim — hidden when noScrim */}
+      {!noScrim && (
+        <div
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.22)' }}
+          onClick={onClose}
+        />
+      )}
 
       {/* Panel */}
       <div
+        onClick={e => e.stopPropagation()}
         style={{
           position: 'relative',
           zIndex: 1,

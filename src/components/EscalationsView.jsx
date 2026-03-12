@@ -5,6 +5,7 @@
 import { useState, useRef, useEffect } from 'react';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
+import { SlaCell } from './ui/TicketCells';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -24,8 +25,8 @@ const ESCALATIONS = [
       status: 'In Progress',
       priority: 'Critical',
       category: 'Infrastructure',
-      sla: '1h overdue',
-      slaType: 'danger',
+      sla: '1h',
+      slaType: 'overdue',
       date: 'Today',
       updated: '38m ago',
       assignee: { name: 'Jamie Chen', initials: 'JC', bg: '4273D1', fg: 'ffffff' },
@@ -50,6 +51,12 @@ const ESCALATIONS = [
           text: "Update: primary node back online. Replica sync in progress. Running row-level reconciliation on orders table. 340 of 342 rows resolved. 2 remain — flagging for manual review. Expect full resolution in ~15 min." },
       ],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Auto-escalation & triage', team: 'IT Monitor', status: 'completed', completedAt: '38m ago', outcomeNote: 'Auto-escalated to Critical. Assigned to Jamie Chen. DBA and Platform Engineering notified.' },
+        { id: 's2', type: 'agent', label: 'Incident investigation', team: 'Jamie Chen', status: 'active' },
+        { id: 's3', type: 'agent', label: 'Data reconciliation', team: 'Database Team', status: 'pending' },
+        { id: 's4', type: 'agent', label: 'Post-incident report', team: 'Jamie Chen', status: 'pending' },
+      ],
     },
   },
   {
@@ -65,7 +72,7 @@ const ESCALATIONS = [
       status: 'In Progress',
       priority: 'Critical',
       category: 'Network / Access',
-      sla: '28m remaining',
+      sla: '28m',
       slaType: 'warning',
       date: 'Today',
       updated: '1h ago',
@@ -91,6 +98,12 @@ const ESCALATIONS = [
           text: "Escalating. Okta cert rotation took out VPN tokens for everyone who had an active session before 13:45. I've re-issued creds for US-East (35 users restored). EMEA push is queued — Okta admin portal is slow due to load. Expect 15 min to clear EMEA. No data exposure, just access disruption." },
       ],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Root cause identification', team: 'Marcus Rivera', status: 'completed', completedAt: '55m ago', outcomeNote: 'Okta cert rotation at 13:45 invalidated active VPN session tokens. US-East region (35 users) restored.' },
+        { id: 's2', type: 'agent', label: 'EMEA token re-issue', team: 'Marcus Rivera', status: 'active' },
+        { id: 's3', type: 'agent', label: 'Verify all regions restored', team: 'IT Team', status: 'pending' },
+        { id: 's4', type: 'agent', label: 'Change process review', team: 'IT Ops', status: 'pending' },
+      ],
     },
   },
   {
@@ -106,7 +119,7 @@ const ESCALATIONS = [
       status: 'In Progress',
       priority: 'Critical',
       category: 'Security',
-      sla: '2h remaining',
+      sla: '2h',
       slaType: 'warning',
       date: 'Today',
       updated: '2h ago',
@@ -132,6 +145,12 @@ const ESCALATIONS = [
           text: "Audit done. No compromise confirmed. Adding enhanced monitoring on the admin portal for the next 24h. Recommend we review whether the portal should be moved behind a VPN-only access rule — creating a follow-up ticket for that." },
       ],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'WAF alert triage', team: 'IT Monitor', status: 'completed', completedAt: '2h ago', outcomeNote: 'Source IP 91.134.x.x auto-blocked. Assigned to Tom Reyes for audit.' },
+        { id: 's2', type: 'agent', label: 'Auth log audit', team: 'Tom Reyes', status: 'completed', completedAt: '1h ago', outcomeNote: '340 attempts, all failed. No successful logins. No breach confirmed.' },
+        { id: 's3', type: 'agent', label: 'Threat intelligence submission', team: 'Tom Reyes', status: 'active' },
+        { id: 's4', type: 'agent', label: 'Portal hardening review', team: 'IT Security', status: 'pending' },
+      ],
     },
   },
   {
@@ -147,7 +166,7 @@ const ESCALATIONS = [
       status: 'In Progress',
       priority: 'Critical',
       category: 'Email / Comms',
-      sla: '1h remaining',
+      sla: '1h',
       slaType: 'warning',
       date: 'Today',
       updated: '3h ago',
@@ -172,6 +191,12 @@ const ESCALATIONS = [
           text: "Escalating. SPF record gap post-migration is causing all finance domain sends to bounce. SPF TTL is 3600s so propagation delay is unavoidable. Workaround provided to finance. Monitoring propagation — will update when primary address is restored. No data issue, just delivery disruption." },
       ],
       initTranscript: [],
+      steps: [
+        { id: 's1', type: 'agent', label: 'Root cause diagnosis', team: 'Priya Nair', status: 'completed', completedAt: '2.5h ago', outcomeNote: 'SPF record not updated after mail relay migration. Recipient MX servers correctly rejecting.' },
+        { id: 's2', type: 'agent', label: 'Workaround provided', team: 'Priya Nair', status: 'completed', completedAt: '1.8h ago', outcomeNote: 'Finance team directed to backup relay address while SPF propagates.' },
+        { id: 's3', type: 'agent', label: 'DNS propagation monitoring', team: 'Priya Nair', status: 'active' },
+        { id: 's4', type: 'agent', label: 'Confirm delivery restored', team: 'IT Ops', status: 'pending' },
+      ],
     },
   },
 ];
@@ -183,17 +208,10 @@ const PRIORITY_PILL = {
   Low:      { bg: '#F3F4F6', color: '#6D6E6F' },
 };
 
-const SLA_COLOR = {
-  danger:  'var(--danger-text)',
-  warning: 'var(--warning-text)',
-  normal:  'var(--text-disabled)',
-};
-
 // ── List row ──────────────────────────────────────────────────────────────────
 
 function EscalationRow({ item, isSelected, onSelect }) {
   const pill = PRIORITY_PILL[item.ticket.priority] ?? PRIORITY_PILL.Critical;
-  const slaColor = SLA_COLOR[item.ticket.slaType] ?? SLA_COLOR.normal;
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -217,9 +235,7 @@ function EscalationRow({ item, isSelected, onSelect }) {
         <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
           {item.ticket.id}
         </span>
-        <span style={{ fontSize: 11, color: slaColor, fontFamily: SFT, fontWeight: item.ticket.slaType === 'danger' ? 600 : 400 }}>
-          {item.ticket.sla}
-        </span>
+        <SlaCell sla={item.ticket.sla} slaType={item.ticket.slaType} />
       </div>
 
       {/* Line 2: title */}
@@ -341,6 +357,10 @@ export default function EscalationsView() {
           setPriorityDropdownOpen={setPriorityDropdownOpen}
           onStatusChange={setLocalStatus}
           onPriorityChange={setLocalPriority}
+          steps={selected.ticket.steps}
+          onLinkedTicketClick={() => {}}
+          onStepCreateTask={() => {}}
+          onStepComplete={() => {}}
         />
       </div>
 

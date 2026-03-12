@@ -650,6 +650,105 @@ function AIPerformanceCard() {
 }
 
 
+// ── My Tickets Card ───────────────────────────────────────────────────────────
+
+const ADMIN2_MY_TICKETS = {
+  sla: [
+    { id: 'IT-4851', title: 'All outbound email bouncing — mail server error',     sla: '28m', slaType: 'danger'  },
+    { id: 'IT-4917', title: 'MacBook Pro overheating — kernel_task 100% CPU',      sla: '1h',  slaType: 'warning' },
+  ],
+  critical: [
+    { id: 'IT-4851', title: 'All outbound email bouncing — mail server error',     priority: 'Critical', age: '2h' },
+    { id: 'IT-4844', title: 'VPN tunnel down for entire engineering org',           priority: 'Critical', age: '3h' },
+  ],
+  all: [
+    { id: 'IT-4851', title: 'All outbound email bouncing',              status: 'Open',        priority: 'Critical' },
+    { id: 'IT-4844', title: 'VPN tunnel down for engineering org',      status: 'Open',        priority: 'Critical' },
+    { id: 'IT-4917', title: 'MacBook Pro overheating',                  status: 'In progress', priority: 'High'     },
+    { id: 'IT-4783', title: 'User locked out after password reset',     status: 'In progress', priority: 'High'     },
+  ],
+};
+
+const MY_TICKET_TABS = ['SLA at risk', 'Critical', 'All'];
+const SLA_CLR = { danger: '#dc2626', warning: '#d97706' };
+const PRIORITY_CLR = { Critical: '#dc2626', High: '#ea580c', Medium: '#ca8a04' };
+const SLA_PILL  = { danger:  { bg: '#fef2f2', dot: '#dc2626', text: '#dc2626' }, warning: { bg: '#fffbeb', dot: '#d97706', text: '#d97706' } };
+const PRI_PILL  = { Critical: { bg: '#fef2f2', dot: '#dc2626', text: '#dc2626' }, High: { bg: '#fff7ed', dot: '#ea580c', text: '#ea580c' }, Medium: { bg: '#fefce8', dot: '#ca8a04', text: '#ca8a04' }, Low: { bg: '#f0fdf4', dot: '#16a34a', text: '#16a34a' } };
+
+function TagPill({ bg, dot, text, label }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, background: bg, flexShrink: 0 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0 }} />
+      <span style={{ fontSize: 12, fontWeight: 500, color: text, fontFamily: SFT, whiteSpace: 'nowrap' }}>{label}</span>
+    </span>
+  );
+}
+
+function MyTicketRow({ ticket, tab }) {
+  const [hov, setHov] = useState(false);
+  let pill = null;
+  if (tab === 'SLA at risk') {
+    const p = SLA_PILL[ticket.slaType];
+    pill = <TagPill {...p} label={ticket.sla + ' left'} />;
+  } else if (tab === 'Critical') {
+    pill = <TagPill {...PRI_PILL['Critical']} label="Critical" />;
+  } else {
+    const p = PRI_PILL[ticket.priority] || PRI_PILL['Low'];
+    pill = <TagPill {...p} label={ticket.priority} />;
+  }
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{ display: 'flex', alignItems: 'center', minHeight: 48, padding: '0 20px', background: hov ? 'var(--background-medium)' : 'transparent', borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.1s', gap: 12 }}
+    >
+      <svg viewBox="0 0 18 18" width="18" height="18" fill="none" style={{ flexShrink: 0, color: 'var(--text-disabled)' }}>
+        <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.2"/>
+        <path d="M5.5 9l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ticket.title}</span>
+      {pill}
+    </div>
+  );
+}
+
+function MyTicketsCard() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('SLA at risk');
+  const tabKey = activeTab === 'SLA at risk' ? 'sla' : activeTab === 'Critical' ? 'critical' : 'all';
+  const rows = ADMIN2_MY_TICKETS[tabKey];
+
+  return (
+    <div style={{ background: 'var(--background-weak)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+      {/* Title row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 0' }}>
+        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>My tickets</span>
+        <button type="button" onClick={() => navigate('/my-tickets')} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT, padding: '4px 8px', borderRadius: 6 }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-weak)'}>
+          See all
+        </button>
+      </div>
+      {/* Tab row */}
+      <div style={{ display: 'flex', padding: '8px 20px 0', borderBottom: '1px solid var(--border)', gap: 4 }}>
+        {MY_TICKET_TABS.map(tab => {
+          const active = tab === activeTab;
+          return (
+            <button key={tab} type="button" onClick={() => setActiveTab(tab)} style={{ padding: '6px 4px', border: 'none', background: 'none', cursor: 'pointer', fontFamily: SFT, fontSize: 14, fontWeight: active ? 600 : 400, color: active ? 'var(--text)' : 'var(--text-weak)', borderBottom: active ? '2px solid var(--text)' : '2px solid transparent', marginBottom: -1, marginRight: 16, transition: 'color 0.12s' }}>
+              {tab}
+            </button>
+          );
+        })}
+      </div>
+      {/* Rows */}
+      {rows.length === 0
+        ? <div style={{ padding: '20px', textAlign: 'center' }}><p style={{ fontSize: 13, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>No tickets in this category</p></div>
+        : rows.map((t, i) => <MyTicketRow key={t.id + i} ticket={t} tab={activeTab} />)
+      }
+    </div>
+  );
+}
+
 // ── KPI stat card (matches DashboardView KpiCard design) ─────────────────────
 
 function KpiStatCard({ label, value, sub, color }) {
@@ -681,8 +780,8 @@ export default function Admin2HomeView({ hideGreeting = false }) {
   const { agents, todayIndex, summary } = TEAM_DATA;
 
   const kpis = [
+    { label: 'My tickets',    value: '4',                              sub: '2 at SLA risk',                                      color: 'var(--text)'                       },
     { label: 'Escalations',   value: '3',                              sub: 'need attention',                                     color: 'var(--danger-text)'                },
-    { label: 'Unassigned',    value: '18',                             sub: 'across queues',                                      color: 'var(--warning-text)'               },
     { label: 'SLA breaches',  value: String(summary.slaBreaches),      sub: 'this week',                                          color: 'var(--text)'                       },
     { label: 'Resolved',      value: String(summary.resolvedThisWeek), sub: 'this week',                                          color: 'var(--text)'                       },
     { label: 'AI deflection', value: `${AI_DATA.pct}%`,               sub: `↑ ${AI_DATA.pct - AI_DATA.prevPct}pp vs last week`,  color: 'var(--selected-background-strong)' },

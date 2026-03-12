@@ -7,8 +7,8 @@ import {
   Treemap,
 } from 'recharts';
 import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA, TICKET_TOPICS } from '../data/dashboard';
+import { SFT } from '../constants/typography';
 
-const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const TICK = { fontSize: 11, fill: '#9ea0a2', fontFamily: SFT };
 const CARD = {
   background: 'var(--background-weak)',
@@ -426,7 +426,7 @@ function DashIntegrationsCard() {
 // ─── Ticket Resolution by Type ─────────────────────────────────────────────────
 
 const COL  = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
-const DIV  = { borderRight: '1px solid var(--border)' };
+const divStyle = { borderRight: '1px solid var(--border)' };
 
 function TicketResolutionTable() {
   const rows = TICKET_RESOLUTION_BY_TYPE;
@@ -440,11 +440,11 @@ function TicketResolutionTable() {
       <div style={{ padding: '0 24px' }}>
       {/* Column headers — no background */}
       <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className={COL} style={{ ...DIV, flex: 1 }}>Ticket Type</div>
-        <div className={`${COL} w-[110px] text-right`} style={DIV}>Total</div>
-        <div className={`${COL} w-[110px] text-right`} style={DIV}>AI Self-Service</div>
-        <div className={`${COL} w-[110px] text-right`} style={DIV}>AI-Assisted</div>
-        <div className={`${COL} w-[110px] text-right`} style={DIV}>Human Only</div>
+        <div className={COL} style={{ ...divStyle, flex: 1 }}>Ticket Type</div>
+        <div className={`${COL} w-[110px] text-right`} style={divStyle}>Total</div>
+        <div className={`${COL} w-[110px] text-right`} style={divStyle}>AI Self-Service</div>
+        <div className={`${COL} w-[110px] text-right`} style={divStyle}>AI-Assisted</div>
+        <div className={`${COL} w-[110px] text-right`} style={divStyle}>Human Only</div>
         <div className={`${COL} w-[110px] text-right`}>Avg Time</div>
       </div>
 
@@ -453,24 +453,24 @@ function TicketResolutionTable() {
         <div key={i}
           className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
           style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="px-2 flex flex-col justify-center" style={{ flex: 1, ...DIV, paddingTop: 8, paddingBottom: 8, minHeight: 52 }}>
+          <div className="px-2 flex flex-col justify-center" style={{ flex: 1, ...divStyle, paddingTop: 8, paddingBottom: 8, minHeight: 52 }}>
             <p style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '22px' }}>{row.type}</p>
             {row.insight && (
               <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '2px 0 0', lineHeight: '18px' }}>{row.insight}</p>
             )}
           </div>
-          <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
+          <div className="flex items-center justify-end px-4 w-[110px]" style={divStyle}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.total}</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={DIV}>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={divStyle}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.aiSelf.count}</span>
             <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{row.aiSelf.pct}%</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={DIV}>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={divStyle}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.aiAssisted.count}</span>
             <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{row.aiAssisted.pct}%</span>
           </div>
-          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={DIV}>
+          <div className="flex flex-col justify-center items-end px-4 w-[110px]" style={divStyle}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{row.humanOnly.count}</span>
             <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{row.humanOnly.pct}%</span>
           </div>
@@ -563,22 +563,22 @@ function KBPerformanceCard() {
       </div>
       <div style={{ padding: '0 24px' }}>
         <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className={COL} style={{ ...DIV, flex: 1 }}>Article</div>
-          <div className={`${COL} w-[110px] text-right`} style={DIV}>Views</div>
-          <div className={`${COL} w-[110px] text-right`} style={DIV}>Deflections</div>
+          <div className={COL} style={{ ...divStyle, flex: 1 }}>Article</div>
+          <div className={`${COL} w-[110px] text-right`} style={divStyle}>Views</div>
+          <div className={`${COL} w-[110px] text-right`} style={divStyle}>Deflections</div>
           <div className={`${COL} w-[110px] text-right`}>Deflect %</div>
         </div>
         {kb.topArticles.map((a, i) => (
           <div key={i}
             className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
             style={{ borderBottom: '1px solid var(--border)' }}>
-            <div className="px-4 flex items-center" style={{ flex: 1, ...DIV, minHeight: 52 }}>
+            <div className="px-4 flex items-center" style={{ flex: 1, ...divStyle, minHeight: 52 }}>
               <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.title}</span>
             </div>
-            <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
+            <div className="flex items-center justify-end px-4 w-[110px]" style={divStyle}>
               <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.views.toLocaleString()}</span>
             </div>
-            <div className="flex items-center justify-end px-4 w-[110px]" style={DIV}>
+            <div className="flex items-center justify-end px-4 w-[110px]" style={divStyle}>
               <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.deflections.toLocaleString()}</span>
             </div>
             <div className="flex flex-col justify-center items-end px-4 w-[110px]">
@@ -879,9 +879,198 @@ function TeamTab() {
   );
 }
 
+// ─── LeaderboardTab ────────────────────────────────────────────────────────────
+
+const LEADERBOARD_AGENTS = [
+  { id: 'me',  name: 'Sarah Mitchell', initials: 'SM', color: '#c0856a', resolved: 12, csat: 4.6, fcr: 87, mtta: 1.8, sla: 94, isMe: true  },
+  { id: 'a3',  name: 'Priya Nair',     initials: 'PN', color: '#5DA182', resolved: 15, csat: 4.5, fcr: 85, mtta: 2.0, sla: 92, isMe: false },
+  { id: 'a2',  name: 'Jamie Chen',     initials: 'JC', color: '#4273D1', resolved: 11, csat: 4.4, fcr: 83, mtta: 2.2, sla: 91, isMe: false },
+  { id: 'a1',  name: 'Marcus Rivera',  initials: 'MR', color: '#D43D5D', resolved: 14, csat: 4.3, fcr: 80, mtta: 2.3, sla: 89, isMe: false },
+  { id: 'a4',  name: 'Devon Walsh',    initials: 'DW', color: '#7C5EA8', resolved: 10, csat: 4.2, fcr: 79, mtta: 2.5, sla: 88, isMe: false },
+  { id: 'a5',  name: 'Sana Okafor',   initials: 'SO', color: '#7C5EA8', resolved:  9, csat: 4.0, fcr: 76, mtta: 2.8, sla: 85, isMe: false },
+  { id: 'a6',  name: 'Tom Reyes',      initials: 'TR', color: '#ECBD85', resolved:  8, csat: 3.8, fcr: 72, mtta: 3.1, sla: 81, isMe: false },
+];
+
+const LB_COLS = [
+  { key: 'resolved', label: 'Resolved',    fmt: v => v,          higherBetter: true  },
+  { key: 'csat',     label: 'CSAT',         fmt: v => v.toFixed(1), higherBetter: true  },
+  { key: 'fcr',      label: 'FCR %',        fmt: v => `${v}%`,    higherBetter: true  },
+  { key: 'mtta',     label: 'MTTA',         fmt: v => `${v}h`,    higherBetter: false },
+  { key: 'sla',      label: 'SLA compliance', fmt: v => `${v}%`,  higherBetter: true  },
+];
+
+const RANK_STYLE = {
+  1: { bg: '#FEF9C3', color: '#854D0E', label: '#1' },
+  2: { bg: '#F1F5F9', color: '#475569', label: '#2' },
+  3: { bg: '#FEF3C7', color: '#92400E', label: '#3' },
+};
+
+const LB_PERIODS = ['This week', 'This month', 'Last quarter'];
+
+function LeaderboardTab() {
+  const [sortKey, setSortKey] = useState('csat');
+  const [sortDir, setSortDir] = useState('desc');
+  const [period, setPeriod] = useState('This week');
+
+  function handleSort(key) {
+    if (key === sortKey) {
+      setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      const col = LB_COLS.find(c => c.key === key);
+      setSortDir(col?.higherBetter ? 'desc' : 'asc');
+    }
+  }
+
+  const sorted = [...LEADERBOARD_AGENTS].sort((a, b) => {
+    const diff = a[sortKey] - b[sortKey];
+    return sortDir === 'desc' ? -diff : diff;
+  });
+
+  return (
+    <div>
+      {/* Sub-header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 500, color: '#1E1F21', fontFamily: SFT, margin: '0 0 2px' }}>Team performance</p>
+          <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Ranked by {LB_COLS.find(c => c.key === sortKey)?.label ?? sortKey} · click any column to re-sort</p>
+        </div>
+        <div style={{ display: 'flex', background: 'var(--background-medium)', borderRadius: 8, padding: 3, gap: 2 }}>
+          {LB_PERIODS.map(p => (
+            <button key={p} type="button" onClick={() => setPeriod(p)} style={{
+              padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: period === p ? 500 : 400, fontFamily: SFT,
+              background: period === p ? 'white' : 'transparent',
+              color: period === p ? 'var(--text)' : 'var(--text-weak)',
+              boxShadow: period === p ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              transition: 'all 0.12s',
+            }}>{p}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
+      <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+        {/* Header */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '48px 1fr 100px 80px 80px 80px 120px',
+          padding: '0 20px', height: 36, alignItems: 'center',
+          borderBottom: '1px solid var(--border)', background: 'white',
+        }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>#</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>Agent</span>
+          {LB_COLS.map(col => (
+            <button key={col.key} type="button" onClick={() => handleSort(col.key)} style={{
+              display: 'flex', alignItems: 'center', gap: 3,
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              fontSize: 11, fontWeight: sortKey === col.key ? 600 : 500,
+              color: sortKey === col.key ? 'var(--text)' : 'var(--text-weak)',
+              fontFamily: SFT, textAlign: 'left', whiteSpace: 'nowrap',
+            }}>
+              {col.label}
+              {sortKey === col.key && (
+                <svg viewBox="0 0 8 8" width="8" height="8" fill="currentColor">
+                  {sortDir === 'desc'
+                    ? <path d="M4 6L1 2h6L4 6z"/>
+                    : <path d="M4 2l3 4H1L4 2z"/>}
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Rows */}
+        {sorted.map((agent, i) => {
+          const rank = i + 1;
+          const rs = RANK_STYLE[rank];
+          return (
+            <LbRow key={agent.id} agent={agent} rank={rank} rankStyle={rs} last={i === sorted.length - 1} />
+          );
+        })}
+      </div>
+
+      {/* Team averages footer */}
+      <div style={{ marginTop: 16, padding: '12px 20px', background: 'var(--background-medium)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 32 }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT, minWidth: 80 }}>Team avg</span>
+        {LB_COLS.map(col => {
+          const avg = LEADERBOARD_AGENTS.reduce((s, a) => s + a[col.key], 0) / LEADERBOARD_AGENTS.length;
+          return (
+            <span key={col.key} style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, minWidth: col.key === 'sla' ? 120 : 80 }}>
+              {col.fmt(Math.round(avg * 10) / 10)}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function LbRow({ agent, rank, rankStyle, last }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'grid', gridTemplateColumns: '48px 1fr 100px 80px 80px 80px 120px',
+        padding: '0 20px', height: 52, alignItems: 'center',
+        borderBottom: last ? 'none' : '1px solid var(--border)',
+        background: agent.isMe
+          ? 'rgba(71, 134, 255, 0.06)'
+          : hov ? 'var(--background-medium)' : 'transparent',
+        transition: 'background 0.1s',
+        cursor: 'pointer',
+      }}
+    >
+      {/* Rank */}
+      <div>
+        {rankStyle ? (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 24, height: 20, borderRadius: 4,
+            background: rankStyle.bg, color: rankStyle.color,
+            fontSize: 11, fontWeight: 700, fontFamily: SFT,
+          }}>
+            {rankStyle.label}
+          </span>
+        ) : (
+          <span style={{ fontSize: 12, color: 'var(--text-disabled)', fontFamily: SFT }}>#{rank}</span>
+        )}
+      </div>
+
+      {/* Agent */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%',
+          background: agent.color, color: 'white',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 10, fontWeight: 600, fontFamily: SFT, flexShrink: 0,
+        }}>
+          {agent.initials}
+        </div>
+        <div>
+          <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT, fontWeight: agent.isMe ? 500 : 400 }}>
+            {agent.name}
+          </span>
+          {agent.isMe && (
+            <span style={{ fontSize: 10, color: 'var(--selected-background-strong)', fontFamily: SFT, marginLeft: 6, fontWeight: 500 }}>you</span>
+          )}
+        </div>
+      </div>
+
+      {/* Metrics */}
+      {LB_COLS.map(col => (
+        <span key={col.key} style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT }}>
+          {col.fmt(agent[col.key])}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ─── DashboardView ─────────────────────────────────────────────────────────────
 
-const DASH_TABS = ['Overview', 'Team'];
+const DASH_TABS = ['Overview', 'Team', 'Leaderboard'];
 
 export default function DashboardView({ initialTab = 'Overview', hideTabs = false }) {
   const [queueId, setQueueId] = useState('all');
@@ -996,6 +1185,9 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
 
         {/* ── Team Tab ──────────────────────────────────────────────────────── */}
         {(hideTabs || activeTab === 'Team') && <TeamTab />}
+
+        {/* ── Leaderboard Tab ───────────────────────────────────────────────── */}
+        {!hideTabs && activeTab === 'Leaderboard' && <LeaderboardTab />}
 
       </div>
     </div>

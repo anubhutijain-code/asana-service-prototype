@@ -9,6 +9,8 @@ import Dropdown from './Dropdown';
 const SFT  = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const base = { fontFamily: SFT, ...LIGA };
+const typoCell = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
+const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
 
 const H5 = {
   fontFamily: '"SF Pro Text"', fontFeatureSettings: "'liga' off, 'clig' off",
@@ -62,6 +64,26 @@ const KB_SOURCES = [
   { id: 'confluence', tool: 'Confluence', space: 'IT Team Space',  articles: 142, syncedAt: 'Mar 2 · 8:00 AM', status: 'synced'  },
   { id: 'notion',     tool: 'Notion',     space: 'IT Runbooks',    articles:  38, syncedAt: 'Mar 1 · 2:15 PM', status: 'synced'  },
 ];
+
+const QUEUE_CONFIGS = {
+  it: {
+    id: 'it', name: 'IT Tickets', desc: 'IT support for hardware, software, and network issues',
+    color: '#0078D4', initials: 'IT',
+    email: 'it-help@acme.com', slack: '#it-help',
+    dayRange: 'Mon–Fri', startTime: '9:00 AM', endTime: '6:00 PM',
+    aiGuidance: 'Always escalate hardware issues to on-site team if unresolved after 2 hrs. Route Salesforce tickets to Sales Eng.',
+    aiEnabled: true, integrationsConnected: 3, automationsActive: 5,
+  },
+  hr: {
+    id: 'hr', name: 'HR Tickets', desc: 'Employee requests for HR policies, payroll, and benefits',
+    color: '#E56020', initials: 'HR',
+    email: 'hr-help@acme.com', slack: '#hr-help',
+    dayRange: 'Mon–Fri', startTime: '8:00 AM', endTime: '5:00 PM',
+    aiGuidance: 'Route all payroll issues to Finance team. Escalate PIP-related requests to HR Director.',
+    aiEnabled: true, integrationsConnected: 2, automationsActive: 3,
+  },
+};
+const QUEUES_LIST = [QUEUE_CONFIGS.it, QUEUE_CONFIGS.hr];
 
 const PANEL_TITLES = {
   'queue-name':        'Queue name',
@@ -597,20 +619,111 @@ function AITab({ values, selectedSetting, onOpen }) {
   );
 }
 
+// ── SettingsLandingPage ────────────────────────────────────────────────────────
+export function SettingsLandingPage() {
+  const navigate = useNavigate();
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background-weak)' }}>
+
+      {/* Header */}
+      <div style={{ flexShrink: 0, padding: '28px 32px 20px' }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
+          Settings
+        </h1>
+      </div>
+
+      {/* Table header */}
+      <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 32px', height: 36, background: 'white' }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
+        <span style={{ ...typoMeta, flex: 1, minWidth: 220, fontWeight: 500 }}>Queue</span>
+        <span style={{ ...typoMeta, width: 160, flexShrink: 0, fontWeight: 500 }}>Email</span>
+        <span style={{ ...typoMeta, width: 180, flexShrink: 0, fontWeight: 500 }}>Business hours</span>
+        <span style={{ ...typoMeta, width: 80, flexShrink: 0, fontWeight: 500 }}>AI</span>
+        <span style={{ ...typoMeta, width: 120, flexShrink: 0, fontWeight: 500 }}>Integrations</span>
+        <span style={{ ...typoMeta, width: 100, flexShrink: 0, fontWeight: 500 }}>Automations</span>
+      </div>
+
+      {/* Rows */}
+      <div style={{ flex: 1, overflowY: 'auto', background: 'white' }}>
+        {QUEUES_LIST.map(q => (
+          <div
+            key={q.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate(`/settings/${q.id}`)}
+            onKeyDown={e => e.key === 'Enter' && navigate(`/settings/${q.id}`)}
+            style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '0 32px', height: 64, cursor: 'pointer', transition: 'background 0.1s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-weak)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+          >
+            <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
+
+            {/* Queue */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 220 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: q.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'white', letterSpacing: '0.2px' }}>{q.initials}</span>
+              </div>
+              <div>
+                <div style={{ ...typoCell }}>{q.name}</div>
+                <div style={{ ...typoMeta, marginTop: 1 }}>{q.desc}</div>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div style={{ width: 160, flexShrink: 0 }}>
+              <span style={{ ...typoCell }}>{q.email}</span>
+            </div>
+
+            {/* Business hours */}
+            <div style={{ width: 180, flexShrink: 0 }}>
+              <span style={{ ...typoCell }}>{q.dayRange}, {q.startTime}–{q.endTime}</span>
+            </div>
+
+            {/* AI */}
+            <div style={{ width: 80, flexShrink: 0 }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: 4,
+                background: q.aiEnabled ? 'var(--success-background)' : 'var(--background-medium)',
+                fontSize: 11, fontWeight: 500,
+                color: q.aiEnabled ? 'var(--success-text)' : 'var(--text-weak)',
+                fontFamily: SFT,
+              }}>
+                {q.aiEnabled ? 'On' : 'Off'}
+              </span>
+            </div>
+
+            {/* Integrations */}
+            <div style={{ width: 120, flexShrink: 0 }}>
+              <span style={{ ...typoCell }}>{q.integrationsConnected} connected</span>
+            </div>
+
+            {/* Automations */}
+            <div style={{ width: 100, flexShrink: 0 }}>
+              <span style={{ ...typoCell }}>{q.automationsActive} active</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── SettingsView ──────────────────────────────────────────────────────────────
-export default function SettingsView() {
+export default function SettingsView({ queueId = 'it' }) {
+  const navigate = useNavigate();
+  const queueConfig = QUEUE_CONFIGS[queueId] ?? QUEUE_CONFIGS.it;
   const [tab, setTab] = useState('general');
 
   // Committed values shown in the list
   const [values, setValues] = useState({
-    queueName:  'IT Tickets',
-    queueDesc:  'IT support for hardware, software, and network issues',
-    email:      'it-help@acme.com',
-    slack:      '#it-help',
-    dayRange:   'Mon–Fri',
-    startTime:  '9:00 AM',
-    endTime:    '6:00 PM',
-    aiGuidance: 'Always escalate hardware issues to on-site team if unresolved after 2 hrs. Route Salesforce tickets to Sales Eng.',
+    queueName:  queueConfig.name,
+    queueDesc:  queueConfig.desc,
+    email:      queueConfig.email,
+    slack:      queueConfig.slack,
+    dayRange:   queueConfig.dayRange,
+    startTime:  queueConfig.startTime,
+    endTime:    queueConfig.endTime,
+    aiGuidance: queueConfig.aiGuidance,
   });
 
   // In-flight edits while panel is open
@@ -643,7 +756,19 @@ export default function SettingsView() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* ── Header ── */}
       <div style={{ padding: '32px 40px 0', flexShrink: 0 }}>
-        <p style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 24px' }}>Settings</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <button type="button" onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4, ...base, fontSize: 13, color: 'var(--text-weak)' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-weak)'; }}
+          >
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7.5 2L4 6l3.5 4"/>
+            </svg>
+            Settings
+          </button>
+        </div>
+        <p style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 24px' }}>{queueConfig.name}</p>
 
         {/* Tab bar */}
         <div className="flex border-b border-border">

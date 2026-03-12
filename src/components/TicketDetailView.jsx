@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TicketDetailHeader from './TicketDetailHeader';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
+import WorkflowStepsPanel from './WorkflowStepsPanel';
 import RightPanelOverlay from './RightPanelOverlay';
 import ApprovalTaskView from './ApprovalTaskView';
 import CreateHRTicketModal from './CreateHRTicketModal';
@@ -236,7 +237,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         </div>
       )}
 
-      {/* Body: chat (flex-1) + optional workflow panel (280px) + info sidebar */}
+      {/* Body: chat (flex-1) + optional workflow col (TICKET-95) + info sidebar */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 min-w-0 overflow-hidden">
           <TicketChatPanel
@@ -250,6 +251,16 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             initTranscript={chatInitTranscript}
           />
         </div>
+        {ticket.id === 'TICKET-95' && (
+          <div style={{ width: 280, flexShrink: 0, borderLeft: '1px solid var(--border)', overflow: 'hidden' }}>
+            <WorkflowStepsPanel
+              initialSteps={ticket.steps}
+              onLinkedTicketClick={handleWorkflowLinkedTicketClick}
+              onStepCreateTask={handleWorkflowStepCreateTask}
+              onStepComplete={handleWorkflowStepComplete}
+            />
+          </div>
+        )}
         <div style={{ width: '30%', maxWidth: 600, minWidth: 300, flexShrink: 0 }}>
           <TicketInfoSidebar
             ticket={ticket}

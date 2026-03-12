@@ -4,6 +4,7 @@ import Avatar from './ui/Avatar';
 import RightPanelOverlay from './RightPanelOverlay';
 import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
+import { SFT, LIGA } from '../constants/typography';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const KB_FILTER_FIELDS = [
@@ -27,8 +28,6 @@ const KB_ACCESSORS = {
 };
 
 // ─── Shared typography ─────────────────────────────────────────────────────────
-const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
 const typoCell = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
 const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
 const COL = 'text-xs font-medium text-text-weak px-2 py-2 text-left whitespace-nowrap flex items-center';
@@ -49,13 +48,6 @@ function SearchIcon() {
   return (
     <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="#9ea0a2" strokeWidth="1.5" strokeLinecap="round">
       <circle cx="7" cy="7" r="5" /><path d="M12 12l-2.5-2.5" />
-    </svg>
-  );
-}
-function FilterIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <path d="M2 4h12M5 8h6M7 12h2" />
     </svg>
   );
 }
@@ -371,7 +363,7 @@ function ManageIntegrationPanel({ project, allArticles, onClose }) {
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 4 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>{title}</div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 12 }}>{title}</div>
       {children}
     </div>
   );
@@ -470,13 +462,15 @@ function TableHeader() {
 
 // ─── Table row ─────────────────────────────────────────────────────────────────
 
-function TableRow({ article, index }) {
+function TableRow({ article, index, onClick }) {
   const badge = STATUS_BADGE[article.status] ?? STATUS_BADGE['Archived'];
+  const hasContent = article.content?.length > 0;
   return (
     <div
       role="row"
-      className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
-      style={{ height: 44, borderBottom: '1px solid var(--border)' }}
+      onClick={hasContent ? onClick : undefined}
+      className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
+      style={{ height: 44, borderBottom: '1px solid var(--border)', cursor: hasContent ? 'pointer' : 'default' }}
     >
       <div className={`${CELL} w-[44px] shrink-0 justify-center`} style={{ ...typoMeta, fontSize: 11 }}>{index + 1}</div>
       <div className={`${CELL} sticky left-[44px] z-[1] w-[280px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
@@ -719,17 +713,22 @@ function KBProjectIcon({ project, size = 28 }) {
   );
 }
 
-function KBLandingPage() {
+const AGENT_HIDDEN_PROJECTS = new Set(['eng-kb', 'onb-kb']);
+const articleCountByProject = Object.fromEntries(
+  KB_PROJECTS.map(p => [p.id, KB_ARTICLES.filter(a => a.projectId === p.id).length])
+);
+
+function KBLandingPage({ isAgent }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
-  const articleCountByProject = Object.fromEntries(
-    KB_PROJECTS.map(p => [p.id, KB_ARTICLES.filter(a => a.projectId === p.id).length])
-  );
+  const visibleProjects = isAgent
+    ? KB_PROJECTS.filter(p => !AGENT_HIDDEN_PROJECTS.has(p.id))
+    : KB_PROJECTS;
 
   const filtered = search
-    ? KB_PROJECTS.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.team.toLowerCase().includes(search.toLowerCase()))
-    : KB_PROJECTS;
+    ? visibleProjects.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.team.toLowerCase().includes(search.toLowerCase()))
+    : visibleProjects;
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background-weak)' }}>
@@ -739,23 +738,25 @@ function KBLandingPage() {
         <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
           Browse knowledge bases
         </h1>
-        <button
-          type="button"
-          style={{
-            height: 32, padding: '0 14px', fontSize: 13, fontFamily: SFT, fontWeight: 500,
-            borderRadius: 6, border: 'none', cursor: 'pointer',
-            background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
-            display: 'flex', alignItems: 'center', gap: 6,
-            transition: 'opacity 0.1s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
-          onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
-        >
-          <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M6 1v10M1 6h10"/>
-          </svg>
-          Create knowledge base
-        </button>
+        {!isAgent && (
+          <button
+            type="button"
+            style={{
+              height: 32, padding: '0 14px', fontSize: 13, fontFamily: SFT, fontWeight: 500,
+              borderRadius: 6, border: 'none', cursor: 'pointer',
+              background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'opacity 0.1s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+          >
+            <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M6 1v10M1 6h10"/>
+            </svg>
+            Create knowledge base
+          </button>
+        )}
       </div>
 
       {/* ── Search ── */}
@@ -871,13 +872,15 @@ function KBLandingPage() {
 
 // ─── KnowledgeBaseView ─────────────────────────────────────────────────────────
 
-export default function KnowledgeBaseView() {
+export default function KnowledgeBaseView({ role }) {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState([]);
   const [manageOpen, setManageOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('articles');
+
+  const isAgent = role === 'agent';
 
   const project = KB_PROJECTS.find(p => p.id === projectId);
   const allArticles = KB_ARTICLES.filter(a => a.projectId === projectId);
@@ -888,7 +891,7 @@ export default function KnowledgeBaseView() {
   const articles = applyFilters(searchFiltered, filters, KB_ACCESSORS);
 
   if (!projectId) {
-    return <KBLandingPage />;
+    return <KBLandingPage isAgent={isAgent} />;
   }
 
   if (!project) {
@@ -901,7 +904,7 @@ export default function KnowledgeBaseView() {
 
   const TABS = [
     { id: 'articles',  label: 'Articles',  count: allArticles.length },
-    { id: 'learnings', label: 'Learnings', count: learningsCount, dot: learningsCount > 0 },
+    ...(!isAgent ? [{ id: 'learnings', label: 'Learnings', count: learningsCount, dot: learningsCount > 0 }] : []),
   ];
 
   return (
@@ -1026,7 +1029,7 @@ export default function KnowledgeBaseView() {
               <div style={{ minWidth: '100%', width: 'max-content' }}>
                 <TableHeader />
                 {articles.length > 0
-                  ? articles.map((article, i) => <TableRow key={article.id} article={article} index={i} />)
+                  ? articles.map((article, i) => <TableRow key={article.id} article={article} index={i} onClick={() => navigate(`/knowledge-base/${projectId}/${article.id}`)} />)
                   : (
                     <div
                       className="flex items-center justify-center py-16 w-full"
