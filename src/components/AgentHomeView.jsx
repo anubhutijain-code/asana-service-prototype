@@ -177,7 +177,7 @@ function KpiCard({ label, value, suffix, better }) {
       }}
     >
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: SFD, fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontFamily: SFD, fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
       <p style={{ fontSize: 12, color: better ? '#16a34a' : 'var(--danger-text)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
         {better ? '↑' : '↓'} {suffix}
       </p>
@@ -470,7 +470,7 @@ export default function AgentHomeView() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <p style={{ fontSize: 13, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 4px' }}>{getDateStr()}</p>
-          <h1 style={{ fontFamily: SFD, fontSize: 32, fontWeight: 400, color: '#1E1F21', margin: 0, letterSpacing: '-0.3px', lineHeight: '38px' }}>
+          <h1 style={{ fontFamily: SFD, fontSize: 32, fontWeight: 400, color: 'var(--text)', margin: 0, letterSpacing: '-0.3px', lineHeight: '38px' }}>
             {getGreeting()}, Sarah
           </h1>
         </div>
@@ -479,7 +479,7 @@ export default function AgentHomeView() {
             <button key={p} type="button" onClick={() => setPeriod(p)} style={{
               padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
               fontSize: 12, fontWeight: period === p ? 500 : 400, fontFamily: SFT,
-              background: period === p ? 'white' : 'transparent',
+              background: period === p ? 'var(--surface)' : 'transparent',
               color: period === p ? 'var(--text)' : 'var(--text-weak)',
               boxShadow: period === p ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               transition: 'all 0.12s',

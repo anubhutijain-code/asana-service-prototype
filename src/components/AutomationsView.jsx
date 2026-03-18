@@ -144,8 +144,8 @@ function Toggle({ checked, onChange }) {
         position: 'absolute', top: 2,
         left: checked ? 18 : 2,
         width: 16, height: 16, borderRadius: '50%',
-        background: 'white', transition: 'left 0.2s',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        background: 'var(--surface)', transition: 'left 0.2s',
+        boxShadow: 'var(--shadow-sm)',
       }} />
     </button>
   );
@@ -254,7 +254,7 @@ export default function AutomationsView() {
 
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 6px' }}>Automations</h1>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 6px' }}>Automations</h1>
         <p style={{ fontSize: 13, color: 'var(--text-weak)', margin: 0 }}>
           Enable pre-built workflows to automate your service queue. Agents can toggle automations for their queues.
         </p>

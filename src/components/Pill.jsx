@@ -21,8 +21,8 @@ function DropdownChevron() {
 export default function Pill({
   label,
   icon,
-  bg = '#F9F8F8',
-  color = '#1E1F21',
+  bg = 'var(--background-medium)',
+  color = 'var(--text)',
   border,
   dropdown = false,
   as: Tag = 'span',

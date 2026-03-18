@@ -100,8 +100,8 @@ function LockIcon() {
 function UserIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-      <circle cx="7" cy="4.5" r="2.5" stroke="#9EA0A2" strokeWidth="1.1"/>
-      <path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round"/>
+      <circle cx="7" cy="4.5" r="2.5" stroke="var(--text-disabled)" strokeWidth="1.1"/>
+      <path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -109,7 +109,7 @@ function UserIcon() {
 function TextIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <path d="M4.25851 11H11.742L13.359 14.7725C13.3879 14.84 13.4359 14.8975 13.4971 14.9379C13.5584 14.9784 13.6301 14.9999 13.7035 15H13.976C14.038 15 14.0991 14.9845 14.1536 14.9551C14.2082 14.9257 14.2547 14.8832 14.2888 14.8314C14.3229 14.7796 14.3437 14.7202 14.3492 14.6585C14.3548 14.5967 14.3449 14.5345 14.3205 14.4775L8.64151 1.2275C8.61264 1.16003 8.56462 1.10251 8.50338 1.06208C8.44215 1.02164 8.37039 1.00005 8.29701 1H7.70351C7.63012 1.00005 7.55837 1.02164 7.49713 1.06208C7.4359 1.10251 7.38787 1.16003 7.35901 1.2275L1.68001 14.4775C1.65562 14.5345 1.64574 14.5967 1.65128 14.6585C1.65681 14.7202 1.67757 14.7796 1.71171 14.8314C1.74584 14.8832 1.79228 14.9257 1.84687 14.9551C1.90146 14.9845 1.96249 15 2.02451 15H2.29701C2.37039 14.9999 2.44215 14.9784 2.50338 14.9379C2.56462 14.8975 2.61264 14.84 2.64151 14.7725L4.25851 11ZM8.00001 2.2695L11.313 10H4.68701L8.00001 2.2695Z" fill="#9EA0A2"/>
+      <path d="M4.25851 11H11.742L13.359 14.7725C13.3879 14.84 13.4359 14.8975 13.4971 14.9379C13.5584 14.9784 13.6301 14.9999 13.7035 15H13.976C14.038 15 14.0991 14.9845 14.1536 14.9551C14.2082 14.9257 14.2547 14.8832 14.2888 14.8314C14.3229 14.7796 14.3437 14.7202 14.3492 14.6585C14.3548 14.5967 14.3449 14.5345 14.3205 14.4775L8.64151 1.2275C8.61264 1.16003 8.56462 1.10251 8.50338 1.06208C8.44215 1.02164 8.37039 1.00005 8.29701 1H7.70351C7.63012 1.00005 7.55837 1.02164 7.49713 1.06208C7.4359 1.10251 7.38787 1.16003 7.35901 1.2275L1.68001 14.4775C1.65562 14.5345 1.64574 14.5967 1.65128 14.6585C1.65681 14.7202 1.67757 14.7796 1.71171 14.8314C1.74584 14.8832 1.79228 14.9257 1.84687 14.9551C1.90146 14.9845 1.96249 15 2.02451 15H2.29701C2.37039 14.9999 2.44215 14.9784 2.50338 14.9379C2.56462 14.8975 2.61264 14.84 2.64151 14.7725L4.25851 11ZM8.00001 2.2695L11.313 10H4.68701L8.00001 2.2695Z" fill="var(--text-disabled)"/>
     </svg>
   );
 }
@@ -146,9 +146,9 @@ function XSmallIcon() {
 function NotionIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="1" width="12" height="14" rx="2" fill="white" stroke="#E8E5E4" strokeWidth="1"/>
-      <path d="M4 4h8M4 7h6M4 10h4" stroke="#1E1F21" strokeWidth="1.2" strokeLinecap="round"/>
-      <path d="M3 2.5L5 1.5" stroke="#1E1F21" strokeWidth="1" strokeLinecap="round"/>
+      <rect x="2" y="1" width="12" height="14" rx="2" fill="var(--surface)" stroke="var(--border)" strokeWidth="1"/>
+      <path d="M4 4h8M4 7h6M4 10h4" stroke="var(--text)" strokeWidth="1.2" strokeLinecap="round"/>
+      <path d="M3 2.5L5 1.5" stroke="var(--text)" strokeWidth="1" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -191,7 +191,7 @@ function SubtleIconBtn({ label, children, onClick }) {
       aria-label={label}
       onClick={onClick}
       style={{ width: 28, height: 28, borderRadius: 6, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--icon)' }}
-      onMouseEnter={e => e.currentTarget.style.background = '#F0EFED'}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
       {children}
@@ -201,10 +201,10 @@ function SubtleIconBtn({ label, children, onClick }) {
 
 // ─── Avi ─────────────────────────────────────────────────────────────────────
 
-function Avi({ name, size = 24, bg = '#6D6E6F', fontSize }) {
+function Avi({ name, size = 24, bg = 'var(--icon)', fontSize }) {
   const ini = name.split(' ').map(n => n[0]).join('').slice(0, 2);
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fontSize ?? Math.round(size * 0.37), fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, boxSizing: 'border-box' }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fontSize ?? Math.round(size * 0.37), fontWeight: 700, color: 'var(--surface)', flexShrink: 0, fontFamily: SFT, boxSizing: 'border-box' }}>
       {ini}
     </div>
   );
@@ -215,13 +215,13 @@ function Avi({ name, size = 24, bg = '#6D6E6F', fontSize }) {
 function TaskToolbar({ isComplete, onMarkComplete, onClose, task }) {
   const facepile = task ? [task.assignee, task.reporter].filter(Boolean) : [];
   return (
-    <div style={{ height: 48, padding: '0 16px', borderBottom: '1px solid #EDEAE9', background: 'white', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+    <div style={{ height: 48, padding: '0 16px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
 
       {/* Left: Mark complete */}
       <button type="button" onClick={onMarkComplete}
-        style={{ height: 28, padding: '0 12px', borderRadius: 6, fontSize: 13, fontWeight: 400, fontFamily: SFT, border: isComplete ? '1.5px solid #5DA182' : '1px solid #DBDAD9', background: isComplete ? '#F0FAF5' : 'white', color: isComplete ? '#0D7F56' : '#1E1F21', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, ...LIGA }}
-        onMouseEnter={e => { if (!isComplete) e.currentTarget.style.background = '#F5F5F4'; }}
-        onMouseLeave={e => { if (!isComplete) e.currentTarget.style.background = 'white'; }}
+        style={{ height: 28, padding: '0 12px', borderRadius: 6, fontSize: 13, fontWeight: 400, fontFamily: SFT, border: isComplete ? '1.5px solid #5DA182' : '1px solid var(--border)', background: isComplete ? '#F0FAF5' : 'var(--surface)', color: isComplete ? '#0D7F56' : 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, ...LIGA }}
+        onMouseEnter={e => { if (!isComplete) e.currentTarget.style.background = 'var(--background-medium)'; }}
+        onMouseLeave={e => { if (!isComplete) e.currentTarget.style.background = 'var(--surface)'; }}
       >
         <CheckSmallIcon />
         {isComplete ? 'Completed' : 'Mark complete'}
@@ -235,30 +235,30 @@ function TaskToolbar({ isComplete, onMarkComplete, onClose, task }) {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {facepile.map((c, i) => (
             <div key={c.name} title={c.name}
-              style={{ width: 28, height: 28, borderRadius: '50%', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, marginLeft: i === 0 ? 0 : -8, border: '2px solid white', boxSizing: 'border-box', position: 'relative', zIndex: facepile.length - i }}
+              style={{ width: 28, height: 28, borderRadius: '50%', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--surface)', flexShrink: 0, fontFamily: SFT, marginLeft: i === 0 ? 0 : -8, border: '2px solid var(--surface)', boxSizing: 'border-box', position: 'relative', zIndex: facepile.length - i }}
             >
               {c.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
             </div>
           ))}
-          <button style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px solid #DBDAD9', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--icon)', flexShrink: 0, marginLeft: -8, position: 'relative', zIndex: 0, boxSizing: 'border-box', fontFamily: SFT }}>
+          <button style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--icon)', flexShrink: 0, marginLeft: -8, position: 'relative', zIndex: 0, boxSizing: 'border-box', fontFamily: SFT }}>
             +
           </button>
         </div>
         {/* Share */}
         <button
-          style={{ height: 28, padding: '0 12px', borderRadius: 6, fontSize: 13, fontWeight: 400, fontFamily: SFT, border: '1px solid #DBDAD9', background: 'white', color: '#1E1F21', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, ...LIGA }}
-          onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
-          onMouseLeave={e => e.currentTarget.style.background = 'white'}
+          style={{ height: 28, padding: '0 12px', borderRadius: 6, fontSize: 13, fontWeight: 400, fontFamily: SFT, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, ...LIGA }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
         >
           <ShareIcon />
           Share
         </button>
-        <div style={{ width: 1, height: 18, background: '#EDEAE9', margin: '0 2px', flexShrink: 0 }} />
+        <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
         <SubtleIconBtn label="Like"><ThumbsUpIcon /></SubtleIconBtn>
         <SubtleIconBtn label="Copy link"><LinkIcon /></SubtleIconBtn>
         <SubtleIconBtn label="Expand"><ExpandIcon /></SubtleIconBtn>
         <SubtleIconBtn label="More"><DotsIcon /></SubtleIconBtn>
-        <div style={{ width: 1, height: 18, background: '#EDEAE9', margin: '0 2px', flexShrink: 0 }} />
+        <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px', flexShrink: 0 }} />
         <SubtleIconBtn label="Close panel" onClick={onClose}>
           <CollapseRightIcon />
         </SubtleIconBtn>
@@ -272,14 +272,14 @@ function TaskToolbar({ isComplete, onMarkComplete, onClose, task }) {
 
 function InfoBanner({ projectName }) {
   return (
-    <div style={{ padding: '8px 16px', background: '#F9F8F8', borderBottom: '1px solid #EDEAE9', fontSize: 12, color: '#6D6E6F', lineHeight: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: SFT, ...LIGA }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#9EA0A2' }}>
+    <div style={{ padding: '8px 16px', background: 'var(--background-medium)', borderBottom: '1px solid var(--border)', fontSize: 12, color: 'var(--text-weak)', lineHeight: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: SFT, ...LIGA }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-disabled)' }}>
         <LockIcon />
-        <span style={{ color: '#6D6E6F' }}>This task is visible to its collaborators and members of {projectName}.</span>
+        <span style={{ color: 'var(--text-weak)' }}>This task is visible to its collaborators and members of {projectName}.</span>
       </div>
-      <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#6D6E6F', fontFamily: SFT, padding: 0, flexShrink: 0 }}
-        onMouseEnter={e => e.currentTarget.style.color = '#1E1F21'}
-        onMouseLeave={e => e.currentTarget.style.color = '#6D6E6F'}
+      <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, padding: 0, flexShrink: 0 }}
+        onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+        onMouseLeave={e => e.currentTarget.style.color = 'var(--text-weak)'}
       >
         Make public
       </button>
@@ -293,20 +293,20 @@ function InfoBanner({ projectName }) {
 function FieldTypeIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-      <circle cx="7" cy="7" r="5.5" stroke="#9EA0A2" strokeWidth="1.1"/>
-      <path d="M4.5 6.5L7 9L9.5 6.5" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="7" cy="7" r="5.5" stroke="var(--text-disabled)" strokeWidth="1.1"/>
+      <path d="M4.5 6.5L7 9L9.5 6.5" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
 function FieldRow({ label, children, last, icon }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', borderBottom: last ? 'none' : '1px solid #EDEAE9', fontFamily: SFT }}>
-      <div style={{ width: 200, flexShrink: 0, padding: '10px 14px', borderRight: '1px solid #EDEAE9', fontSize: 13, color: '#6D6E6F', display: 'flex', alignItems: 'center', gap: 8, ...LIGA }}>
+    <div style={{ display: 'flex', alignItems: 'center', borderBottom: last ? 'none' : '1px solid var(--border)', fontFamily: SFT }}>
+      <div style={{ width: 200, flexShrink: 0, padding: '10px 14px', borderRight: '1px solid var(--border)', fontSize: 13, color: 'var(--text-weak)', display: 'flex', alignItems: 'center', gap: 8, ...LIGA }}>
         {icon ?? <FieldTypeIcon />}
         {label}
       </div>
-      <div style={{ flex: 1, padding: '10px 14px', fontSize: 13, color: '#1E1F21', minWidth: 0 }}>
+      <div style={{ flex: 1, padding: '10px 14px', fontSize: 13, color: 'var(--text)', minWidth: 0 }}>
         {children}
       </div>
     </div>
@@ -316,24 +316,24 @@ function FieldRow({ label, children, last, icon }) {
 // ─── Custom fields table ──────────────────────────────────────────────────────
 
 const CUSTOM_FIELDS = [
-  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="11" rx="2" stroke="#9EA0A2" strokeWidth="1.1"/><path d="M4 6.5h5M4 9h3" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Escalation type' },
-  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#9EA0A2" strokeWidth="1.1"/><path d="M6.5 3.5v3l2 1.5" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>, label: 'SLA deadline' },
-  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2" stroke="#9EA0A2" strokeWidth="1.1"/><path d="M2 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Affected users' },
-  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="#9EA0A2" strokeWidth="1.1"/><path d="M1 5h11" stroke="#9EA0A2" strokeWidth="1.1"/><path d="M4 1v2M9 1v2" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Resolution date' },
-  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11L6.5 2L11 11" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M3.5 8h6" stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Related system' },
+  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="11" rx="2" stroke="var(--text-disabled)" strokeWidth="1.1"/><path d="M4 6.5h5M4 9h3" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Escalation type' },
+  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="var(--text-disabled)" strokeWidth="1.1"/><path d="M6.5 3.5v3l2 1.5" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>, label: 'SLA deadline' },
+  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2" stroke="var(--text-disabled)" strokeWidth="1.1"/><path d="M2 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Affected users' },
+  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="var(--text-disabled)" strokeWidth="1.1"/><path d="M1 5h11" stroke="var(--text-disabled)" strokeWidth="1.1"/><path d="M4 1v2M9 1v2" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Resolution date' },
+  { icon: <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11L6.5 2L11 11" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M3.5 8h6" stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round"/></svg>, label: 'Related system' },
 ];
 
 function CustomFieldsTable({ showAll }) {
   const fields = showAll ? CUSTOM_FIELDS : CUSTOM_FIELDS.slice(0, 3);
   return (
-    <div style={{ border: '1px solid #EDEAE9', borderRadius: 6, overflow: 'hidden', fontSize: 12, fontFamily: SFT }}>
+    <div style={{ border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden', fontSize: 12, fontFamily: SFT }}>
       {fields.map((f, i) => (
-        <div key={f.label} style={{ display: 'flex', alignItems: 'center', borderBottom: i < fields.length - 1 ? '1px solid #EDEAE9' : 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', width: 170, flexShrink: 0, borderRight: '1px solid #EDEAE9', background: '#FAFAF9', color: '#6D6E6F' }}>
+        <div key={f.label} style={{ display: 'flex', alignItems: 'center', borderBottom: i < fields.length - 1 ? '1px solid var(--border)' : 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', width: 170, flexShrink: 0, borderRight: '1px solid var(--border)', background: 'var(--background-medium)', color: 'var(--text-weak)' }}>
             {f.icon}
             {f.label}
           </div>
-          <div style={{ padding: '7px 12px', color: '#9EA0A2', flex: 1 }}>—</div>
+          <div style={{ padding: '7px 12px', color: 'var(--text-disabled)', flex: 1 }}>—</div>
         </div>
       ))}
     </div>
@@ -361,7 +361,7 @@ function CommentItem({ comment, task }) {
   const isSystem = comment.type === 'system';
   const agentSrc = AGENT_AVATARS[comment.author];
   const bg = comment.bg
-    ?? (comment.author === task.assignee?.name ? task.assignee?.bg : (task.reporter?.bg ?? '#6D6E6F'));
+    ?? (comment.author === task.assignee?.name ? task.assignee?.bg : (task.reporter?.bg ?? 'var(--icon)'));
   const label = comment.author.split(' ').map(n => n[0]).join('').slice(0, 2);
 
   return (
@@ -369,7 +369,7 @@ function CommentItem({ comment, task }) {
       {/* Avatar */}
       {agentSrc
         ? <img src={agentSrc} alt={comment.author} style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
-        : <div style={{ width: 32, height: 32, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white', flexShrink: 0, boxSizing: 'border-box' }}>
+        : <div style={{ width: 32, height: 32, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--surface)', flexShrink: 0, boxSizing: 'border-box' }}>
             {label}
           </div>
       }
@@ -378,14 +378,14 @@ function CommentItem({ comment, task }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
           <div style={{ fontSize: 13, lineHeight: '20px', ...LIGA, flex: 1 }}>
-            <span style={{ fontWeight: 600, color: '#1E1F21' }}>{comment.author}</span>
-            {isSystem && <span style={{ fontWeight: 400, color: '#6D6E6F' }}> {comment.action}</span>}
-            <span style={{ color: '#9EA0A2', fontWeight: 400 }}> · {comment.time}</span>
+            <span style={{ fontWeight: 600, color: 'var(--text)' }}>{comment.author}</span>
+            {isSystem && <span style={{ fontWeight: 400, color: 'var(--text-weak)' }}> {comment.action}</span>}
+            <span style={{ color: 'var(--text-disabled)', fontWeight: 400 }}> · {comment.time}</span>
           </div>
           {!isSystem && (
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#C2BFBB', flexShrink: 0, display: 'flex', alignItems: 'center', marginTop: 3 }}
-              onMouseEnter={e => e.currentTarget.style.color = '#6D6E6F'}
-              onMouseLeave={e => e.currentTarget.style.color = '#C2BFBB'}
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--border-strong)', flexShrink: 0, display: 'flex', alignItems: 'center', marginTop: 3 }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--border-strong)'}
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M2.5 14H12.47C12.95 14.0021 13.413 13.8318 13.777 13.5201C14.14 13.2084 14.38 12.7761 14.451 12.3023L15.227 7.287C15.271 7.005 15.253 6.716 15.174 6.441C15.096 6.166 14.959 5.911 14.772 5.694C14.586 5.477 14.355 5.302 14.095 5.183C13.836 5.064 13.553 5.002 13.267 5.002H10V2.003C10 1.022 9.355 0.234 8.393 0.042C7.434 -0.15 6.531 0.328 6.155 1.233L4.167 6.001H2.5C1.673 6.001 1 6.674 1 7.501V12.5C1 13.327 1.673 14 2.5 14ZM5 6.6L7.078 1.615C7.31 1.057 7.828 0.945 8.197 1.02C8.568 1.094 9 1.395 9 2V6H13.267C13.554 6 13.826 6.125 14.013 6.343C14.2 6.562 14.283 6.849 14.238 7.133L13.462 12.149C13.426 12.387 13.307 12.603 13.124 12.759C12.942 12.916 12.71 13.001 12.47 13H5V6.6ZM2 7.5C2 7.224 2.224 7 2.5 7H4V13H2.5C2.224 13 2 12.775 2 12.5V7.5Z" fill="currentColor"/>
@@ -394,14 +394,14 @@ function CommentItem({ comment, task }) {
           )}
         </div>
         {!isSystem && comment.text && (
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#1E1F21', lineHeight: '20px', ...LIGA }}>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text)', lineHeight: '20px', ...LIGA }}>
             {comment.text}
           </p>
         )}
         {!isSystem && comment.steps?.length > 0 && (
           <ol style={{ margin: '6px 0 0', padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 5 }}>
             {comment.steps.map((s, i) => (
-              <li key={i} style={{ fontSize: 13, color: '#1E1F21', lineHeight: '20px', ...LIGA }}>{s}</li>
+              <li key={i} style={{ fontSize: 13, color: 'var(--text)', lineHeight: '20px', ...LIGA }}>{s}</li>
             ))}
           </ol>
         )}
@@ -429,7 +429,7 @@ function NextStepsCard({ steps }) {
       </div>
       <ol style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 7 }}>
         {steps.map((s, i) => (
-          <li key={i} style={{ fontSize: 13, color: '#374151', lineHeight: '20px', ...LIGA }}>{s}</li>
+          <li key={i} style={{ fontSize: 13, color: 'var(--text)', lineHeight: '20px', ...LIGA }}>{s}</li>
         ))}
       </ol>
     </div>
@@ -452,7 +452,7 @@ export default function BasicTaskView({ task, onClose }) {
   ]);
 
   const meAuthor = task.assignee?.name ?? task.reporter?.name ?? 'Me';
-  const meBg     = task.assignee?.bg  ?? task.reporter?.bg  ?? '#6D6E6F';
+  const meBg     = task.assignee?.bg  ?? task.reporter?.bg  ?? 'var(--icon)';
 
   function handleSend() {
     const text = commentInput.trim();
@@ -465,7 +465,7 @@ export default function BasicTaskView({ task, onClose }) {
   const calColor = dueDateIsOverdue ? '#C92F54' : '#0D7F56';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'white', overflow: 'hidden', fontFamily: SFT }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--surface)', overflow: 'hidden', fontFamily: SFT }}>
 
       {/* ── Toolbar ── */}
       <TaskToolbar isComplete={isComplete} onMarkComplete={() => setIsComplete(c => !c)} onClose={onClose} task={task} />
@@ -477,64 +477,64 @@ export default function BasicTaskView({ task, onClose }) {
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '24px 24px 0', overscrollBehavior: 'none' }}>
 
         {/* Breadcrumb */}
-        <div style={{ fontSize: 12, color: '#9EA0A2', marginBottom: 4, lineHeight: '18px', ...LIGA }}>
+        <div style={{ fontSize: 12, color: 'var(--text-disabled)', marginBottom: 4, lineHeight: '18px', ...LIGA }}>
           IT Escalations Inbox
-          <span style={{ margin: '0 6px', color: '#CFCBCB' }}>›</span>
+          <span style={{ margin: '0 6px', color: 'var(--border-strong)' }}>›</span>
           <span>{task.ticket}</span>
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: SFD, fontSize: 24, fontWeight: 500, color: 'var(--neutrals-lm-text, #1E1F21)', lineHeight: '32px', margin: '0 0 16px', letterSpacing: '0.35px', ...LIGA }}>
+        <h1 style={{ fontFamily: SFD, fontSize: 24, fontWeight: 500, color: 'var(--text)', lineHeight: '32px', margin: '0 0 16px', letterSpacing: '0.35px', ...LIGA }}>
           {task.name}
         </h1>
 
         {/* Field rows — mirrors project columns */}
         <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 20, fontFamily: SFT }}>
           <span style={{ width: 108, flexShrink: 0, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', paddingTop: 10, paddingRight: 16, ...LIGA }}>Fields</span>
-          <div style={{ flex: 1, border: '1px solid #EDEAE9', borderRadius: 6, overflow: 'hidden' }}>
+          <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
           <FieldRow label="Assignee" icon={<UserIcon />}>
             {task.assignee
               ? <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Avi name={task.assignee.name} size={22} bg={task.assignee.bg} />
-                  <span style={{ fontSize: 13, color: '#1E1F21', ...LIGA }}>{task.assignee.name}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text)', ...LIGA }}>{task.assignee.name}</span>
                 </div>
-              : <span style={{ fontSize: 13, color: '#9EA0A2', fontFamily: SFT }}>Unassigned</span>
+              : <span style={{ fontSize: 13, color: 'var(--text-disabled)', fontFamily: SFT }}>Unassigned</span>
             }
           </FieldRow>
           {task.reporter && (
             <FieldRow label="Customer" icon={<UserIcon />}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Avi name={task.reporter.name} size={22} bg={task.reporter.bg} />
-                <span style={{ fontSize: 13, color: '#1E1F21', ...LIGA }}>{task.reporter.name}</span>
+                <span style={{ fontSize: 13, color: 'var(--text)', ...LIGA }}>{task.reporter.name}</span>
               </div>
             </FieldRow>
           )}
           <FieldRow label="Department">
-            <span style={{ fontSize: 13, color: task.reporter?.dept ? '#1E1F21' : '#9EA0A2', ...LIGA }}>
+            <span style={{ fontSize: 13, color: task.reporter?.dept ? 'var(--text)' : 'var(--text-disabled)', ...LIGA }}>
               {task.reporter?.dept ?? '—'}
             </span>
           </FieldRow>
           {task.escalationType && (
             <FieldRow label="Type">
               {(() => {
-                const ts = { Hardware: { bg: '#FEF3C7', color: '#92400E' }, Software: { bg: '#EDE9FE', color: '#5B21B6' }, Access: { bg: '#DBEAFE', color: '#1D4ED8' }, Network: { bg: '#FCE7F3', color: '#9D174D' } }[task.escalationType] ?? { bg: '#F3F4F6', color: '#6D6E6F' };
+                const ts = { Hardware: { bg: '#FEF3C7', color: '#92400E' }, Software: { bg: '#EDE9FE', color: '#5B21B6' }, Access: { bg: 'var(--selected-background)', color: 'var(--selected-text)' }, Network: { bg: '#FCE7F3', color: '#9D174D' } }[task.escalationType] ?? { bg: 'var(--priority-low-bg)', color: 'var(--priority-low-text)' };
                 return <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 500, fontFamily: SFT, padding: '2px 8px', borderRadius: 4, background: ts.bg, color: ts.color, ...LIGA }}>{task.escalationType}</span>;
               })()}
             </FieldRow>
           )}
-          <FieldRow label="Due date" icon={<CalendarIcon color="#9EA0A2" />}>
+          <FieldRow label="Due date" icon={<CalendarIcon color="var(--text-disabled)" />}>
             {task.dueDate
               ? <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <CalendarIcon color={calColor} />
                   <span style={{ fontSize: 13, color: calColor, ...LIGA }}>{task.dueDate}</span>
                 </div>
-              : <span style={{ fontSize: 13, color: '#9EA0A2', fontFamily: SFT }}>No due date</span>
+              : <span style={{ fontSize: 13, color: 'var(--text-disabled)', fontFamily: SFT }}>No due date</span>
             }
           </FieldRow>
           {task.status && (
             <FieldRow label="Status">
               {(() => {
-                const ss = { 'Needs review': { bg: '#EDE9FE', color: '#5B21B6' }, 'In progress': { bg: '#DBEAFE', color: '#1D4ED8' }, 'Blocked': { bg: '#FEE2E2', color: '#991B1B' }, 'Resolved': { bg: '#D1FAE5', color: '#065F46' } }[task.status] ?? {};
+                const ss = { 'Needs review': { bg: '#EDE9FE', color: '#5B21B6' }, 'In progress': { bg: 'var(--selected-background)', color: 'var(--selected-text)' }, 'Blocked': { bg: 'var(--danger-background)', color: 'var(--danger-text)' }, 'Resolved': { bg: 'var(--success-background)', color: 'var(--success-text)' } }[task.status] ?? {};
                 return <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 500, fontFamily: SFT, padding: '2px 8px', borderRadius: 4, background: ss.bg, color: ss.color, ...LIGA }}>{task.status}</span>;
               })()}
             </FieldRow>
@@ -542,13 +542,13 @@ export default function BasicTaskView({ task, onClose }) {
           {task.priority && (
             <FieldRow label="Priority">
               {(() => {
-                const ps = { Critical: { bg: '#FEF3C7', color: '#92400E' }, High: { bg: '#FCE7F3', color: '#9D174D' }, Medium: { bg: '#DBEAFE', color: '#1D4ED8' }, Low: { bg: '#F3F4F6', color: '#6D6E6F' } }[task.priority] ?? {};
+                const ps = { Critical: { bg: '#FEF3C7', color: '#92400E' }, High: { bg: '#FCE7F3', color: '#9D174D' }, Medium: { bg: 'var(--selected-background)', color: 'var(--selected-text)' }, Low: { bg: 'var(--priority-low-bg)', color: 'var(--priority-low-text)' } }[task.priority] ?? {};
                 return <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 500, fontFamily: SFT, padding: '2px 8px', borderRadius: 4, background: ps.bg, color: ps.color, ...LIGA }}>{task.priority}</span>;
               })()}
             </FieldRow>
           )}
           <FieldRow label="Ticket ID" last icon={<TextIcon />}>
-            <span style={{ fontSize: 12, color: '#1E1F21', fontFamily: 'SF Mono, ui-monospace, monospace', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px' }}>
+            <span style={{ fontSize: 12, color: 'var(--text)', fontFamily: 'SF Mono, ui-monospace, monospace', background: 'var(--background-medium)', borderRadius: 4, padding: '2px 7px' }}>
               {task.ticket}
             </span>
           </FieldRow>
@@ -557,14 +557,14 @@ export default function BasicTaskView({ task, onClose }) {
 
 
         {/* ── Comments section (scrolls with content) ── */}
-        <div style={{ marginTop: 24, marginLeft: -24, marginRight: -24, padding: '0 24px', background: '#F6F5F3' }}>
+        <div style={{ marginTop: 24, marginLeft: -24, marginRight: -24, padding: '0 24px', background: 'var(--background-medium)' }}>
           {/* Comments / All activity tabs */}
-          <div style={{ display: 'flex', borderBottom: '1px solid #EDEAE9' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
             {['Comments', 'All activity'].map(tab => {
               const active = commentsTab === tab;
               return (
                 <button key={tab} onClick={() => setCommentsTab(tab)}
-                  style={{ height: 38, padding: '0 2px', marginRight: 18, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SFT, fontSize: 14, fontWeight: active ? 600 : 400, color: active ? '#1E1F21' : '#6D6E6F', borderBottom: active ? '2px solid #1E1F21' : '2px solid transparent', marginBottom: -1 }}>
+                  style={{ height: 38, padding: '0 2px', marginRight: 18, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SFT, fontSize: 14, fontWeight: active ? 600 : 400, color: active ? 'var(--text)' : 'var(--text-weak)', borderBottom: active ? '2px solid var(--text)' : '2px solid transparent', marginBottom: -1 }}>
                   {tab}
                 </button>
               );
@@ -578,17 +578,17 @@ export default function BasicTaskView({ task, onClose }) {
       </div>
 
       {/* ── Sticky footer: comment input ── */}
-      <div style={{ flexShrink: 0, borderTop: '1px solid #EDEAE9', background: '#F6F5F3' }}>
+      <div style={{ flexShrink: 0, borderTop: '1px solid var(--border)', background: 'var(--background-medium)' }}>
         <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
           <Avi name={meAuthor} size={28} bg={meBg} />
-          <div style={{ flex: 1, border: '1px solid #E4E1DC', borderRadius: 20, padding: '6px 14px', cursor: 'text', background: 'white' }}>
+          <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 20, padding: '6px 14px', cursor: 'text', background: 'var(--surface)' }}>
             <textarea
               placeholder="Add a comment..."
               value={commentInput}
               onChange={e => setCommentInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
               rows={1}
-              style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontSize: 13, color: '#1E1F21', fontFamily: SFT, lineHeight: '20px', minHeight: 20, padding: 0, ...LIGA }}
+              style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontSize: 13, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', minHeight: 20, padding: 0, ...LIGA }}
             />
           </div>
         </div>

@@ -9,7 +9,7 @@ import {
 import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA, TICKET_TOPICS } from '../data/dashboard';
 import { SFT } from '../constants/typography';
 
-const TICK = { fontSize: 11, fill: '#9ea0a2', fontFamily: SFT };
+const TICK = { fontSize: 11, fill: 'var(--text-disabled)', fontFamily: SFT };
 const CARD = {
   background: 'var(--background-weak)',
   border: '1px solid var(--border)',
@@ -68,7 +68,7 @@ function TrendDown({ color = 'currentColor', size = 10 }) {
 function ChartCard({ title, subtitle, children, style }) {
   return (
     <div style={{ ...CARD, padding: '20px 24px', ...style }}>
-      <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 2px' }}>{title}</p>
+      <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 2px' }}>{title}</p>
       {subtitle && <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 16px' }}>{subtitle}</p>}
       {children}
     </div>
@@ -110,13 +110,11 @@ function KpiCard({ label, value, trend, trendGood, spark = [] }) {
         background: 'var(--background-weak)',
         borderRadius: 10,
         padding: '18px 20px',
-        boxShadow: hov
-          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
-          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
+        boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
       }}>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
       <p style={{ fontSize: 12, color: trendColor, fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
         {trendPrefix} {trend}
       </p>
@@ -128,16 +126,18 @@ function KpiCard({ label, value, trend, trendGood, spark = [] }) {
 
 // Blue scale: index 0 = highest volume (darkest) → index 7 = lowest (lightest)
 const TOPIC_BLUES = [
-  '#1e3a8a', '#1d4ed8', '#2563eb', '#3b82f6',
-  '#4273D1', '#60a5fa', '#93c5fd', '#bfdbfe',
+  'var(--chart-0)', 'var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)',
+  'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)', 'var(--chart-7)',
 ];
 
 function TreemapContent(props) {
   const { x, y, width, height, name, count, sla, colorIdx } = props;
   if (!width || !height || width < 4 || height < 4) return null;
   const bg = TOPIC_BLUES[colorIdx ?? 0];
-  const isDark = (colorIdx ?? 0) < 5;
-  const textFill = isDark ? '#ffffff' : '#1e3a8a';
+  const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+  const idx = colorIdx ?? 0;
+  const needsWhiteText = isDarkTheme ? idx >= 3 : idx < 5;
+  const textFill = needsWhiteText ? 'white' : 'var(--text)';
   return (
     <g>
       <rect
@@ -175,7 +175,7 @@ function TopicVolumeCard() {
       {/* ── Left: treemap ──────────────────────────────────────────────── */}
       <div style={{ flex: '0 0 60%', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px 8px', flexShrink: 0 }}>
-          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>Ticket topics</p>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>Ticket topics</p>
           <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Volume by category · this month</p>
         </div>
         <div style={{ flex: 1, minHeight: 0, padding: '0 16px 16px' }}>
@@ -194,7 +194,7 @@ function TopicVolumeCard() {
       {/* ── Right: sparkline rows ──────────────────────────────────────── */}
       <div style={{ flex: '0 0 40%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px 8px', flexShrink: 0 }}>
-          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>7-day trend</p>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>7-day trend</p>
           <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Daily ticket volume per topic</p>
         </div>
         <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
@@ -285,8 +285,8 @@ function DonutCenter({ viewBox, total }) {
   const { cx, cy } = viewBox;
   return (
     <text textAnchor="middle" dominantBaseline="middle">
-      <tspan x={cx} y={cy - 7} fontSize="20" fontWeight="700" fill="#1E1F21" fontFamily={SFT}>{total}</tspan>
-      <tspan x={cx} y={cy + 11} fontSize="10" fill="#9ea0a2" fontFamily={SFT}>tickets</tspan>
+      <tspan x={cx} y={cy - 7} fontSize="20" fontWeight="700" fill="var(--text)" fontFamily={SFT}>{total}</tspan>
+      <tspan x={cx} y={cy + 11} fontSize="10" fill="var(--text-disabled)" fontFamily={SFT}>tickets</tspan>
     </text>
   );
 }
@@ -382,7 +382,7 @@ function DashRecommendedTile({ item }) {
   const [hov, setHov] = useState(false);
   return (
     <div role="button" tabIndex={0} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background: hov ? 'var(--background-medium)' : '#fff', borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', transition: 'background 0.1s' }}>
+      style={{ background: hov ? 'var(--background-medium)' : 'var(--surface)', borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', transition: 'background 0.1s' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {DASH_LOGO[item.id]}
@@ -398,7 +398,7 @@ function DashIntegrationsCard() {
   return (
     <div style={{ ...CARD, overflow: 'hidden' }}>
       <div style={{ padding: '20px 20px 18px' }}>
-        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 10px' }}>Integrations</p>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 10px' }}>Integrations</p>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
           <span style={{ fontFamily: SFT, fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>23pp</span>
           <span style={{ fontSize: 14, color: 'var(--text-weak)', fontFamily: SFT }}>of AI deflection driven by integrations</span>
@@ -413,7 +413,7 @@ function DashIntegrationsCard() {
           ))}
         </div>
       </div>
-      <div style={{ background: 'var(--Default-background-medium, #F2F3F4)', padding: '14px 20px 20px', borderTop: '1px solid var(--border)' }}>
+      <div style={{ background: 'var(--background-medium)', padding: '14px 20px 20px', borderTop: '1px solid var(--border)' }}>
         <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 12px' }}>Recommended integrations</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {RECOMMENDED_INTEGRATIONS.map(item => <DashRecommendedTile key={item.id} item={item} />)}
@@ -433,7 +433,7 @@ function TicketResolutionTable() {
   return (
     <div style={{ ...CARD, overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 16px' }}>
-        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Ticket Resolution by Type</p>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Ticket Resolution by Type</p>
         <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Detailed breakdown of resolution methods by ticket category</p>
       </div>
 
@@ -558,7 +558,7 @@ function KBPerformanceCard() {
   return (
     <div style={{ ...CARD, overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 16px' }}>
-        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Knowledge Base Performance</p>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Knowledge Base Performance</p>
         <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Article views, ticket deflections, and content gaps</p>
       </div>
       <div style={{ padding: '0 24px' }}>
@@ -598,7 +598,7 @@ function KBOptimizationsCard() {
   return (
     <div style={{ ...CARD, overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 16px' }}>
-        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>KB Optimizations</p>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>KB Optimizations</p>
         <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Suggested improvements to KB content</p>
       </div>
       <div style={{ padding: '0 24px' }}>
@@ -665,13 +665,11 @@ function TeamKpiCard({ label, value }) {
         background: 'var(--background-weak)',
         borderRadius: 10,
         padding: '18px 20px',
-        boxShadow: hov
-          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
-          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
+        boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
       }}>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: 0, fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: 0, fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
     </div>
   );
 }
@@ -853,14 +851,14 @@ function TeamTab() {
                   {/* Grey base — full data */}
                   <Area
                     type="monotone" dataKey="base" name={agent.name}
-                    stroke="#9CA3AF" fill="#9CA3AF" fillOpacity={0.15}
+                    stroke="var(--chart-neutral)" fill="var(--chart-neutral)" fillOpacity={0.15}
                     strokeWidth={1.5} dot={false}
-                    activeDot={{ r: 3, fill: '#9CA3AF', strokeWidth: 0 }}
+                    activeDot={{ r: 3, fill: 'var(--chart-neutral)', strokeWidth: 0 }}
                   />
                   {/* Red overload — full bar from bottom on over-capacity days */}
                   <Area
                     type="monotone" dataKey="over"
-                    stroke="#D43D5D" fill="#D43D5D" fillOpacity={0.3}
+                    stroke="var(--chart-danger)" fill="var(--chart-danger)" fillOpacity={0.3}
                     strokeWidth={1.5} dot={false} connectNulls={false}
                     activeDot={false}
                   />
@@ -932,7 +930,7 @@ function LeaderboardTab() {
       {/* Sub-header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <p style={{ fontSize: 14, fontWeight: 500, color: '#1E1F21', fontFamily: SFT, margin: '0 0 2px' }}>Team performance</p>
+          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 2px' }}>Team performance</p>
           <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Ranked by {LB_COLS.find(c => c.key === sortKey)?.label ?? sortKey} · click any column to re-sort</p>
         </div>
         <div style={{ display: 'flex', background: 'var(--background-medium)', borderRadius: 8, padding: 3, gap: 2 }}>
@@ -940,9 +938,9 @@ function LeaderboardTab() {
             <button key={p} type="button" onClick={() => setPeriod(p)} style={{
               padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
               fontSize: 12, fontWeight: period === p ? 500 : 400, fontFamily: SFT,
-              background: period === p ? 'white' : 'transparent',
+              background: period === p ? 'var(--surface)' : 'transparent',
               color: period === p ? 'var(--text)' : 'var(--text-weak)',
-              boxShadow: period === p ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              boxShadow: period === p ? 'var(--shadow-sm)' : 'none',
               transition: 'all 0.12s',
             }}>{p}</button>
           ))}
@@ -955,7 +953,7 @@ function LeaderboardTab() {
         <div style={{
           display: 'grid', gridTemplateColumns: '48px 1fr 100px 80px 80px 80px 120px',
           padding: '0 20px', height: 36, alignItems: 'center',
-          borderBottom: '1px solid var(--border)', background: 'white',
+          borderBottom: '1px solid var(--border)', background: 'var(--surface)',
         }}>
           <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>#</span>
           <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>Agent</span>
@@ -1086,7 +1084,7 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: 16 }}>
           <div>
-            <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 3px' }}>
+            <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 3px' }}>
               {hideTabs ? 'Team workload' : 'Dashboard'}
             </h1>
             <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>

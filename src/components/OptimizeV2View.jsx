@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { OPTIMIZE_GAPS } from '../data/optimize';
-import { TABS, ImpactPill, CxScorePill, StatusBadge, GapDetailPanel } from './OptimizeView';
+import { TABS, ImpactPill, CxScorePill, StatusBadge, GapDetailPanel, CATEGORY_CONFIG, TOP_ACTIONS, getPriorityScore, formatEffortHours } from './OptimizeView';
 import RightPanelOverlay from './RightPanelOverlay';
 import Pill from './Pill';
 
@@ -27,9 +27,10 @@ const SECTIONS = [
 
 // ─── Gap card (Automations-style) ─────────────────────────────────────────────
 
-function GapCardV2({ item, status, selected, onSelect }) {
+function GapCardV2({ item, status, selected, onSelect, showCategory = false }) {
   const [hov, setHov] = useState(false);
   const isDone = status === 'done' || status === 'dismissed';
+  const cat = item._tabId ? CATEGORY_CONFIG[item._tabId] : null;
 
   return (
     <div
@@ -46,7 +47,7 @@ function GapCardV2({ item, status, selected, onSelect }) {
         padding: 20,
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 10,
         cursor: 'pointer',
         outline: 'none',
         boxShadow: hov && !selected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
@@ -54,13 +55,18 @@ function GapCardV2({ item, status, selected, onSelect }) {
         opacity: isDone ? 0.6 : 1,
       }}
     >
-      {/* Header: impact/score pill + ticket count */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Header row: category (optional) + impact/score + ticket count */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        {showCategory && cat && (
+          <span style={{ fontSize: 10, fontWeight: 600, fontFamily: SFT, padding: '2px 6px', borderRadius: 4, background: cat.bg, color: cat.color }}>
+            {cat.label}
+          </span>
+        )}
         {item.cxScore != null
           ? <CxScorePill score={item.cxScore} />
           : <ImpactPill impact={item.impact} />
         }
-        <span style={{ fontSize: 12, color: 'var(--text-disabled)', fontFamily: SFT }}>
+        <span style={{ fontSize: 12, color: 'var(--text-disabled)', fontFamily: SFT, marginLeft: 'auto' }}>
           {item.ticketCount} {item.cxScore != null ? 'interactions' : 'tickets'}
         </span>
       </div>
@@ -85,9 +91,22 @@ function GapCardV2({ item, status, selected, onSelect }) {
         {item.suggestion}
       </p>
 
-      {/* Footer: status */}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <StatusBadge status={status} />
+      {/* Footer: impact/effort metadata + status */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+        {item.hoursSaved && (
+          <span style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text-weak)', fontWeight: 500 }}>
+            {item.hoursSaved} hrs/mo saved
+          </span>
+        )}
+        {item.effortHours && (
+          <>
+            {item.hoursSaved && <span style={{ fontSize: 11, color: 'var(--border)', fontFamily: SFT }}>·</span>}
+            <span style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text-weak)', fontWeight: 500 }}>
+              {formatEffortHours(item.effortHours)}
+            </span>
+          </>
+        )}
+        {status && status !== 'open' && <StatusBadge status={status} />}
       </div>
     </div>
   );
@@ -103,6 +122,8 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
   const allItems = Object.entries(OPTIMIZE_GAPS).flatMap(([tabId, items]) =>
     items.map(item => ({ ...item, _tabId: tabId }))
   );
+
+  const priorityItems = TOP_ACTIONS.map(item => ({ ...item, _tabId: item.tabId }));
 
   const activeTabConfig = TABS.find(t => t.id === (selectedItem?._tabId ?? activeFilter)) ?? TABS[0];
 
@@ -120,7 +141,7 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
 
       {/* Page header */}
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 4px' }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 4px' }}>
           Optimize
         </h1>
         <p style={{ fontSize: 13, color: 'var(--text-weak)', margin: 0, fontFamily: SFT }}>
@@ -156,6 +177,27 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
           }))
           .filter(s => s.items.length > 0);
 
+        const prioritySection = activeFilter === 'all' ? (
+          <div key="__priority" style={{ marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>Priority</span>
+              <span style={{ fontSize: 13, color: 'var(--text-disabled)', fontFamily: SFT }}>ranked by return on time</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+              {priorityItems.map(item => (
+                <GapCardV2
+                  key={item.id}
+                  item={item}
+                  status={statuses[item.id]}
+                  selected={selectedItem?.id === item.id}
+                  onSelect={i => setSelectedItem(i)}
+                  showCategory
+                />
+              ))}
+            </div>
+          </div>
+        ) : null;
+
         if (visibleSections.length === 0) {
           return (
             <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-disabled)', fontSize: 14, fontFamily: SFT }}>
@@ -166,6 +208,7 @@ export default function OptimizeV2View({ onNavigateToTicket }) {
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+            {prioritySection}
             {visibleSections.map(section => (
               <div key={section.id}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>

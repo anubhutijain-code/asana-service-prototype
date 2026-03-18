@@ -119,10 +119,15 @@ const NAV_ITEMS = [
 const AGENT_PRIMARY = new Set(['service', 'company']);
 
 const ROLES = [
-  { id: 'admin2', label: 'Anubhuti Jain', role: 'IT Admin',        initials: 'AJ', color: '#c0856a' },
-  { id: 'admin',  label: 'Priya Sharma',  role: 'Analytics Admin', initials: 'PS', color: '#6a8ec0' },
-  { id: 'agent',  label: 'Marcus Lee',    role: 'IT Agent',        initials: 'ML', color: '#6ac08e' },
-  { id: 'agent3', label: 'Jordan Kim',    role: 'Support Agent',   initials: 'JK', color: '#a06ac0' },
+  { id: 'admin2', label: 'Anubhuti Jain', role: 'IT Admin',        initials: 'AJ', color: '#c0856a', group: 'recommended' },
+  { id: 'agent',  label: 'Marcus Lee',    role: 'IT Agent',        initials: 'ML', color: '#6ac08e', group: 'recommended' },
+  { id: 'admin',  label: 'Priya Sharma',  role: 'Analytics Admin', initials: 'PS', color: '#6a8ec0', group: 'others' },
+  { id: 'agent3', label: 'Jordan Kim',    role: 'Support Agent',   initials: 'JK', color: '#a06ac0', group: 'others' },
+];
+
+const ROLE_GROUPS = [
+  { key: 'recommended', label: 'Recommended' },
+  { key: 'others',      label: 'Others' },
 ];
 
 // ── NavItem ────────────────────────────────────────────────────────────────────
@@ -312,13 +317,13 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
               style={{
                 width: 28, height: 28, borderRadius: '50%',
                 background: activeRole.color,
-                border: profileOpen ? '2px solid #6D6E6F' : '2px solid transparent',
+                border: profileOpen ? '2px solid var(--icon)' : '2px solid transparent',
                 cursor: 'pointer', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 10, fontWeight: 700, color: 'white',
                 fontFamily: SFT, transition: 'border-color 150ms',
               }}
-              onMouseEnter={e => { if (!profileOpen) e.currentTarget.style.borderColor = '#c0c0c0'; }}
+              onMouseEnter={e => { if (!profileOpen) e.currentTarget.style.borderColor = 'var(--border-strong)'; }}
               onMouseLeave={e => { if (!profileOpen) e.currentTarget.style.borderColor = 'transparent'; }}
             >
               {activeRole.initials}
@@ -337,10 +342,10 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
             left: dropdownPos.left,
             zIndex: 9999,
             width: 360,
-            background: 'white',
+            background: 'var(--background-weak)',
             border: '1px solid var(--border)',
             borderRadius: 10,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+            boxShadow: 'var(--shadow-lg)',
             display: 'flex',
             overflow: 'hidden',
             fontFamily: SFT,
@@ -355,58 +360,61 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
             flexDirection: 'column',
             background: 'var(--background-weak)',
           }}>
-            <div style={{
-              padding: '12px 12px 6px',
-              fontSize: 10, fontWeight: 600,
-              letterSpacing: '0.06em',
-              color: 'var(--text-disabled)',
-              textTransform: 'uppercase',
-            }}>
-              Account
-            </div>
-            {ROLES.map(({ id, label, role: roleLabel, initials, color }) => {
-              const active = role === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => handleRoleSelect(id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    width: '100%', padding: '7px 10px 7px 12px',
-                    background: active ? 'var(--background-medium)' : 'transparent',
-                    border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: SFT,
-                  }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--background-medium)'; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <div style={{
-                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                    background: color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 8, fontWeight: 700, color: 'white',
-                  }}>{initials}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 12, fontWeight: active ? 600 : 400,
-                      color: active ? 'var(--text)' : 'var(--text-weak)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      lineHeight: '15px',
-                    }}>{label}</div>
-                    <div style={{
-                      fontSize: 10, color: 'var(--text-disabled)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      lineHeight: '13px',
-                    }}>{roleLabel}</div>
-                  </div>
-                  {active && (
-                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: 'var(--text)' }}>
-                      <path d="M2 6.5L5 9.5L11 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
+            <div style={{ paddingTop: 8 }} />
+            {ROLE_GROUPS.map(({ key, label: groupLabel }) => (
+              <div key={key}>
+                <div style={{
+                  padding: '8px 12px 4px',
+                  fontSize: 10, fontWeight: 600,
+                  letterSpacing: '0.06em',
+                  color: 'var(--text-disabled)',
+                  textTransform: 'uppercase',
+                }}>{groupLabel}</div>
+                {ROLES.filter(r => r.group === key).map(({ id, label, role: roleLabel, initials, color }) => {
+                  const active = role === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => handleRoleSelect(id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        width: '100%', padding: '7px 10px 7px 12px',
+                        background: active ? 'var(--background-medium)' : 'transparent',
+                        border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: SFT,
+                      }}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--background-medium)'; }}
+                      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{
+                        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                        background: color,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 8, fontWeight: 700, color: 'white',
+                      }}>{initials}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: 12, fontWeight: active ? 600 : 400,
+                          color: active ? 'var(--text)' : 'var(--text-weak)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          lineHeight: '15px',
+                        }}>{label}</div>
+                        <div style={{
+                          fontSize: 10, color: 'var(--text-disabled)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          lineHeight: '13px',
+                        }}>{roleLabel}</div>
+                      </div>
+                      {active && (
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, color: 'var(--text)' }}>
+                          <path d="M2 6.5L5 9.5L11 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
           {/* ── Right: user + menu ────────────────────────────────────────── */}
@@ -450,6 +458,40 @@ export default function ModeSidebar({ active, onSelect, role, onRoleChange }) {
 
             {/* Menu items */}
             <div style={{ flex: 1, padding: '4px 0' }}>
+              {/* Dark mode toggle */}
+              {(() => {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                return (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? null : 'dark';
+                      if (next) {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                      } else {
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('theme', 'light');
+                      }
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      width: '100%', padding: '7px 14px',
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      fontSize: 13, fontFamily: SFT, textAlign: 'left',
+                      color: 'var(--text)',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <span>Dark mode</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 4,
+                      background: 'var(--background-medium)', color: 'var(--text-disabled)',
+                    }}>{isDark ? 'ON' : 'OFF'}</span>
+                  </button>
+                );
+              })()}
               {[
                 { label: 'My organization' },
                 { label: 'Invite to Asana' },

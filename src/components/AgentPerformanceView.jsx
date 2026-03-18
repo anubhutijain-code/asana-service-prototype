@@ -8,7 +8,7 @@ import {
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const SFD = '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-const TICK = { fontSize: 11, fill: '#9ea0a2', fontFamily: SFT };
+const TICK = { fontSize: 11, fill: 'var(--text-disabled)', fontFamily: SFT };
 
 // ── Mock data per period ───────────────────────────────────────────────────────
 
@@ -111,8 +111,8 @@ function KpiCard({ label, value, suffix, better }) {
       }}
     >
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: SFD, fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
-      <p style={{ fontSize: 12, color: better ? '#16a34a' : 'var(--danger-text)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
+      <p style={{ fontFamily: SFD, fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontSize: 12, color: better ? 'var(--success-text)' : 'var(--danger-text)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
         {better ? '↑' : '↓'} {suffix}
       </p>
     </div>
@@ -129,13 +129,13 @@ function TrendChart({ title, dataKey, teamKey, data, color, unit, domain }) {
       borderRadius: 8,
       padding: '16px 20px 12px',
     }}>
-      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--Default-text, #1E1F21)', fontFamily: SFT, margin: '0 0 4px', letterSpacing: '-0.2px' }}>{title}</p>
+      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: '0 0 4px', letterSpacing: '-0.2px' }}>{title}</p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>
           <span style={{ width: 16, height: 2, background: color, display: 'inline-block', borderRadius: 1, flexShrink: 0 }} /> Me
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>
-          <span style={{ width: 16, height: 0, borderTop: '2px dashed #9ea0a2', display: 'inline-block', flexShrink: 0 }} /> Team avg
+          <span style={{ width: 16, height: 0, borderTop: '2px dashed var(--text-disabled)', display: 'inline-block', flexShrink: 0 }} /> Team avg
         </span>
       </div>
       <ResponsiveContainer width="100%" height={100}>
@@ -145,11 +145,11 @@ function TrendChart({ title, dataKey, teamKey, data, color, unit, domain }) {
           <YAxis tick={TICK} axisLine={false} tickLine={false} domain={domain} tickFormatter={v => unit ? `${v}${unit}` : v} />
           <RechartsTooltip
             formatter={(val, name) => [`${val}${unit ?? ''}`, name === dataKey ? 'Me' : 'Team avg']}
-            contentStyle={{ fontSize: 12, fontFamily: SFT, border: '1px solid var(--border)', borderRadius: 6 }}
+            contentStyle={{ fontSize: 12, fontFamily: SFT, border: '1px solid var(--border)', borderRadius: 6, background: 'var(--surface)', color: 'var(--text)' }}
             labelStyle={{ color: 'var(--text-weak)', marginBottom: 4 }}
           />
           <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={{ r: 3, fill: color }} activeDot={{ r: 4 }} />
-          <Line type="monotone" dataKey={teamKey} stroke="#9ea0a2" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
+          <Line type="monotone" dataKey={teamKey} stroke="var(--text-disabled)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -162,7 +162,7 @@ function StarRating({ value }) {
   return (
     <div style={{ display: 'flex', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} viewBox="0 0 12 12" width="11" height="11" fill={i <= value ? '#F59E0B' : '#E5E7EB'}>
+        <svg key={i} viewBox="0 0 12 12" width="11" height="11" fill={i <= value ? 'var(--warning-background-strong)' : 'var(--border)'}>
           <path d="M6 1l1.3 2.6L10 4.1 8 6.1l.5 2.9L6 7.6 3.5 9 4 6.1 2 4.1l2.7-.5L6 1z"/>
         </svg>
       ))}
@@ -239,7 +239,7 @@ export default function AgentPerformanceView() {
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontFamily: SFD, fontSize: 20, fontWeight: 500, color: '#1E1F21', margin: 0, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off" }}>
+        <h1 style={{ fontFamily: SFD, fontSize: 20, fontWeight: 500, color: 'var(--text)', margin: 0, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off" }}>
           My performance
         </h1>
 
@@ -249,7 +249,7 @@ export default function AgentPerformanceView() {
             <button key={p} type="button" onClick={() => setPeriod(p)} style={{
               padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
               fontSize: 12, fontWeight: period === p ? 500 : 400, fontFamily: SFT,
-              background: period === p ? 'white' : 'transparent',
+              background: period === p ? 'var(--surface)' : 'transparent',
               color: period === p ? 'var(--text)' : 'var(--text-weak)',
               boxShadow: period === p ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               transition: 'all 0.12s',
@@ -265,15 +265,15 @@ export default function AgentPerformanceView() {
 
       {/* Trend charts — 2×2 grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-        <TrendChart title="Tickets resolved" dataKey="resolved" teamKey="teamResolved" data={trend} color="#4786FF" domain={[0, 20]} />
-        <TrendChart title="CSAT score"       dataKey="csat"     teamKey="teamCsat"     data={trend} color="#16a34a" domain={[3.5, 5.0]} />
+        <TrendChart title="Tickets resolved" dataKey="resolved" teamKey="teamResolved" data={trend} color="var(--chart-4)" domain={[0, 20]} />
+        <TrendChart title="CSAT score"       dataKey="csat"     teamKey="teamCsat"     data={trend} color="var(--success-text)" domain={[3.5, 5.0]} />
         <TrendChart title="FCR rate (%)"     dataKey="fcr"      teamKey="teamFcr"      data={trend} color="#8b5cf6" unit="%" domain={[70, 95]} />
-        <TrendChart title="MTTA (hours)"     dataKey="mtta"     teamKey="teamMtta"     data={trend} color="#f59e0b" unit="h" domain={[1, 3.5]} />
+        <TrendChart title="MTTA (hours)"     dataKey="mtta"     teamKey="teamMtta"     data={trend} color="var(--warning-background-strong)" unit="h" domain={[1, 3.5]} />
       </div>
 
       {/* Recently resolved — flat table with column dividers */}
       <div>
-        <p style={{ fontSize: 14, fontWeight: 500, color: '#1E1F21', margin: '0 0 10px', fontFamily: SFT, letterSpacing: '-0.2px' }}>Recently resolved</p>
+        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: '0 0 10px', fontFamily: SFT, letterSpacing: '-0.2px' }}>Recently resolved</p>
         <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
           <TableHeader />
           {tickets.map((t, i) => (

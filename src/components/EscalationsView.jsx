@@ -3,9 +3,12 @@
 // Read-only view for admin visibility into high/critical tickets in flight.
 
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
 import { SlaCell } from './ui/TicketCells';
+import TicketMoreMenu from './ui/TicketMoreMenu';
+import CloseAndMoveModal from './CloseAndMoveModal';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -18,7 +21,7 @@ const ESCALATIONS = [
     time: '38m ago',
     assignedTo: 'Jamie Chen',
     initials: 'JC',
-    color: '#4273D1',
+    color: 'var(--selected-text)',
     ticket: {
       id: 'IT-4889',
       name: 'Production database hit failover threshold mid-deployment — potential record inconsistency',
@@ -65,7 +68,7 @@ const ESCALATIONS = [
     time: '1h ago',
     assignedTo: 'Marcus Rivera',
     initials: 'MR',
-    color: '#D43D5D',
+    color: 'var(--danger-text)',
     ticket: {
       id: 'IT-4801',
       name: 'VPN authentication broken for ~47 users after identity provider cert update',
@@ -112,7 +115,7 @@ const ESCALATIONS = [
     time: '2h ago',
     assignedTo: 'Tom Reyes',
     initials: 'TR',
-    color: '#C48B35',
+    color: 'var(--warning-text)',
     ticket: {
       id: 'IT-4744',
       name: 'WAF detected 340 failed login attempts on IT admin portal — external IP blocked',
@@ -159,7 +162,7 @@ const ESCALATIONS = [
     time: '3h ago',
     assignedTo: 'Priya Nair',
     initials: 'PN',
-    color: '#5DA182',
+    color: 'var(--success-text)',
     ticket: {
       id: 'IT-4712',
       name: 'Outbound emails from finance@acme.com bouncing — domain flagged by recipient MX servers',
@@ -202,15 +205,15 @@ const ESCALATIONS = [
 ];
 
 const PRIORITY_PILL = {
-  Critical: { bg: '#FEF3C7', color: '#92400E' },
-  High:     { bg: '#FEE2E2', color: '#991B1B' },
-  Medium:   { bg: '#DBEAFE', color: '#1D4ED8' },
-  Low:      { bg: '#F3F4F6', color: '#6D6E6F' },
+  Critical: { bg: 'var(--priority-critical-bg)', color: 'var(--priority-critical-text)' },
+  High:     { bg: 'var(--priority-high-bg)',     color: 'var(--priority-high-text)'     },
+  Medium:   { bg: 'var(--priority-medium-bg)',   color: 'var(--priority-medium-text)'   },
+  Low:      { bg: 'var(--priority-low-bg)',      color: 'var(--priority-low-text)'      },
 };
 
 // ── List row ──────────────────────────────────────────────────────────────────
 
-function EscalationRow({ item, isSelected, onSelect }) {
+function EscalationRow({ item, isSelected, onSelect, onMoreAction }) {
   const pill = PRIORITY_PILL[item.ticket.priority] ?? PRIORITY_PILL.Critical;
   const [hovered, setHovered] = useState(false);
 
@@ -230,12 +233,18 @@ function EscalationRow({ item, isSelected, onSelect }) {
         transition: 'background 0.1s',
       }}
     >
-      {/* Line 1: ticket ID + SLA */}
+      {/* Line 1: ticket ID + SLA (or more button on hover) */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
         <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
           {item.ticket.id}
         </span>
-        <SlaCell sla={item.ticket.sla} slaType={item.ticket.slaType} />
+        {hovered ? (
+          <div onClick={e => e.stopPropagation()}>
+            <TicketMoreMenu ticketId={item.ticket.id} onAction={onMoreAction} />
+          </div>
+        ) : (
+          <SlaCell sla={item.ticket.sla} slaType={item.ticket.slaType} />
+        )}
       </div>
 
       {/* Line 2: title */}
@@ -265,6 +274,13 @@ function EscalationRow({ item, isSelected, onSelect }) {
 
 export default function EscalationsView() {
   const [selectedId, setSelectedId] = useState(ESCALATIONS[0].id);
+  const navigate = useNavigate();
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [closedIds, setClosedIds] = useState(new Set());
+
+  function handleMoreAction(actionId) {
+    // kept for row-level TicketMoreMenu (no-op for close_and_move — modal handles it)
+  }
 
   // Sidebar dropdown state — reset when selection changes
   const [localStatus, setLocalStatus] = useState('');
@@ -309,7 +325,7 @@ export default function EscalationsView() {
       }}>
         {/* Header */}
         <div style={{ padding: '24px 16px 16px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
             Escalations
           </h2>
         </div>
@@ -322,6 +338,7 @@ export default function EscalationsView() {
               item={item}
               isSelected={item.id === selectedId}
               onSelect={setSelectedId}
+              onMoreAction={handleMoreAction}
             />
           ))}
         </div>
@@ -329,6 +346,23 @@ export default function EscalationsView() {
 
       {/* ── Col 2: Chat panel ───────────────────────────────────────────────── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Banner: ticket closed and moved to Asana */}
+        {closedIds.has(selectedId) && (
+          <div
+            className="shrink-0 flex items-center gap-1"
+            style={{ height: 38, padding: '0 24px', background: 'var(--success-background)', borderBottom: '1px solid var(--border)', fontSize: 13, color: 'var(--success-text)' }}
+          >
+            <span>Ticket resolved — task created in IT Escalations</span>
+            <span style={{ margin: '0 2px' }}>—</span>
+            <button
+              type="button"
+              onClick={() => navigate('/projects/it-escalations')}
+              style={{ background: 'none', border: 'none', padding: '0 2px', color: 'var(--success-text)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+            >
+              View in IT Escalations
+            </button>
+          </div>
+        )}
         <TicketChatPanel
           key={selectedId}
           ticket={selected.ticket}
@@ -337,6 +371,13 @@ export default function EscalationsView() {
           initInternal={selected.ticket.initInternal}
           initTranscript={selected.ticket.initTranscript}
           transcriptEventText={`Escalation: ${selected.title}`}
+          moreMenuItems={[
+            { label: 'Request approval' },
+            { label: 'Create ticket for HR' },
+            { label: 'Route to HR' },
+            { divider: true },
+            { label: 'Close ticket and move to Asana', onClick: () => setCloseModalOpen(true) },
+          ]}
         />
       </div>
 
@@ -364,6 +405,12 @@ export default function EscalationsView() {
         />
       </div>
 
+      <CloseAndMoveModal
+        open={closeModalOpen}
+        ticket={selected.ticket}
+        onClose={() => setCloseModalOpen(false)}
+        onConfirm={() => { setCloseModalOpen(false); setClosedIds(prev => new Set([...prev, selectedId])); }}
+      />
     </div>
   );
 }

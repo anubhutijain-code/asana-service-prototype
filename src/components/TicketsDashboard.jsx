@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Pill from './Pill';
 import StatCard from './StatCard';
-import { STATS, TABS, TICKETS, filterTickets, HR_TICKETS } from '../data/tickets';
+import { STATS, TABS, filterTickets, HR_TICKETS } from '../data/tickets';
+import { useTickets } from '../store/useTickets';
+import { useAppStore } from '../store/AppStore';
 import TicketDetailView from './TicketDetailView';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
 import { SFT, SFM, LIGA } from '../constants/typography';
 import { StatusIcon, SlaIcon, SlaCell, PriorityPill, PersonCell, typoTicketNo, typoName, typoPriority, typoStatus, typoUpdated } from './ui/TicketCells';
+import TicketMoreMenu from './ui/TicketMoreMenu';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const TICKET_FIELDS = [
@@ -80,7 +83,7 @@ function ImageAttachmentIcon() {
 // ─── Status cell — uses existing Pill + StatusIcon ────────────────────────────
 
 function StatusCell({ status }) {
-  if (status === 'Routed') return <Pill icon={<StatusIcon status={status} />} label={status} bg="#F3F4F6" color="#6D6E6F" />;
+  if (status === 'Routed') return <Pill icon={<StatusIcon status={status} />} label={status} bg="var(--priority-low-bg)" color="var(--priority-low-text)" />;
   return <Pill icon={<StatusIcon status={status} />} label={status} />;
 }
 
@@ -95,11 +98,11 @@ const divStyle = { borderRight: '1px solid var(--border)' };
 function TableHeader() {
   return (
     <div
-      className="flex items-stretch w-full bg-white sticky top-0 z-[2]"
+      className="flex items-stretch w-full bg-[var(--surface)] sticky top-0 z-[2]"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
-      <div className={`${COL} sticky left-0       bg-white z-[3] w-[120px] shrink-0`} style={divStyle}>Ticket number</div>
-      <div className={`${COL} sticky left-[120px] bg-white z-[3] w-[300px] shrink-0`} style={divStyle}>Name</div>
+      <div className={`${COL} sticky left-0       bg-[var(--surface)] z-[3] w-[120px] shrink-0`} style={divStyle}>Ticket number</div>
+      <div className={`${COL} sticky left-[120px] bg-[var(--surface)] z-[3] w-[300px] shrink-0`} style={divStyle}>Name</div>
       <div className={`${COL} w-[130px] shrink-0`} style={divStyle}>Priority</div>
       <div className={`${COL} w-[175px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[155px] shrink-0`} style={divStyle}>Last updated</div>
@@ -110,11 +113,11 @@ function TableHeader() {
   );
 }
 
-function TableRow({ ticket, onClick }) {
+function TableRow({ ticket, onClick, onMoreAction }) {
   return (
     <div
       onClick={onClick}
-      className="group flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
+      className="group relative flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
       <div className={`${CELL} sticky left-0       z-[1] bg-background-weak group-hover:bg-background-medium w-[120px] shrink-0 flex items-center`}
@@ -154,6 +157,13 @@ function TableRow({ ticket, onClick }) {
       <div className={`${CELL} flex-1 min-w-[165px] overflow-hidden`}>
         <PersonCell person={ticket.requester} />
       </div>
+      {/* More button — floats over right side on row hover */}
+      <div
+        className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-[2]"
+        onClick={e => e.stopPropagation()}
+      >
+        <TicketMoreMenu ticketId={ticket.id} onAction={onMoreAction} />
+      </div>
     </div>
   );
 }
@@ -166,29 +176,36 @@ function TableRow({ ticket, onClick }) {
 
 export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTicket = () => {}, deepLinkTicketId = null, onDeepLinkHandled = () => {}, onURLBack = null, linkedHRTickets = {}, onLinkHRTicket = () => {}, onGoToLinkedHRTicket, initialTab = 'My Tickets' }) {
   const navigate = useNavigate();
+  const { dispatch } = useAppStore();
+  const tickets = useTickets();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [statusOverrides, setStatusOverrides] = useState({});
+
+  function handleMoreAction(actionId, ticketId) {
+    if (actionId === 'mark_resolved') {
+      dispatch({ type: 'UPDATE_TICKET', id: ticketId, patch: { status: 'Resolved', resolvedAt: Date.now() } });
+    } else if (actionId === 'close_and_move') {
+      dispatch({ type: 'UPDATE_TICKET', id: ticketId, patch: { status: 'Closed', resolvedAt: Date.now() } });
+      navigate('/projects/it-escalations');
+    }
+  }
 
   // Auto-open a ticket navigated to from the HR ticket banner
   useEffect(() => {
     if (!deepLinkTicketId) return;
-    const found = TICKETS.find(t => t.id === deepLinkTicketId);
+    const found = tickets.find(t => t.id === deepLinkTicketId);
     if (found) setSelectedTicket(found);
     onDeepLinkHandled();
   }, [deepLinkTicketId]);
 
-  const ticketsWithOverrides = TICKETS.map(t =>
-    statusOverrides[t.id] ? { ...t, status: statusOverrides[t.id] } : t
-  );
   // Routed tickets leave the IT queue entirely — they live in HR now
-  const queueTickets = ticketsWithOverrides.filter(t => t.status !== 'Routed');
+  const queueTickets = tickets.filter(t => t.status !== 'Routed');
   const rows = applyFilters(filterTickets(queueTickets, activeTab, search), filters, TICKET_ACCESSORS);
 
   function handleRouteComplete(ticket, chatSnapshot, notes) {
-    setStatusOverrides(prev => ({ ...prev, [ticket.id]: 'Routed' }));
+    dispatch({ type: 'UPDATE_TICKET', id: ticket.id, patch: { status: 'Routed', routedToHR: true } });
     const nextHRNum = HR_TICKETS.reduce((m, t) => Math.max(m, parseInt(t.id.split('-')[1], 10)), 0) + 1;
     const emp = ticket.submitter?.name ?? ticket.requester?.name ?? 'the employee';
     const org = ticket.submitter?.org ?? '';
@@ -258,7 +275,11 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
 
   function handleITStatusChange(newStatus) {
     if (!selectedTicket) return;
-    setStatusOverrides(prev => ({ ...prev, [selectedTicket.id]: newStatus }));
+    const isResolved = newStatus === 'Resolved' || newStatus === 'Closed';
+    dispatch({ type: 'UPDATE_TICKET', id: selectedTicket.id, patch: {
+      status: newStatus,
+      ...(isResolved ? { resolvedAt: Date.now() } : {}),
+    }});
   }
 
   function handleCreateHRComplete(ticket, chatSnapshot, notes) {
@@ -359,7 +380,7 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
       {/* ── Ticket feed title + tabs + search — always visible ───────────── */}
       <div className="shrink-0 px-6">
 
-        <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 16px' }}>Ticket feed</h2>
+        <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 16px' }}>Ticket feed</h2>
 
         {/* Tab bar */}
         <div className="flex border-b border-border gap-6">
@@ -455,6 +476,7 @@ export default function TicketsDashboard({ onRouteToHR = () => {}, onCreateHRTic
                     key={t.id}
                     ticket={t}
                     onClick={() => navigate(`/tickets/${t.id}`)}
+                    onMoreAction={handleMoreAction}
                   />
                 ))
               : (

@@ -1,6 +1,38 @@
 import { useState } from 'react';
 import { OPTIMIZE_GAPS } from '../data/optimize';
 
+// ─── Category config ───────────────────────────────────────────────────────────
+
+export const CATEGORY_CONFIG = {
+  content: { label: 'Content', bg: 'var(--selected-background)',  color: 'var(--selected-text)'  },
+  action:  { label: 'Action',  bg: 'var(--warning-background)',   color: 'var(--warning-text)'   },
+  data:    { label: 'Data',    bg: 'var(--background-medium)',    color: 'var(--text-weak)'      },
+  cx:      { label: 'CX',     bg: 'var(--danger-background)',    color: 'var(--danger-text)'    },
+};
+
+// ─── Priority ranking — ROI score = hoursSaved / effortHours ──────────────────
+
+export function getPriorityScore(item) {
+  if (!item.hoursSaved || !item.effortHours) return 0;
+  return item.hoursSaved / item.effortHours;
+}
+
+export function formatEffortHours(h) {
+  if (h < 8)  return `~${h} hr${h === 1 ? '' : 's'}`;
+  if (h === 8) return '~1 day';
+  return `~${Math.round(h / 8)} days`;
+}
+
+export const ALL_ITEMS_RANKED = (() => {
+  const all = [];
+  Object.entries(OPTIMIZE_GAPS).forEach(([tabId, items]) => {
+    items.forEach(item => all.push({ ...item, tabId }));
+  });
+  return all.sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
+})();
+
+export const TOP_ACTIONS = ALL_ITEMS_RANKED.slice(0, 5);
+
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const SFD = '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -112,6 +144,24 @@ export function CxScorePill({ score }) {
   );
 }
 
+export function EffortBadge({ effortLabel, effortHours }) {
+  const cfg = {
+    'Quick win':  { bg: 'var(--success-background)', color: 'var(--success-text)' },
+    'Half day':   { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
+    'Multi-day':  { bg: 'var(--background-medium)',  color: 'var(--text-weak)'    },
+  }[effortLabel] ?? { bg: 'var(--background-medium)', color: 'var(--text-weak)' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      fontSize: 11, fontWeight: 500, fontFamily: SFT,
+      padding: '2px 7px', borderRadius: 4,
+      background: cfg.bg, color: cfg.color, flexShrink: 0,
+    }}>
+      {effortLabel} · {formatEffortHours(effortHours)}
+    </span>
+  );
+}
+
 function CloseIcon() {
   return (
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -178,6 +228,10 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
   const isDone = status === 'done';
   const isDismissed = status === 'dismissed';
 
+  const rank = ALL_ITEMS_RANKED.findIndex(i => i.id === item.id) + 1;
+  const total = ALL_ITEMS_RANKED.length;
+  const roiScore = item.effortHours ? (item.hoursSaved / item.effortHours).toFixed(1) : null;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
@@ -190,11 +244,17 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
                 ? <CxScorePill score={item.cxScore} />
                 : <ImpactPill impact={item.impact} />
               }
+              {item.effortLabel && <EffortBadge effortLabel={item.effortLabel} effortHours={item.effortHours} />}
               <StatusBadge status={status} />
             </div>
             <h2 style={{ fontFamily: SFT, fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: 0, lineHeight: '22px' }}>
               {item.gap}
             </h2>
+            {roiScore && (
+              <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)', margin: '6px 0 0', lineHeight: '18px' }}>
+                Ranked #{rank} of {total} · {roiScore}× return on time
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -214,6 +274,44 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
 
       {/* Scrollable body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px' }}>
+
+        {/* Impact + Effort — two columns */}
+        {(item.hoursSaved || item.effortLabel) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 28 }}>
+            {item.hoursSaved && (
+              <div style={{ padding: '14px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--background-weak)' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, fontFamily: SFT, color: 'var(--text-weak)', marginBottom: 6 }}>Impact</div>
+                <div style={{ fontFamily: SFD, fontSize: 26, fontWeight: 400, color: 'var(--text)', letterSpacing: '0.35px', lineHeight: '32px', marginBottom: 4 }}>
+                  {item.hoursSaved} hrs
+                </div>
+                <div style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-weak)' }}>saved per month</div>
+                {item.avgTimeAdded && (
+                  <div style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)', marginTop: 8, lineHeight: '16px' }}>
+                    {item.avgTimeAdded}
+                  </div>
+                )}
+              </div>
+            )}
+            {item.effortLabel && (
+              <div style={{ padding: '14px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--background-weak)' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, fontFamily: SFT, color: 'var(--text-weak)', marginBottom: 6 }}>Effort</div>
+                <div style={{ fontFamily: SFD, fontSize: 26, fontWeight: 400, color: 'var(--text)', letterSpacing: '0.35px', lineHeight: '32px', marginBottom: 4 }}>
+                  {formatEffortHours(item.effortHours)}
+                </div>
+                <div style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-weak)' }}>{item.effortLabel}</div>
+                {item.integrations?.length > 0 && (
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
+                    {item.integrations.map(name => (
+                      <span key={name} style={{ fontFamily: SFT, fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 3, background: 'var(--background-medium)', color: 'var(--text-weak)' }}>
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <PanelSection label={item.cxScore != null ? 'What went wrong' : "What's happening"}>
           <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-weak)', margin: 0, lineHeight: '20px' }}>
@@ -261,23 +359,9 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
             {item.suggestion}
           </p>
           {item.summary && (
-            <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-weak)', margin: '0 0 10px', lineHeight: '20px' }}>
+            <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text-weak)', margin: 0, lineHeight: '20px' }}>
               {item.summary}
             </p>
-          )}
-          {item.integrations?.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>Integrations needed:</span>
-              {item.integrations.map(name => (
-                <span key={name} style={{
-                  fontFamily: SFT, fontSize: 11, fontWeight: 500,
-                  padding: '2px 7px', borderRadius: 4,
-                  background: 'var(--background-medium)', color: 'var(--text-weak)',
-                }}>
-                  {name}
-                </span>
-              ))}
-            </div>
           )}
         </PanelSection>
 
@@ -408,17 +492,176 @@ function PanelSection({ label, children }) {
   );
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
+// ─── Focus this week (left pane, above tabs) ──────────────────────────────────
 
-function OptimizeEmptyState() {
+function FocusSection({ onSelectFocus, statuses }) {
+  const openCount = TOP_ACTIONS.filter(a => !statuses[a.id] || statuses[a.id] === 'open').length;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, color: 'var(--text-disabled)' }}>
-      <svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="13" cy="13" r="9"/>
-        <path d="M20 20l8 8"/>
-        <path d="M13 9v8M13 19v2"/>
-      </svg>
-      <p style={{ fontSize: 13, fontFamily: SFT, margin: 0 }}>Select a gap to view details</p>
+    <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 6px' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, fontFamily: SFT, color: 'var(--text-weak)', letterSpacing: '0.04em' }}>
+          Focus this week
+        </span>
+        <span style={{ fontSize: 11, fontFamily: SFT, color: 'var(--text-disabled)' }}>
+          {openCount} open
+        </span>
+      </div>
+      {TOP_ACTIONS.map(item => {
+        const isDone = statuses[item.id] === 'done' || statuses[item.id] === 'dismissed';
+        const cat = CATEGORY_CONFIG[item.tabId];
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onSelectFocus(item)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+              padding: '6px 16px', background: 'transparent', border: 'none',
+              cursor: 'pointer', textAlign: 'left', opacity: isDone ? 0.45 : 1,
+              transition: 'background 0.1s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <span style={{
+              fontSize: 10, fontWeight: 600, fontFamily: SFT,
+              padding: '2px 6px', borderRadius: 4, flexShrink: 0,
+              background: cat.bg, color: cat.color,
+            }}>
+              {cat.label}
+            </span>
+            <span style={{
+              fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text)',
+              flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {item.gap}
+            </span>
+            {item.cxScore != null
+              ? <CxScorePill score={item.cxScore} />
+              : <ImpactPill impact={item.impact} />
+            }
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Overview panel (default right state) ─────────────────────────────────────
+
+function OptimizeOverview({ onTabSelect, statuses }) {
+  const categoryStats = Object.entries(OPTIMIZE_GAPS).map(([id, items]) => {
+    const tab = TABS.find(t => t.id === id);
+    const highCount = items.filter(i => i.impact === 'high' || (i.cxScore != null && i.cxScore < 2.5)).length;
+    const avgCx = id === 'cx'
+      ? (items.reduce((s, i) => s + i.cxScore, 0) / items.length).toFixed(1)
+      : null;
+    const totalTickets = items.reduce((s, i) => s + i.ticketCount, 0);
+    return { id, label: tab?.label, count: items.length, highCount, avgCx, totalTickets };
+  });
+
+  const totalTickets = categoryStats.reduce((s, t) => s + t.totalTickets, 0);
+  const totalHigh = categoryStats.reduce((s, t) => s + t.highCount, 0);
+
+  return (
+    <div style={{ padding: '32px 28px', overflowY: 'auto', height: '100%' }}>
+
+      {/* Headline */}
+      <div style={{ marginBottom: 28 }}>
+        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)', margin: '0 0 6px' }}>
+          AI analysis · Updated today
+        </p>
+        <p style={{ fontFamily: SFD, fontSize: 22, fontWeight: 400, color: 'var(--text)', margin: 0, letterSpacing: '0.38px', lineHeight: '30px' }}>
+          {totalHigh} high-impact gaps<br />across {totalTickets} tickets
+        </p>
+      </div>
+
+      {/* Category grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 32 }}>
+        {categoryStats.map(s => {
+          const cat = CATEGORY_CONFIG[s.id];
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => onTabSelect(s.id)}
+              style={{
+                display: 'flex', flexDirection: 'column', gap: 5, textAlign: 'left',
+                padding: '14px 16px', borderRadius: 10,
+                border: '1px solid var(--border)',
+                background: 'var(--background-weak)',
+                cursor: 'pointer', transition: 'box-shadow 0.12s, border-color 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              <span style={{ fontSize: 10, fontWeight: 600, fontFamily: SFT, padding: '2px 6px', borderRadius: 4, alignSelf: 'flex-start', background: cat.bg, color: cat.color }}>
+                {cat.label}
+              </span>
+              <span style={{ fontFamily: SFD, fontSize: 32, fontWeight: 400, color: 'var(--text)', letterSpacing: '0.35px', lineHeight: '38px' }}>
+                {s.count}
+              </span>
+              <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-weak)', lineHeight: '16px' }}>
+                {s.id === 'cx'
+                  ? `avg ★ ${s.avgCx}`
+                  : `${s.highCount} high impact · ${s.totalTickets} tickets`
+                }
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Top priorities */}
+      <div>
+        <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-weak)', margin: '0 0 10px', letterSpacing: '0.04em' }}>
+          Highest priority
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {TOP_ACTIONS.map((item, i) => {
+            const cat = CATEGORY_CONFIG[item.tabId];
+            const isDone = statuses[item.id] === 'done' || statuses[item.id] === 'dismissed';
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onTabSelect(item.tabId, item)}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 10, textAlign: 'left',
+                  padding: '12px 14px', borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--background-weak)',
+                  cursor: 'pointer', opacity: isDone ? 0.5 : 1,
+                  transition: 'box-shadow 0.1s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+              >
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, flexShrink: 0, minWidth: 16, paddingTop: 1 }}>
+                  {i + 1}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, fontFamily: SFT, padding: '2px 6px', borderRadius: 4, background: cat.bg, color: cat.color }}>
+                      {cat.label}
+                    </span>
+                    {item.cxScore != null ? <CxScorePill score={item.cxScore} /> : <ImpactPill impact={item.impact} />}
+                    <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, marginLeft: 'auto' }}>
+                      {item.ticketCount} tickets
+                    </span>
+                  </div>
+                  <p style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 3px', lineHeight: '19px' }}>
+                    {item.gap}
+                  </p>
+                  <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '17px' }}>
+                    {item.suggestion}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -427,7 +670,7 @@ function OptimizeEmptyState() {
 
 export default function OptimizeView({ onNavigateToTicket }) {
   const [activeTab, setActiveTab] = useState('content');
-  const [selectedItem, setSelectedItem] = useState(() => OPTIMIZE_GAPS['content']?.[0] ?? null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [statuses, setStatuses] = useState({});
 
   const tab = TABS.find(t => t.id === activeTab);
@@ -445,7 +688,19 @@ export default function OptimizeView({ onNavigateToTicket }) {
 
   function handleTabChange(id) {
     setActiveTab(id);
-    setSelectedItem(OPTIMIZE_GAPS[id]?.[0] ?? null);
+    setSelectedItem(null);
+  }
+
+  // Called from FocusSection — switches tab + selects item
+  function handleSelectFocus(item) {
+    setActiveTab(item.tabId);
+    setSelectedItem(item);
+  }
+
+  // Called from OptimizeOverview category cards / top priority items
+  function handleTabSelectFromOverview(tabId, item = null) {
+    setActiveTab(tabId);
+    setSelectedItem(item ?? null);
   }
 
   const selectedItemInCurrentTab = selectedItem && items.find(i => i.id === selectedItem.id) ? selectedItem : null;
@@ -461,8 +716,13 @@ export default function OptimizeView({ onNavigateToTicket }) {
           <h2 style={{ fontFamily: SFD, fontSize: 18, fontWeight: 500, color: 'var(--text)', margin: '0 0 14px', letterSpacing: '0.38px' }}>
             Optimize
           </h2>
+        </div>
 
-          {/* Tab bar */}
+        {/* Focus this week */}
+        <FocusSection onSelectFocus={handleSelectFocus} statuses={statuses} />
+
+        {/* Tab bar */}
+        <div style={{ padding: '0 16px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
             {TABS.map(t => {
               const active = activeTab === t.id;
@@ -529,7 +789,7 @@ export default function OptimizeView({ onNavigateToTicket }) {
         </div>
       </div>
 
-      {/* ── Right: detail or empty ────────────────────────────────────────────── */}
+      {/* ── Right: detail or overview ─────────────────────────────────────────── */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {selectedItemInCurrentTab ? (
           <GapDetailPanel
@@ -541,7 +801,10 @@ export default function OptimizeView({ onNavigateToTicket }) {
             onTicketClick={onNavigateToTicket}
           />
         ) : (
-          <OptimizeEmptyState />
+          <OptimizeOverview
+            onTabSelect={handleTabSelectFromOverview}
+            statuses={statuses}
+          />
         )}
       </div>
 

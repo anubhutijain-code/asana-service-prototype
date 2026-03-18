@@ -7,6 +7,7 @@ import TicketDetailView from './TicketDetailView';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
 import { SFT, SFM, LIGA } from '../constants/typography';
 import { StatusIcon, SlaIcon, SlaCell, PriorityPill, PersonCell, typoTicketNo, typoName, typoPriority, typoStatus, typoUpdated } from './ui/TicketCells';
+import TicketMoreMenu from './ui/TicketMoreMenu';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const HR_FILTER_FIELDS = [
@@ -75,12 +76,12 @@ const ISSUE_TYPE_COLORS = {
   Benefits:    { bg: '#DCFCE7', color: '#166534' },
   Onboarding:  { bg: '#DBEAFE', color: '#1D4ED8' },
   Performance: { bg: '#FEE2E2', color: '#991B1B' },
-  Policy:      { bg: '#F3F4F6', color: '#6D6E6F' },
+  Policy:      { bg: 'var(--priority-low-bg)', color: 'var(--priority-low-text)' },
   Offboarding: { bg: '#FFF7ED', color: '#9A3412' },
 };
 
 function IssueTypePill({ type }) {
-  const { bg, color } = ISSUE_TYPE_COLORS[type] ?? { bg: '#F3F4F6', color: '#6D6E6F' };
+  const { bg, color } = ISSUE_TYPE_COLORS[type] ?? { bg: 'var(--priority-low-bg)', color: 'var(--priority-low-text)' };
   return <Pill bg={bg} color={color} label={type} />;
 }
 
@@ -101,11 +102,11 @@ const divStyle = { borderRight: '1px solid var(--border)' };
 function TableHeader() {
   return (
     <div
-      className="flex items-stretch w-full bg-white sticky top-0 z-[2]"
+      className="flex items-stretch w-full bg-[var(--surface)] sticky top-0 z-[2]"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
-      <div className={`${COL} sticky left-0       bg-white z-[3] w-[120px] shrink-0`} style={divStyle}>Case number</div>
-      <div className={`${COL} sticky left-[120px] bg-white z-[3] w-[280px] shrink-0`} style={divStyle}>Name</div>
+      <div className={`${COL} sticky left-0       bg-[var(--surface)] z-[3] w-[120px] shrink-0`} style={divStyle}>Case number</div>
+      <div className={`${COL} sticky left-[120px] bg-[var(--surface)] z-[3] w-[280px] shrink-0`} style={divStyle}>Name</div>
       <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Issue type</div>
       <div className={`${COL} w-[175px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[155px] shrink-0`} style={divStyle}>Last updated</div>
@@ -118,11 +119,11 @@ function TableHeader() {
   );
 }
 
-function TableRow({ ticket, onClick }) {
+function TableRow({ ticket, onClick, onMoreAction }) {
   return (
     <div
       onClick={onClick}
-      className="group flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
+      className="group relative flex items-stretch w-full h-[64px] bg-background-weak hover:bg-background-medium transition-colors cursor-pointer"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
       <div className={`${CELL} sticky left-0       z-[1] bg-background-weak group-hover:bg-background-medium w-[120px] shrink-0 flex items-center`}
@@ -165,6 +166,12 @@ function TableRow({ ticket, onClick }) {
       <div className={`${CELL} flex-1 min-w-[165px] overflow-hidden`}>
         <PersonCell person={ticket.requester ?? ticket.employee} />
       </div>
+      <div
+        className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-[2]"
+        onClick={e => e.stopPropagation()}
+      >
+        <TicketMoreMenu ticketId={ticket.id} onAction={onMoreAction} />
+      </div>
     </div>
   );
 }
@@ -178,6 +185,15 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
   const [filters, setFilters] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [hrStatusOverrides, setHrStatusOverrides] = useState({});
+
+  function handleMoreAction(actionId, ticketId) {
+    if (actionId === 'mark_resolved') {
+      setHrStatusOverrides(p => ({ ...p, [ticketId]: 'Resolved' }));
+    } else if (actionId === 'close_and_move') {
+      setHrStatusOverrides(p => ({ ...p, [ticketId]: 'Closed' }));
+      navigate('/projects/it-escalations');
+    }
+  }
 
   const allTickets = [...extraTickets, ...HR_TICKETS].map(t =>
     hrStatusOverrides[t.id] ? { ...t, status: hrStatusOverrides[t.id] } : t
@@ -224,7 +240,7 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
       {/* ── Title + tabs + search ── */}
       <div className="shrink-0 px-6">
 
-        <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 16px' }}>Case feed</h2>
+        <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 16px' }}>Case feed</h2>
 
         {/* Tab bar */}
         <div className="flex border-b border-border gap-6">
@@ -309,7 +325,7 @@ export default function HRTicketsDashboard({ extraTickets = [], onHRCaseStatusCh
           <div style={{ minWidth: '100%', width: 'max-content' }}>
             <TableHeader />
             {rows.length > 0
-              ? rows.map(t => <TableRow key={t.id} ticket={t} onClick={() => navigate(`/hr-tickets/${t.id}`)} />)
+              ? rows.map(t => <TableRow key={t.id} ticket={t} onClick={() => navigate(`/hr-tickets/${t.id}`)} onMoreAction={handleMoreAction} />)
               : (
                 <div
                   className="flex items-center justify-center py-16 w-full text-sm text-text-disabled"

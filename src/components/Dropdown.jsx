@@ -7,7 +7,7 @@ function CheckIcon() {
     <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
       <path
         d="M10.78 1.72L4.5 8 1.03 4.53a.75.75 0 0 0-1.06 1.06l4 4a.75.75 0 0 0 1.06 0l7-7a.75.75 0 0 0-1.06-1.06l.03.13Z"
-        fill="#757677"
+        fill="var(--icon)"
       />
     </svg>
   );
@@ -18,7 +18,7 @@ function CheckIcon() {
 function ChevronDown() {
   return (
     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M1 1l4 4 4-4" stroke="#9ea0a2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M1 1l4 4 4-4" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -63,11 +63,11 @@ export default function Dropdown({ value, onChange, options, placeholder = 'Sele
           width: '100%', height: 42,
           padding: '0 13px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          border: `1.5px solid ${open ? '#3F6AC4' : '#EDEAE9'}`,
+          border: `1.5px solid ${open ? 'var(--selected-background-strong)' : 'var(--border)'}`,
           borderRadius: 8,
           fontSize: 14,
-          color: selectedLabel ? '#1E1F21' : '#9ea0a2',
-          background: 'white',
+          color: selectedLabel ? 'var(--text)' : 'var(--text-disabled)',
+          background: 'var(--surface)',
           cursor: 'pointer',
           fontFamily: 'inherit',
           textAlign: 'left',
@@ -92,10 +92,10 @@ export default function Dropdown({ value, onChange, options, placeholder = 'Sele
             left: 0,
             right: 0,
             zIndex: 200,
-            background: 'white',
-            border: '1px solid #E0E1E3',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: 4,
-            boxShadow: '0 5px 20px rgba(109,110,111,0.08)',
+            boxShadow: 'var(--shadow-md)',
             overflow: 'hidden',
           }}
         >
@@ -114,17 +114,17 @@ export default function Dropdown({ value, onChange, options, placeholder = 'Sele
                   // 34px left padding: 12px edge + 10px checkmark + 12px gap
                   padding: '0 14px 0 34px',
                   position: 'relative',
-                  background: 'white',
+                  background: 'var(--surface)',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: 14,
-                  color: '#1D1F21',
+                  color: 'var(--text)',
                   textAlign: 'left',
                   fontFamily: 'inherit',
                   transition: 'background 0.1s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#F5F5F4'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; }}
               >
                 {selected && (
                   <span style={{

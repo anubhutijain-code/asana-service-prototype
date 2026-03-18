@@ -15,13 +15,13 @@ const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeigh
 const H5 = {
   fontFamily: '"SF Pro Text"', fontFeatureSettings: "'liga' off, 'clig' off",
   fontSize: 16, fontWeight: 500, lineHeight: '20px', letterSpacing: '-0.32px',
-  color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))',
+  color: 'var(--text)',
 };
 
 const inputStyle = {
   ...base, fontSize: 13, height: 32, padding: '0 10px',
   border: '1px solid var(--border)', borderRadius: 6,
-  outline: 'none', color: 'var(--text)', background: 'white',
+  outline: 'none', color: 'var(--text)', background: 'var(--surface)',
   boxSizing: 'border-box',
 };
 
@@ -147,7 +147,7 @@ function Toggle({ value, onChange }) {
         background: value ? 'var(--selected-background-strong)' : 'var(--background-strong)',
         transition: 'background 0.15s',
       }}>
-      <span style={{ position: 'absolute', top: 2, width: 16, height: 16, borderRadius: 8, background: 'white', transition: 'left 0.15s', left: value ? 18 : 2 }} />
+      <span style={{ position: 'absolute', top: 2, width: 16, height: 16, borderRadius: 8, background: 'var(--surface)', transition: 'left 0.15s', left: value ? 18 : 2 }} />
     </button>
   );
 }
@@ -627,13 +627,13 @@ export function SettingsLandingPage() {
 
       {/* Header */}
       <div style={{ flexShrink: 0, padding: '28px 32px 20px' }}>
-        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
           Settings
         </h1>
       </div>
 
       {/* Table header */}
-      <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 32px', height: 36, background: 'white' }}>
+      <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 32px', height: 36, background: 'var(--surface)' }}>
         <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
         <span style={{ ...typoMeta, flex: 1, minWidth: 220, fontWeight: 500 }}>Queue</span>
         <span style={{ ...typoMeta, width: 160, flexShrink: 0, fontWeight: 500 }}>Email</span>
@@ -644,7 +644,7 @@ export function SettingsLandingPage() {
       </div>
 
       {/* Rows */}
-      <div style={{ flex: 1, overflowY: 'auto', background: 'white' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: 'var(--surface)' }}>
         {QUEUES_LIST.map(q => (
           <div
             key={q.id}
@@ -654,7 +654,7 @@ export function SettingsLandingPage() {
             onKeyDown={e => e.key === 'Enter' && navigate(`/settings/${q.id}`)}
             style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '0 32px', height: 64, cursor: 'pointer', transition: 'background 0.1s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-weak)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; }}
           >
             <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
 
@@ -768,7 +768,7 @@ export default function SettingsView({ queueId = 'it' }) {
             Settings
           </button>
         </div>
-        <p style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 24px' }}>{queueConfig.name}</p>
+        <p style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 24px' }}>{queueConfig.name}</p>
 
         {/* Tab bar */}
         <div className="flex border-b border-border">

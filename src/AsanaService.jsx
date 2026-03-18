@@ -184,6 +184,16 @@ export default function AsanaService() {
 
   const [role, setRole] = useState('admin2');
 
+  // Apply saved theme on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, []);
+
   useEffect(() => {
     if (role === 'agent')       navigate('/my-tickets');
     else if (role === 'agent3') navigate('/agent-home');
@@ -290,7 +300,7 @@ export default function AsanaService() {
 
   return (
     // Fixed root — truly viewport-locked, no flex-chain height dependencies
-    <div className="fixed inset-0 overflow-hidden bg-white">
+    <div className="fixed inset-0 overflow-hidden" style={{ background: 'var(--surface)' }}>
 
       {/* ── Top bar ─────────────────────────────────────────────── z-50 */}
       <div className="absolute inset-x-0 top-0 h-12 z-50">
@@ -305,7 +315,7 @@ export default function AsanaService() {
       {/* ── Separator below NavBar — skips the mode sidebar zone ───────────── */}
       <div
         className="absolute pointer-events-none z-[55]"
-        style={{ top: 48, left: mainLeft, right: 0, height: 1, background: '#e0e1e3' }}
+        style={{ top: 48, left: mainLeft, right: 0, height: 1, background: 'var(--border)' }}
       />
 
       {/* ── Mode sidebar ────────────────────────────── left-0, below top bar */}
@@ -319,7 +329,7 @@ export default function AsanaService() {
       {secondaryVisible && sidebarOpen && (
         <div
           className="absolute pointer-events-none z-[39]"
-          style={{ top: 48, left: 64, width: 12, height: 12, background: '#e8e9ea' }}
+          style={{ top: 48, left: 64, width: 12, height: 12, background: 'var(--background-strong)' }}
         />
       )}
 

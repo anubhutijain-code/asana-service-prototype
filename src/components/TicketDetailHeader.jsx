@@ -5,15 +5,15 @@ import { useState, useRef, useEffect } from 'react';
 export const PRIORITY_COLORS = {
   Critical: { bg: '#FEF3C7', color: '#92400E' },
   Medium:   { bg: '#DBEAFE', color: '#1D4ED8' },
-  Low:      { bg: '#F3F4F6', color: '#6D6E6F' },
+  Low:      { bg: 'var(--priority-low-bg)', color: 'var(--priority-low-text)' },
 };
 export const STATUS_BORDER = {
   'On hold':      '#F1BD6C',
   'Investigating':'#79ABFF',
-  'Not started':  '#D1D5DB',
+  'Not started':  'var(--border)',
   'Resolved':     '#58A182',
-  'Closed':       '#D1D5DB',
-  'Routed':       '#D1D5DB',
+  'Closed':       'var(--border)',
+  'Routed':       'var(--border)',
 };
 export const PRIORITY_OPTIONS = ['Critical', 'Medium', 'Low'];
 export const STATUS_OPTIONS   = ['Not started', 'Investigating', 'On hold', 'Resolved'];
@@ -21,7 +21,7 @@ export const STATUS_OPTIONS   = ['Not started', 'Investigating', 'On hold', 'Res
 export function PillStatusIcon({ status }) {
   if (status === 'Not started') return (
     <svg viewBox="4 6 12 12" width="12" height="12" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M10 8C7.7945 8 6 9.7945 6 12C6 14.2055 7.7945 16 10 16C12.2055 16 14 14.2055 14 12C14 9.795 12.2055 8 10 8ZM10 15C8.3455 15 7 13.6545 7 12C7 10.3455 8.3455 9 10 9C11.6545 9 13 10.3455 13 12C13 13.6545 11.6545 15 10 15Z" fill="#6D6E6F" />
+      <path d="M10 8C7.7945 8 6 9.7945 6 12C6 14.2055 7.7945 16 10 16C12.2055 16 14 14.2055 14 12C14 9.795 12.2055 8 10 8ZM10 15C8.3455 15 7 13.6545 7 12C7 10.3455 8.3455 9 10 9C11.6545 9 13 10.3455 13 12C13 13.6545 11.6545 15 10 15Z" fill="var(--icon)" />
     </svg>
   );
   if (status === 'On hold') return (
@@ -65,7 +65,7 @@ function LinkIcon() {
 
 // ─── TicketDetailHeader ───────────────────────────────────────────────────────
 
-export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, onRouteToHR, onCreateTicketHR, readOnly = false }) {
+export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, onRouteToHR, onCreateTicketHR, onCloseAndMove, readOnly = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -82,26 +82,26 @@ export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, 
 
   return (
     <div
-      className="shrink-0 flex items-center justify-between bg-white"
-      style={{ height: 72, padding: '0 24px', borderBottom: '1px solid #EDEAE9' }}
+      className="shrink-0 flex items-center justify-between bg-[var(--surface)]"
+      style={{ height: 72, padding: '0 24px', borderBottom: '1px solid var(--border)' }}
     >
       {/* Left: breadcrumb + title */}
       <div className="flex flex-col gap-0.5 min-w-0 mr-6">
-        <div className="flex items-center gap-1" style={{ fontSize: 12, color: '#6D6E6F' }}>
+        <div className="flex items-center gap-1" style={{ fontSize: 12, color: 'var(--text-weak)' }}>
           <button
             type="button"
             onClick={onBack}
             className="border-0 bg-transparent p-0 cursor-pointer hover:underline transition-colors"
-            style={{ fontSize: 12, color: '#6D6E6F' }}
+            style={{ fontSize: 12, color: 'var(--text-weak)' }}
           >
             Tickets
           </button>
-          <span style={{ color: '#9ea0a2' }}>/</span>
-          <span style={{ color: '#1E1F21', fontWeight: 500 }}>{ticket.id}</span>
+          <span style={{ color: 'var(--text-disabled)' }}>/</span>
+          <span style={{ color: 'var(--text)', fontWeight: 500 }}>{ticket.id}</span>
         </div>
         <h1
           className="truncate"
-          style={{ fontSize: 18, fontWeight: 600, lineHeight: '24px', letterSpacing: '-0.2px', color: '#1E1F21', maxWidth: 600 }}
+          style={{ fontSize: 18, fontWeight: 600, lineHeight: '24px', letterSpacing: '-0.2px', color: 'var(--text)', maxWidth: 600 }}
         >
           {ticket.name}
         </h1>
@@ -113,8 +113,8 @@ export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, 
           type="button"
           aria-label="Copy link"
           className="flex items-center justify-center cursor-pointer transition-colors"
-          style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', color: '#6D6E6F' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+          style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--icon)' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
           <LinkIcon />
@@ -126,8 +126,8 @@ export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, 
               type="button"
               aria-label="More options"
               className="flex items-center justify-center cursor-pointer transition-colors"
-              style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: menuOpen ? '#F5F5F4' : 'transparent', color: '#6D6E6F' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+              style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: menuOpen ? 'var(--background-medium)' : 'transparent', color: 'var(--icon)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
               onMouseLeave={e => { if (!menuOpen) e.currentTarget.style.background = 'transparent'; }}
               onClick={() => setMenuOpen(o => !o)}
             >
@@ -135,41 +135,54 @@ export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, 
             </button>
 
             {menuOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', border: '1px solid #EDEAE9', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.08)', background: 'white', zIndex: 50, minWidth: 200, padding: '4px 0' }}>
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: 'var(--shadow-md)', background: 'var(--surface)', zIndex: 50, minWidth: 200, padding: '4px 0' }}>
                 <button
                   type="button"
                   className="w-full text-left cursor-pointer border-0 bg-transparent"
-                  style={{ padding: '7px 12px', fontSize: 13, color: '#1E1F21' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   onClick={() => { setMenuOpen(false); onRequestApproval?.(); }}
                 >
                   Request approval
                 </button>
 
-                <div style={{ height: 1, background: '#EDEAE9', margin: '4px 0' }} />
+                <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
 
                 <button
                   type="button"
                   className="w-full text-left cursor-pointer border-0 bg-transparent"
-                  style={{ padding: '7px 12px', fontSize: 13, color: '#1E1F21' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   onClick={() => { setMenuOpen(false); onCreateTicketHR?.(); }}
                 >
                   Create ticket for HR
                 </button>
-                <div style={{ height: 1, background: '#EDEAE9', margin: '4px 0' }} />
+                <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
 
                 <button
                   type="button"
                   className="w-full text-left cursor-pointer border-0 bg-transparent"
-                  style={{ padding: '7px 12px', fontSize: 13, color: '#1E1F21' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   onClick={() => { setMenuOpen(false); onRouteToHR?.(); }}
                 >
                   Route to HR
+                </button>
+
+                <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+
+                <button
+                  type="button"
+                  className="w-full text-left cursor-pointer border-0 bg-transparent"
+                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => { setMenuOpen(false); onCloseAndMove?.(); }}
+                >
+                  Close ticket and move to Asana
                 </button>
               </div>
             )}

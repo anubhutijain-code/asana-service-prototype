@@ -56,7 +56,7 @@ const divStyle = { borderRight: '1px solid var(--border)' };
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="#9ea0a2" strokeWidth="1.5" strokeLinecap="round">
+    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round">
       <circle cx="7" cy="7" r="5" /><path d="M12 12l-2.5-2.5" />
     </svg>
   );
@@ -156,10 +156,10 @@ function TotalIcon(stroke) {
 
 function TableHeader() {
   return (
-    <div className="flex items-stretch w-full bg-white sticky top-0 z-[2]"
+    <div className="flex items-stretch w-full bg-[var(--surface)] sticky top-0 z-[2]"
          style={{ borderBottom: '1px solid var(--border)' }}>
       <div className={`${COL} w-[44px] shrink-0 justify-center`}>#</div>
-      <div className={`${COL} sticky left-[44px] bg-white z-[3] w-[210px] shrink-0`} style={divStyle}>Asset</div>
+      <div className={`${COL} sticky left-[44px] bg-[var(--surface)] z-[3] w-[210px] shrink-0`} style={divStyle}>Asset</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Model</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>OS</div>

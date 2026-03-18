@@ -69,9 +69,9 @@ function TeamsIcon() {
 function EmailIcon() {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="8" fill="#F3F2F2"/>
-      <path d="M6 11a2 2 0 012-2h16a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V11z" stroke="#6D6E6F" strokeWidth="1.5"/>
-      <path d="M6 11.5l10 7 10-7" stroke="#6D6E6F" strokeWidth="1.5" strokeLinecap="round"/>
+      <rect width="32" height="32" rx="8" fill="var(--background-medium)"/>
+      <path d="M6 11a2 2 0 012-2h16a2 2 0 012 2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V11z" stroke="var(--icon)" strokeWidth="1.5"/>
+      <path d="M6 11.5l10 7 10-7" stroke="var(--icon)" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -217,8 +217,8 @@ function ToggleSwitch({ checked, onChange, disabled }) {
       <span style={{
         position: 'absolute', top: 2, left: checked ? 18 : 2,
         width: 16, height: 16, borderRadius: '50%',
-        background: 'white', transition: 'left 0.2s',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        background: 'var(--surface)', transition: 'left 0.2s',
+        boxShadow: 'var(--shadow-sm)',
       }} />
     </button>
   );
@@ -336,8 +336,8 @@ function IntakeCard({ icon, name, description, fieldLabel, fieldPlaceholder, fie
             {value && connectingMsg && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
                 <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
-                  <circle cx="8" cy="8" r="6.5" stroke="#9ea0a2" strokeWidth="1.2"/>
-                  <path d="M5 8.5l2 2 4-4" stroke="#9ea0a2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="6.5" stroke="var(--text-disabled)" strokeWidth="1.2"/>
+                  <path d="M5 8.5l2 2 4-4" stroke="var(--text-disabled)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span style={{ fontFamily: '"SF Pro Text", -apple-system, sans-serif', fontSize: 12, fontWeight: 400, color: 'var(--text-disabled)' }}>{connectingMsg}</span>
               </div>
@@ -458,7 +458,7 @@ function Step3({ form, onChange }) {
                 }}>
                   {isOn && (
                     <svg viewBox="0 0 10 8" width="8" height="8" fill="none">
-                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 4l3 3 5-6" stroke="var(--surface)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   )}
                 </span>
@@ -626,7 +626,7 @@ function Step4({ workflows, onToggle }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
-            <path d="M8 3v10M3 8h10" stroke="#9ea0a2" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M8 3v10M3 8h10" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-disabled)' }}>Add workflow</span>
@@ -651,8 +651,8 @@ function SuccessState({ queueName, onOpenQueue, onCreateAnother }) {
         marginBottom: 28,
       }}>
         <svg viewBox="0 0 40 40" width="40" height="40" fill="none">
-          <circle cx="20" cy="20" r="19" stroke="#5da283" strokeWidth="2"/>
-          <path d="M12 20l6 7 11-12" stroke="#5da283" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="20" cy="20" r="19" stroke="var(--success-text)" strokeWidth="2"/>
+          <path d="M12 20l6 7 11-12" stroke="var(--success-text)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
       <h2 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', margin: '0 0 10px' }}>
@@ -814,7 +814,7 @@ export default function CreateQueueWizard({ onDone }) {
                   style={{
                     height: 36, padding: '0 22px',
                     border: 'none', borderRadius: 8,
-                    fontSize: 14, fontWeight: 600, color: 'white',
+                    fontSize: 14, fontWeight: 600, color: 'var(--surface)',
                     background: valid ? 'var(--selected-background-strong)' : 'var(--border)',
                     cursor: valid ? 'pointer' : 'default',
                     transition: 'background 0.15s',

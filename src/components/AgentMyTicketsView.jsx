@@ -2,8 +2,12 @@
 // Col 1: compact list  Col 2: TicketChatPanel  Col 3: TicketInfoSidebar
 
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
+import TicketMoreMenu from './ui/TicketMoreMenu';
+import CloseAndMoveModal from './CloseAndMoveModal';
+import { useAppStore } from '../store/AppStore';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -173,14 +177,14 @@ const MY_TICKETS = [
 ];
 
 const PRIORITY_PILL = {
-  Critical: { bg: '#FEF3C7', color: '#92400E' },
-  Medium:   { bg: '#DBEAFE', color: '#1D4ED8' },
-  Low:      { bg: '#F3F4F6', color: '#6D6E6F' },
+  Critical: { bg: 'var(--priority-critical-bg)', color: 'var(--priority-critical-text)' },
+  Medium:   { bg: 'var(--priority-medium-bg)',   color: 'var(--priority-medium-text)'   },
+  Low:      { bg: 'var(--priority-low-bg)',      color: 'var(--priority-low-text)'      },
 };
 
 // ── List row ──────────────────────────────────────────────────────────────────
 
-function TicketRow({ item, isSelected, onSelect }) {
+function TicketRow({ item, isSelected, onSelect, onMoreAction }) {
   const pill = PRIORITY_PILL[item.ticket.priority] ?? PRIORITY_PILL.Low;
   const [hovered, setHovered] = useState(false);
 
@@ -200,14 +204,20 @@ function TicketRow({ item, isSelected, onSelect }) {
         transition: 'background 0.1s',
       }}
     >
-      {/* Line 1: ticket ID + time */}
+      {/* Line 1: ticket ID + time (or more button on hover) */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
         <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.2px' }}>
           {item.ticket.id}
         </span>
-        <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>
-          {item.time}
-        </span>
+        {hovered ? (
+          <div onClick={e => e.stopPropagation()}>
+            <TicketMoreMenu ticketId={item.ticket.id} onAction={onMoreAction} />
+          </div>
+        ) : (
+          <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>
+            {item.time}
+          </span>
+        )}
       </div>
 
       {/* Line 2: ticket title */}
@@ -236,7 +246,15 @@ function TicketRow({ item, isSelected, onSelect }) {
 // ── Main view ─────────────────────────────────────────────────────────────────
 
 export default function AgentMyTicketsView() {
+  const navigate = useNavigate();
+  const { state, dispatch } = useAppStore();
   const [selectedId, setSelectedId] = useState(MY_TICKETS[0].id);
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [closedIds, setClosedIds] = useState(new Set());
+
+  function handleMoreAction() {
+    // row-level menu (no-op for close_and_move — modal handles it)
+  }
 
   const [localStatus, setLocalStatus] = useState('');
   const [localPriority, setLocalPriority] = useState('');
@@ -245,7 +263,23 @@ export default function AgentMyTicketsView() {
   const statusRef = useRef(null);
   const priorityRef = useRef(null);
 
-  const selected = MY_TICKETS.find(t => t.id === selectedId) ?? MY_TICKETS[0];
+  const rawSelected = MY_TICKETS.find(t => t.id === selectedId) ?? MY_TICKETS[0];
+  // Merge store overrides onto MY_TICKETS ticket data
+  const ticketOverride = state.ticketOverrides[rawSelected.ticket.id] ?? {};
+  const { extraPublicComments, extraInternalComments, ...statusOverrides } = ticketOverride;
+  const selected = {
+    ...rawSelected,
+    ticket: {
+      ...rawSelected.ticket,
+      ...statusOverrides,
+      initPublic: extraPublicComments?.length
+        ? [...(rawSelected.ticket.initPublic ?? []), ...extraPublicComments]
+        : rawSelected.ticket.initPublic,
+      initInternal: extraInternalComments?.length
+        ? [...(rawSelected.ticket.initInternal ?? []), ...extraInternalComments]
+        : rawSelected.ticket.initInternal,
+    },
+  };
 
   useEffect(() => {
     setLocalStatus(selected.ticket.status);
@@ -280,7 +314,7 @@ export default function AgentMyTicketsView() {
       }}>
         {/* Header */}
         <div style={{ padding: '24px 16px 16px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
             My tickets
           </h2>
         </div>
@@ -293,6 +327,7 @@ export default function AgentMyTicketsView() {
               item={item}
               isSelected={item.id === selectedId}
               onSelect={setSelectedId}
+              onMoreAction={handleMoreAction}
             />
           ))}
         </div>
@@ -300,6 +335,23 @@ export default function AgentMyTicketsView() {
 
       {/* ── Col 2: Chat panel ───────────────────────────────────────────────── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Banner: ticket closed and moved to Asana */}
+        {closedIds.has(selectedId) && (
+          <div
+            className="shrink-0 flex items-center gap-1"
+            style={{ height: 38, padding: '0 24px', background: 'var(--success-background)', borderBottom: '1px solid var(--border)', fontSize: 13, color: 'var(--success-text)' }}
+          >
+            <span>Ticket resolved — task created in IT Escalations</span>
+            <span style={{ margin: '0 2px' }}>—</span>
+            <button
+              type="button"
+              onClick={() => navigate('/projects/it-escalations')}
+              style={{ background: 'none', border: 'none', padding: '0 2px', color: 'var(--success-text)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+            >
+              View in IT Escalations
+            </button>
+          </div>
+        )}
         <TicketChatPanel
           key={selectedId}
           ticket={selected.ticket}
@@ -308,6 +360,13 @@ export default function AgentMyTicketsView() {
           initInternal={selected.ticket.initInternal}
           initTranscript={selected.ticket.initTranscript}
           transcriptEventText={selected.title}
+          moreMenuItems={[
+            { label: 'Request approval' },
+            { label: 'Create ticket for HR' },
+            { label: 'Route to HR' },
+            { divider: true },
+            { label: 'Close ticket and move to Asana', onClick: () => setCloseModalOpen(true) },
+          ]}
         />
       </div>
 
@@ -326,8 +385,18 @@ export default function AgentMyTicketsView() {
           setStatusDropdownOpen={setStatusDropdownOpen}
           priorityDropdownOpen={priorityDropdownOpen}
           setPriorityDropdownOpen={setPriorityDropdownOpen}
-          onStatusChange={setLocalStatus}
-          onPriorityChange={setLocalPriority}
+          onStatusChange={opt => {
+            setLocalStatus(opt);
+            const isResolved = opt === 'Resolved' || opt === 'Closed';
+            dispatch({ type: 'UPDATE_TICKET', id: selected.ticket.id, patch: {
+              status: opt,
+              ...(isResolved ? { resolvedAt: Date.now() } : {}),
+            }});
+          }}
+          onPriorityChange={opt => {
+            setLocalPriority(opt);
+            dispatch({ type: 'UPDATE_TICKET', id: selected.ticket.id, patch: { priority: opt } });
+          }}
           steps={selected.ticket.steps}
           onLinkedTicketClick={() => {}}
           onStepCreateTask={() => {}}
@@ -335,6 +404,16 @@ export default function AgentMyTicketsView() {
         />
       </div>
 
+      <CloseAndMoveModal
+        open={closeModalOpen}
+        ticket={selected.ticket}
+        onClose={() => setCloseModalOpen(false)}
+        onConfirm={() => {
+          setCloseModalOpen(false);
+          setClosedIds(prev => new Set([...prev, selectedId]));
+          dispatch({ type: 'UPDATE_TICKET', id: selected.ticket.id, patch: { status: 'Closed', resolvedAt: Date.now() } });
+        }}
+      />
     </div>
   );
 }

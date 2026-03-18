@@ -277,7 +277,7 @@ function ChatMessage({ msg, userInfo }) {
         <div style={{
           background: '#F5F5F4', borderRadius: 12, padding: '10px 14px', maxWidth: '68%',
         }}>
-          <p style={{ fontSize: 13, lineHeight: '20px', color: '#1E1F21', margin: 0, whiteSpace: 'pre-wrap', fontFamily: SFT }}>
+          <p style={{ fontSize: 13, lineHeight: '20px', color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap', fontFamily: SFT }}>
             {lines.map((line, i) => <span key={i}>{line}{i < lines.length - 1 && <br />}</span>)}
           </p>
         </div>
@@ -289,7 +289,7 @@ function ChatMessage({ msg, userInfo }) {
   // Customer message — inbound style (no bubble, avatar+name below)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
-      <p style={{ fontSize: 13, lineHeight: '20px', color: '#1E1F21', margin: 0, whiteSpace: 'pre-wrap', fontFamily: SFT }}>
+      <p style={{ fontSize: 13, lineHeight: '20px', color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap', fontFamily: SFT }}>
         {lines.map((line, i) => <span key={i}>{line}{i < lines.length - 1 && <br />}</span>)}
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -379,7 +379,7 @@ export default function RequestsView() {
 
         {/* List header */}
         <div style={{ padding: '24px 16px 0', flexShrink: 0 }}>
-          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 14px' }}>
+          <h2 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 14px' }}>
             Requests
           </h2>
 

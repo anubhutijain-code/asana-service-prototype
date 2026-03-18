@@ -88,7 +88,7 @@ const SECTIONS = [
         reporter: { name: 'Priya Kapoor', bg: '#F1BD6C', dept: 'Engineering' },
         escalatedBy: { name: 'Ajeet Cyrus', bg: '#4573D2' },
         escalationType: 'Software',
-        dueDate: 'Mar 18', dueDateColor: '#C92F54', status: 'Blocked', priority: 'Critical',
+        dueDate: 'Mar 18', dueDateColor: 'var(--danger-text)', status: 'Blocked', priority: 'Critical',
         description: 'The self-hosted GitHub Actions runner pool (32 EC2 instances) hit capacity after the monorepo migration completed last week. CI queue times now average 12+ hours and Engineering has soft-frozen merges. Scaling the fleet requires VP Finance approval for ~$8k/mo additional EC2 spend, plus designing and owning a new auto-scaling runner architecture. Currently blocked on Finance sign-off.',
         nextSteps: [
           'Present cost-benefit analysis to VP Finance: $8k/mo vs. estimated $40k/mo lost engineering productivity. Target approval by Mar 14',
@@ -109,7 +109,7 @@ const SECTIONS = [
         reporter: { name: 'Marcus Webb', bg: '#F06A6A', dept: 'Revenue Ops' },
         escalatedBy: { name: 'Zoe Wong', bg: '#5DA283' },
         escalationType: 'Access',
-        dueDate: 'Mar 5', dueDateColor: '#0D7F56', status: 'Resolved', priority: 'Medium',
+        dueDate: 'Mar 5', dueDateColor: 'var(--success-text)', status: 'Resolved', priority: 'Medium',
         description: 'Annual SaaS audit found 47 accounts with admin-level access in Salesforce, HubSpot, Looker, Mixpanel, and 8 other tools belonging to employees who left over 12 months ago. No SCIM integration existed for these tools and manual offboarding had missed them. Resolution required 3 weeks of coordination with 12 tool admins, legal sign-off on data access logs, and removal of all accounts.',
         nextSteps: [
           '✓ All 47 accounts deactivated and removal documented for legal records',
@@ -124,24 +124,24 @@ const SECTIONS = [
 const TOTAL_TASKS = SECTIONS.reduce((n, s) => n + s.tasks.length, 0);
 
 const STATUS_STYLE = {
-  'Needs review': { bg: '#EDE9FE', color: '#5B21B6' },
-  'In progress':  { bg: '#DBEAFE', color: '#1D4ED8' },
-  'Blocked':      { bg: '#FEE2E2', color: '#991B1B' },
-  'Resolved':     { bg: '#D1FAE5', color: '#065F46' },
+  'Needs review': { bg: 'var(--warning-background)',  color: 'var(--warning-text)'  },
+  'In progress':  { bg: 'var(--selected-background)', color: 'var(--selected-text)' },
+  'Blocked':      { bg: 'var(--danger-background)',   color: 'var(--danger-text)'   },
+  'Resolved':     { bg: 'var(--success-background)',  color: 'var(--success-text)'  },
 };
 
 const ESCALATION_TYPE_STYLE = {
-  Hardware: { bg: '#FEF3C7', color: '#92400E' },
-  Software: { bg: '#EDE9FE', color: '#5B21B6' },
-  Access:   { bg: '#DBEAFE', color: '#1D4ED8' },
-  Network:  { bg: '#FCE7F3', color: '#9D174D' },
+  Hardware: { bg: 'var(--warning-background)',  color: 'var(--warning-text)'  },
+  Software: { bg: 'var(--priority-medium-bg)',  color: 'var(--priority-medium-text)' },
+  Access:   { bg: 'var(--selected-background)', color: 'var(--selected-text)' },
+  Network:  { bg: 'var(--danger-background)',   color: 'var(--danger-text)'   },
 };
 
 const PRIORITY_STYLE = {
-  Critical: { bg: '#FEF3C7', color: '#92400E' },
-  High:     { bg: '#FCE7F3', color: '#9D174D' },
-  Medium:   { bg: '#DBEAFE', color: '#1D4ED8' },
-  Low:      { bg: '#F3F4F6', color: '#6D6E6F' },
+  Critical: { bg: 'var(--priority-critical-bg)', color: 'var(--priority-critical-text)' },
+  High:     { bg: 'var(--priority-high-bg)',     color: 'var(--priority-high-text)'     },
+  Medium:   { bg: 'var(--priority-medium-bg)',   color: 'var(--priority-medium-text)'   },
+  Low:      { bg: 'var(--priority-low-bg)',      color: 'var(--priority-low-text)'      },
 };
 
 const TEAM = [
@@ -166,7 +166,7 @@ function StarIcon({ style }) {
 function StatusDot() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M10 6C10 8.21 8.21 10 6 10C3.79 10 2 8.21 2 6C2 3.79 3.79 2 6 2C8.21 2 10 3.79 10 6Z" fill="#58A182"/>
+      <path d="M10 6C10 8.21 8.21 10 6 10C3.79 10 2 8.21 2 6C2 3.79 3.79 2 6 2C8.21 2 10 3.79 10 6Z" fill="var(--success-text)"/>
     </svg>
   );
 }
@@ -196,13 +196,13 @@ function CustomizeIcon() {
       <rect x="2" y="2" width="5" height="5" rx="1" fill="#F06A6A"/>
       <rect x="2" y="9" width="5" height="5" rx="1" fill="#5DA283"/>
       <rect x="9" y="2" width="5" height="5" rx="1" fill="#F1BD6C"/>
-      <rect x="9.5" y="9.5" width="4" height="4" rx="0.5" stroke="#4573D2"/>
+      <rect x="9.5" y="9.5" width="4" height="4" rx="0.5" stroke="var(--selected-background-strong)"/>
     </svg>
   );
 }
 
 // PlusIcon (16px).svg
-function PlusIcon({ color = '#6D6E6F' }) {
+function PlusIcon({ color = 'var(--icon)' }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M7.99902 2C7.73381 2 7.47945 2.10536 7.29192 2.29289C7.10438 2.48043 6.99902 2.73478 6.99902 3V7H2.99902C2.73381 7 2.47945 7.10536 2.29192 7.29289C2.10438 7.48043 1.99902 7.73478 1.99902 8C1.99902 8.26522 2.10438 8.51957 2.29192 8.70711C2.47945 8.89464 2.73381 9 2.99902 9H6.99902V13C6.99902 13.2652 7.10438 13.5196 7.29192 13.7071C7.47945 13.8946 7.73381 14 7.99902 14C8.26424 14 8.51859 13.8946 8.70613 13.7071C8.89367 13.5196 8.99902 13.2652 8.99902 13V9H12.999C13.2642 9 13.5186 8.89464 13.7061 8.70711C13.8937 8.51957 13.999 8.26522 13.999 8C13.999 7.73478 13.8937 7.48043 13.7061 7.29289C13.5186 7.10536 13.2642 7 12.999 7H8.99902V3C8.99902 2.73478 8.89367 2.48043 8.70613 2.29289C8.51859 2.10536 8.26424 2 7.99902 2Z" fill={color}/>
@@ -214,7 +214,7 @@ function PlusIcon({ color = '#6D6E6F' }) {
 function BreadcrumbSep() {
   return (
     <svg width="5" height="11" viewBox="0 0 5 11" fill="none" style={{ flexShrink: 0 }}>
-      <path d="M4.46423 0.185699L0.464233 10.1857" stroke="#6D6E6F"/>
+      <path d="M4.46423 0.185699L0.464233 10.1857" stroke="var(--icon)"/>
     </svg>
   );
 }
@@ -274,10 +274,10 @@ function TabIcon({ tab }) {
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
-function Avi({ name, size = 24, bg = '#6D6E6F', border = false }) {
+function Avi({ name, size = 24, bg = 'var(--icon)', border = false }) {
   const ini = name.split(' ').map(n => n[0]).join('').slice(0, 2);
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: bg, border: border ? '2px solid white' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(size * 0.37), fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, letterSpacing: '0.02em', boxSizing: 'border-box' }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: bg, border: border ? '2px solid var(--surface)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(size * 0.37), fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, letterSpacing: '0.02em', boxSizing: 'border-box' }}>
       {ini}
     </div>
   );
@@ -309,7 +309,7 @@ function Checkbox({ done, onToggle }) {
 }
 
 // ── Typography constants (matches TicketsDashboard) ───────────────────────────
-const COL_TEXT = { fontFamily: SFT, fontSize: '14px', fontStyle: 'normal', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', ...LIGA };
+const COL_TEXT = { fontFamily: SFT, fontSize: '14px', fontStyle: 'normal', fontWeight: 400, lineHeight: '22px', letterSpacing: '-0.15px', color: 'var(--text)', ...LIGA };
 
 // Column widths (px)
 const CW = { name: 'flex-1', assignee: 120, reporter: 130, dept: 110, escalationType: 100, dueDate: 120, status: 120, priority: 120 };
@@ -322,13 +322,13 @@ const InsetLine = () => (
 // ── Table header — matches TicketsDashboard ───────────────────────────────────
 // padding: 9px 8px 9px 0 per cell; 24px left padding on container
 
-const COL_LABEL_BASE = { fontFamily: SFT, fontSize: 12, fontStyle: 'normal', fontWeight: 400, lineHeight: '18px', color: 'var(--neutrals-lm-text-weak, var(--Default-text-weak, #6D6E6F))', ...LIGA, whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center' };
+const COL_LABEL_BASE = { fontFamily: SFT, fontSize: 12, fontStyle: 'normal', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA, whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center' };
 const COL_LABEL_1 = { ...COL_LABEL_BASE, flex: 1, padding: '8px 8px 8px 0' };
 const COL_LABEL_N = { ...COL_LABEL_BASE, padding: '8px', borderLeft: '1px solid var(--border)' };
 
 function ProjectTableHeader() {
   return (
-    <div style={{ display: 'flex', alignItems: 'stretch', flexShrink: 0, paddingLeft: 24, paddingRight: 24, background: 'white', position: 'sticky', top: 0, zIndex: 2 }}>
+    <div style={{ display: 'flex', alignItems: 'stretch', flexShrink: 0, paddingLeft: 24, paddingRight: 24, background: 'var(--surface)', position: 'sticky', top: 0, zIndex: 2 }}>
       <div style={COL_LABEL_1}>Task name</div>
       <div style={{ ...COL_LABEL_N, width: CW.assignee }}>Assignee</div>
       <div style={{ ...COL_LABEL_N, width: CW.reporter }}>Customer</div>
@@ -355,7 +355,7 @@ function TaskRow({ task, onClick, selected }) {
   const [done, setDone] = useState(task.status === 'Resolved');
   const ss = STATUS_STYLE[task.status] ?? {};
   const ps = PRIORITY_STYLE[task.priority] ?? {};
-  const ts = ESCALATION_TYPE_STYLE[task.escalationType] ?? { bg: '#F3F4F6', color: '#6D6E6F' };
+  const ts = ESCALATION_TYPE_STYLE[task.escalationType] ?? { bg: 'var(--priority-low-bg)', color: 'var(--priority-low-text)' };
 
   return (
     <div
@@ -450,7 +450,7 @@ function Section({ s, onSelectTask, selectedTaskId }) {
               <path d="M10.249 4H1.74904C1.65016 4.00002 1.55351 4.02936 1.47131 4.0843C1.3891 4.13924 1.32504 4.21732 1.2872 4.30867C1.24936 4.40002 1.23946 4.50054 1.25875 4.59752C1.27803 4.69449 1.32563 4.78357 1.39554 4.8535L5.64554 9.1035C5.69187 9.15009 5.74695 9.18707 5.80761 9.2123C5.86828 9.23753 5.93334 9.25052 5.99904 9.25052C6.06474 9.25052 6.1298 9.23753 6.19047 9.2123C6.25113 9.18707 6.30621 9.15009 6.35254 9.1035L10.6025 4.8535C10.6724 4.78357 10.72 4.69449 10.7393 4.59752C10.7586 4.50054 10.7487 4.40002 10.7109 4.30867C10.673 4.21732 10.609 4.13924 10.5268 4.0843C10.4446 4.02936 10.3479 4.00002 10.249 4Z" fill="currentColor"/>
             </svg>
           </button>
-          <span style={{ fontFamily: SFT, fontSize: 16, fontStyle: 'normal', fontWeight: 500, lineHeight: '20px', letterSpacing: '-0.32px', color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', fontFeatureSettings: "'liga' off, 'clig' off" }}>{s.label}</span>
+          <span style={{ fontFamily: SFT, fontSize: 16, fontStyle: 'normal', fontWeight: 500, lineHeight: '20px', letterSpacing: '-0.32px', color: 'var(--text)', fontFeatureSettings: "'liga' off, 'clig' off" }}>{s.label}</span>
           <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-disabled)', fontFamily: SFT }}>{s.tasks.length}</span>
         </div>
       </div>
@@ -486,7 +486,7 @@ export default function ITEscalationsProject() {
   const [selectedTask, setSelectedTask] = useState(null);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'white', position: 'relative' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background-weak)', position: 'relative' }}>
 
       {/* ── Project header ──────────────────────────────────────────── */}
       <div style={{ flexShrink: 0, padding: '16px 24px 0', borderBottom: '1px solid var(--border)' }}>
@@ -514,7 +514,7 @@ export default function ITEscalationsProject() {
                 <path fillRule="evenodd" clipRule="evenodd" d="M10.5 2C11.3285 2 12 2.67158 12 3.5V8.5C12 9.32845 11.3285 10 10.5 10H1.5C0.671575 10 0 9.32845 0 8.5V0.5C0 0.22386 0.223857 0 0.5 0H4.8L5.85435 1.75725C5.9447 1.90785 6.10745 2 6.2831 2H10.5ZM11 3.5V8.5C11 8.77615 10.7761 9 10.5 9H1.5C1.22386 9 1 8.77615 1 8.5V3H10.5C10.7761 3 11 3.22386 11 3.5ZM4.83381 2L4.23381 1H1V2H4.83381Z" fill="white"/>
               </svg>
             </div>
-            <h2 style={{ fontFamily: SFD, fontSize: 20, fontWeight: 500, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', letterSpacing: '0.38px', lineHeight: '28px', margin: 0, whiteSpace: 'nowrap', fontStyle: 'normal', fontFeatureSettings: "'liga' off, 'clig' off" }}>
+            <h2 style={{ fontFamily: SFD, fontSize: 20, fontWeight: 500, color: 'var(--text)', letterSpacing: '0.38px', lineHeight: '28px', margin: 0, whiteSpace: 'nowrap', fontStyle: 'normal', fontFeatureSettings: "'liga' off, 'clig' off" }}>
               IT Escalations Inbox
             </h2>
             {/* Chevron down */}
@@ -525,12 +525,12 @@ export default function ITEscalationsProject() {
             </button>
             {/* Star */}
             <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: 'var(--text-disabled)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#F1BD6C'; }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--warning-text)'; }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-disabled)'; }}>
               <StarIcon style={{ width: 14, height: 14 }} />
             </button>
             {/* Status badge — using Icon (12px).svg dot */}
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontFamily: SFT, color: '#0D7F56', background: '#E6F8F1', borderRadius: 100, padding: '3px 10px 3px 7px', lineHeight: '18px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontFamily: SFT, color: 'var(--success-text)', background: 'var(--success-background)', borderRadius: 100, padding: '3px 10px 3px 7px', lineHeight: '18px' }}>
               <StatusDot />
               On track
             </span>
@@ -544,25 +544,25 @@ export default function ITEscalationsProject() {
                 <div
                   key={m.name}
                   title={m.name}
-                  style={{ width: 26, height: 26, borderRadius: '50%', background: m.bg, border: '2px solid white', marginLeft: i === 0 ? 0 : -10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, position: 'relative', zIndex: TEAM.length - i, boxSizing: 'border-box' }}
+                  style={{ width: 26, height: 26, borderRadius: '50%', background: m.bg, border: '2px solid var(--surface)', marginLeft: i === 0 ? 0 : -10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, position: 'relative', zIndex: TEAM.length - i, boxSizing: 'border-box' }}
                 >
                   {m.name.split(' ').map(n => n[0]).join('')}
                 </div>
               ))}
               {/* +N pill — matches Header top.svg: 36×23, rx=11.5, fill=#F9F8F8, stroke=#EDEAE9 */}
-              <div style={{ height: 23, minWidth: 36, borderRadius: 11.5, border: '1px solid #EDEAE9', background: '#F9F8F8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -10, padding: '0 8px', fontSize: 11, fontWeight: 500, fontFamily: SFT, color: '#6D6E6F', zIndex: 0, position: 'relative', flexShrink: 0 }}>
+              <div style={{ height: 23, minWidth: 36, borderRadius: 11.5, border: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -10, padding: '0 8px', fontSize: 11, fontWeight: 500, fontFamily: SFT, color: 'var(--icon)', zIndex: 0, position: 'relative', flexShrink: 0 }}>
                 +{TOTAL_TASKS}
               </div>
             </div>
 
             {/* Share button — 65×28, rx=6, blue, LockIcon */}
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 28, padding: '0 14px', background: '#4573D2', border: 'none', borderRadius: 6, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'white', cursor: 'pointer', flexShrink: 0 }}>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 28, padding: '0 14px', background: 'var(--selected-background-strong)', border: 'none', borderRadius: 6, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--selected-text-strong)', cursor: 'pointer', flexShrink: 0 }}>
               <LockIcon />
               Share
             </button>
 
-            {/* Customize button — ~95×27, rx=5.5, white, border #CFCBCB, CustomizeIcon */}
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 27, padding: '0 12px', background: 'white', border: '1px solid #CFCBCB', borderRadius: 5.5, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--text)', cursor: 'pointer', flexShrink: 0 }}>
+            {/* Customize button */}
+            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 27, padding: '0 12px', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: 5.5, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--text)', cursor: 'pointer', flexShrink: 0 }}>
               <CustomizeIcon />
               Customize
             </button>
@@ -601,11 +601,11 @@ export default function ITEscalationsProject() {
       <Toolbar
         left={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 28, paddingLeft: 10, paddingRight: 10, background: 'white', border: '1px solid var(--border-strong)', borderRight: 'none', borderRadius: '6px 0 0 6px', fontFamily: SFT, fontSize: 12, fontWeight: 400, fontStyle: 'normal', lineHeight: '18px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--neutrals-lm-text, #1E1F21)', cursor: 'pointer' }}>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 28, paddingLeft: 10, paddingRight: 10, background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRight: 'none', borderRadius: '6px 0 0 6px', fontFamily: SFT, fontSize: 12, fontWeight: 400, fontStyle: 'normal', lineHeight: '18px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', cursor: 'pointer' }}>
               <PlusIcon color="var(--icon)" />
               Add task
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 28, width: 24, background: 'white', border: '1px solid var(--border-strong)', borderRadius: '0 6px 6px 0', cursor: 'pointer', color: 'var(--icon)' }}>
+            <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 28, width: 24, background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: '0 6px 6px 0', cursor: 'pointer', color: 'var(--icon)' }}>
               <ChevronDownIcon style={{ width: 12, height: 12 }} />
             </button>
           </div>

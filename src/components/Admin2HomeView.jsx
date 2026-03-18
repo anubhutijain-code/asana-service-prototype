@@ -26,7 +26,7 @@ const H4 = {
   fontFamily: '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   fontSize: 16,
   fontWeight: 500,
-  color: 'var(--Default-text, #1E1F21)',
+  color: 'var(--text)',
   lineHeight: '20px',
   letterSpacing: '-0.32px',
   fontFeatureSettings: "'liga' off, 'clig' off",
@@ -203,7 +203,7 @@ function RecommendedTile({ item }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? 'var(--background-medium)' : '#fff',
+        background: hov ? 'var(--background-medium)' : 'var(--surface)',
         borderRadius: 8,
         padding: '12px 14px',
         display: 'flex',
@@ -260,7 +260,7 @@ function IntegrationsCard() {
 
       {/* ── Gradient bottom section ── */}
       <div style={{
-        background: 'var(--Default-background-medium, #F2F3F4)',
+        background: 'var(--background-medium)',
         padding: '14px 20px 20px',
         borderTop: '1px solid var(--border)',
       }}>
@@ -280,8 +280,8 @@ function IntegrationsCard() {
 
 // Same blue scale as DashboardView TopicVolumeCard (darkest → lightest by volume)
 const TOPIC_BLUES = [
-  '#1e3a8a', '#1d4ed8', '#2563eb', '#3b82f6',
-  '#4273D1', '#60a5fa', '#93c5fd', '#bfdbfe',
+  'var(--chart-0)', 'var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)',
+  'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)', 'var(--chart-7)',
 ];
 
 function TicketTopicsCard() {
@@ -375,7 +375,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
 
         {/* Left column */}
         <div style={{ width: 200, flexShrink: 0, borderRight: '1px solid var(--border)' }}>
-          <div style={{ height: 32, background: 'white', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>Agent</div>
+          <div style={{ height: 32, background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT }}>Agent</div>
           {agents.map((agent, i) => (
             <div key={agent.id} style={{
               height: chartRowH,
@@ -400,7 +400,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
             <div style={{ position: 'absolute', left: todayX, top: 0, bottom: 0, width: 1, background: 'var(--selected-background-strong)', opacity: 0.4, zIndex: 2, pointerEvents: 'none' }} />
 
             {/* Date header */}
-            <div style={{ height: 32, borderBottom: '1px solid var(--border)', background: 'white', position: 'relative' }}>
+            <div style={{ height: 32, borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative' }}>
               {WEEK_STARTS.map(ws => (
                 <span key={ws.label} style={{ position: 'absolute', left: ws.index * PX_PER_DAY + 4, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--text-weak)', fontFamily: SFT, whiteSpace: 'nowrap' }}>
                   {ws.label}
@@ -428,13 +428,13 @@ function TeamWorkloadCard({ agents, todayIndex }) {
                   <XAxis dataKey="idx" type="number" domain={[0, N_DAYS - 1]} hide />
                   {/* Grey base — full data */}
                   <Area type="monotone" dataKey="base" name={agent.name}
-                    stroke="#9CA3AF" fill="#9CA3AF" fillOpacity={0.15}
+                    stroke="var(--chart-neutral)" fill="var(--chart-neutral)" fillOpacity={0.15}
                     strokeWidth={1.5} dot={false}
-                    activeDot={{ r: 3, fill: '#9CA3AF', strokeWidth: 0 }}
+                    activeDot={{ r: 3, fill: 'var(--chart-neutral)', strokeWidth: 0 }}
                   />
                   {/* Red overload — full bar from bottom on over-capacity days */}
                   <Area type="monotone" dataKey="over"
-                    stroke="#D43D5D" fill="#D43D5D" fillOpacity={0.3}
+                    stroke="var(--chart-danger)" fill="var(--chart-danger)" fillOpacity={0.3}
                     strokeWidth={1.5} dot={false} connectNulls={false}
                     activeDot={false}
                   />
@@ -588,7 +588,7 @@ function AIPerformanceCard() {
         </p>
 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
-          <span style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', fontFeatureSettings: "'liga' off, 'clig' off" }}>
+          <span style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', fontFeatureSettings: "'liga' off, 'clig' off" }}>
             {pct}%
           </span>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--success-text)', lineHeight: '18px' }}>↑ {diff}pp</span>
@@ -719,7 +719,7 @@ function MyTicketsCard() {
   const rows = ADMIN2_MY_TICKETS[tabKey];
 
   return (
-    <div style={{ background: 'var(--background-weak)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+    <div style={{ background: 'var(--background-weak)', borderRadius: 12, border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
       {/* Title row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 0' }}>
         <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>My tickets</span>
@@ -762,13 +762,13 @@ function KpiStatCard({ label, value, sub, color }) {
         borderRadius: 10,
         padding: '18px 20px',
         boxShadow: hov
-          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
-          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
+          ? 'var(--shadow-md)'
+          : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
       }}
     >
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: color ?? 'var(--neutrals-lm-text, var(--Default-text, #1E1F21))', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: color ?? 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>{sub}</p>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store/AppStore';
 import TicketDetailHeader from './TicketDetailHeader';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
@@ -8,6 +9,7 @@ import RightPanelOverlay from './RightPanelOverlay';
 import ApprovalTaskView from './ApprovalTaskView';
 import CreateHRTicketModal from './CreateHRTicketModal';
 import RouteToHRModal from './RouteToHRModal';
+import CloseAndMoveModal from './CloseAndMoveModal';
 // ─── Payroll ticket chat content (TICKET-68) ──────────────────────────────────
 
 const PAYROLL_TRANSCRIPT = [
@@ -30,6 +32,7 @@ const PAYROLL_INTERNAL = [
 
 export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCreateHRTicket, onAddLinkedHRTicket, hrLinkedTicket, onGoToLinkedITTicket, onGoToLinkedHRTicket, onHRStatusChange, onITStatusChange }) {
   const navigate = useNavigate();
+  const { dispatch } = useAppStore();
   const [workflowLinkedTicket, setWorkflowLinkedTicket] = useState(null);
   const [approvalState, setApprovalState] = useState(null);
   const [chatEvents, setChatEvents] = useState([]);
@@ -38,6 +41,8 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
   const [showRouteModal, setShowRouteModal] = useState(false);
   const [hrCreateOpen, setHrCreateOpen] = useState(false);
   const [pendingHRCreate, setPendingHRCreate] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [closedAndMoved, setClosedAndMoved] = useState(false);
 
   // Pills bar state
   const [localStatus,   setLocalStatus]   = useState(ticket.status);
@@ -186,13 +191,14 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
   }
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden" style={{ position: 'relative' }}>
+    <div className="flex flex-col h-full bg-[var(--surface)] overflow-hidden" style={{ position: 'relative' }}>
       <TicketDetailHeader
         ticket={ticket}
         onBack={onBack}
         onRequestApproval={handleRequestApproval}
         onRouteToHR={() => setShowRouteModal(true)}
         onCreateTicketHR={() => setHrCreateOpen(true)}
+        onCloseAndMove={() => setShowCloseModal(true)}
         readOnly={routedToHR}
       />
 
@@ -237,6 +243,24 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         </div>
       )}
 
+      {/* Banner: ticket closed and moved to Asana */}
+      {closedAndMoved && (
+        <div
+          className="shrink-0 flex items-center gap-1"
+          style={{ height: 38, padding: '0 24px', background: '#F0FDF4', borderBottom: '1px solid #BBF7D0', fontSize: 13, color: '#15803D' }}
+        >
+          <span>Ticket resolved — task created in IT Escalations</span>
+          <span style={{ margin: '0 2px' }}>—</span>
+          <button
+            type="button"
+            onClick={() => navigate('/projects/it-escalations')}
+            style={{ background: 'none', border: 'none', padding: '0 2px', color: '#15803D', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+          >
+            View in IT Escalations
+          </button>
+        </div>
+      )}
+
       {/* Body: chat (flex-1) + optional workflow col (TICKET-95) + info sidebar */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 min-w-0 overflow-hidden">
@@ -278,6 +302,11 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             setPriorityDropdownOpen={setPriorityDropdownOpen}
             onStatusChange={opt => {
               setLocalStatus(opt);
+              const isResolved = opt === 'Resolved' || opt === 'Closed';
+              dispatch({ type: 'UPDATE_TICKET', id: ticket.id, patch: {
+                status: opt,
+                ...(isResolved ? { resolvedAt: Date.now() } : {}),
+              }});
               if (ticket.linkedFromId) onHRStatusChange?.(opt);
               else onITStatusChange?.(opt);
               setChatEvents(prev => [...prev, { type: 'system', text: `Status changed to ${opt}` }]);
@@ -329,6 +358,17 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         ticket={ticket}
         onClose={() => setShowRouteModal(false)}
         onRoute={handleConfirmRouteToHR}
+      />
+
+      <CloseAndMoveModal
+        open={showCloseModal}
+        ticket={ticket}
+        onClose={() => setShowCloseModal(false)}
+        onConfirm={() => {
+          setShowCloseModal(false);
+          setClosedAndMoved(true);
+          dispatch({ type: 'UPDATE_TICKET', id: ticket.id, patch: { status: 'Closed', resolvedAt: Date.now() } });
+        }}
       />
     </div>
   );

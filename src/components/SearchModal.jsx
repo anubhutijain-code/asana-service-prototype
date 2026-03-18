@@ -241,16 +241,16 @@ function FilterPill({ type, label, active, onToggle }) {
       onClick={onToggle}
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors shrink-0"
       style={active
-        ? { background: '#EEF2FB', color: '#3F6AC4', border: '1px solid #3F6AC4' }
-        : { background: 'transparent', color: '#1E1F21', border: '1px solid #D1D5DB' }
+        ? { background: 'var(--selected-background)', color: 'var(--selected-text)', border: '1px solid var(--selected-text)' }
+        : { background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)' }
       }
     >
-      <span style={{ color: active ? '#3F6AC4' : '#6D6E6F', display: 'flex', alignItems: 'center' }}>
+      <span style={{ color: active ? 'var(--selected-text)' : 'var(--text-weak)', display: 'flex', alignItems: 'center' }}>
         <PillIcon type={type} />
       </span>
       {label}
       {active && (
-        <span style={{ color: '#3F6AC4', display: 'flex', alignItems: 'center', marginLeft: 2 }}>
+        <span style={{ color: 'var(--selected-text)', display: 'flex', alignItems: 'center', marginLeft: 2 }}>
           <XIcon />
         </span>
       )}
@@ -280,18 +280,18 @@ function ModeScopePill({ activeContext, open, onOpenDropdown, onSelectMode, onCl
         type="button"
         onClick={handleOpen}
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-        style={{ background: '#EEF2FB', color: '#3F6AC4', border: '1px solid #3F6AC4' }}
+        style={{ background: 'var(--selected-background)', color: 'var(--selected-text)', border: '1px solid var(--selected-text)' }}
       >
         {cfg ? (
           <>
-            <span style={{ color: '#3F6AC4', display: 'flex', alignItems: 'center' }}>
+            <span style={{ color: 'var(--selected-text)', display: 'flex', alignItems: 'center' }}>
               <PillIcon type={cfg.type} />
             </span>
             {cfg.label}
             <span
               role="button"
               onClick={e => { e.stopPropagation(); onClear(); }}
-              style={{ color: '#3F6AC4', display: 'flex', alignItems: 'center', marginLeft: 2 }}
+              style={{ color: 'var(--selected-text)', display: 'flex', alignItems: 'center', marginLeft: 2 }}
             >
               <XIcon />
             </span>
@@ -311,11 +311,11 @@ function ModeScopePill({ activeContext, open, onOpenDropdown, onSelectMode, onCl
             top: dropPos.top,
             left: dropPos.left,
             zIndex: 400,
-            background: '#fff',
+            background: 'var(--surface)',
             borderRadius: 10,
             minWidth: 180,
             paddingBlock: 6,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+            boxShadow: 'var(--shadow-lg)',
           }}
         >
           {/* Global option */}
@@ -326,23 +326,23 @@ function ModeScopePill({ activeContext, open, onOpenDropdown, onSelectMode, onCl
               display: 'flex', alignItems: 'center', gap: 12,
               width: '100%', padding: '10px 16px',
               fontSize: 14, fontWeight: !activeContext ? 500 : 400,
-              color: !activeContext ? '#3F6AC4' : '#1E1F21',
-              background: !activeContext ? '#EEF2FB' : 'transparent',
+              color: !activeContext ? 'var(--selected-text)' : 'var(--text)',
+              background: !activeContext ? 'var(--selected-background)' : 'transparent',
               border: 'none', cursor: 'pointer', textAlign: 'left',
               transition: 'background 0.1s',
             }}
-            onMouseEnter={e => { if (activeContext) e.currentTarget.style.background = '#F7F8F9'; }}
+            onMouseEnter={e => { if (activeContext) e.currentTarget.style.background = 'var(--background-medium)'; }}
             onMouseLeave={e => { if (activeContext) e.currentTarget.style.background = 'transparent'; }}
           >
             <span style={{
-              color: !activeContext ? '#3F6AC4' : '#9ea0a2',
+              color: !activeContext ? 'var(--selected-text)' : 'var(--text-disabled)',
               display: 'flex', alignItems: 'center', flexShrink: 0,
             }}>
               <SearchIcon size={12} />
             </span>
             Global
           </button>
-          <div style={{ height: 1, background: '#EDEAE9', margin: '2px 0' }} />
+          <div style={{ height: 1, background: 'var(--border)', margin: '2px 0' }} />
           {Object.values(CONTEXT_CONFIG).map(({ type, label }) => {
             const isActive = activeContext === type;
             return (
@@ -354,16 +354,16 @@ function ModeScopePill({ activeContext, open, onOpenDropdown, onSelectMode, onCl
                   display: 'flex', alignItems: 'center', gap: 12,
                   width: '100%', padding: '10px 16px',
                   fontSize: 14, fontWeight: isActive ? 500 : 400,
-                  color: isActive ? '#3F6AC4' : '#1E1F21',
-                  background: isActive ? '#EEF2FB' : 'transparent',
+                  color: isActive ? 'var(--selected-text)' : 'var(--text)',
+                  background: isActive ? 'var(--selected-background)' : 'transparent',
                   border: 'none', cursor: 'pointer', textAlign: 'left',
                   transition: 'background 0.1s',
                 }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F7F8F9'; }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--background-medium)'; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
               >
                 <span style={{
-                  color: isActive ? '#3F6AC4' : '#9ea0a2',
+                  color: isActive ? 'var(--selected-text)' : 'var(--text-disabled)',
                   display: 'flex', alignItems: 'center', flexShrink: 0,
                 }}>
                   <PillIcon type={type} />
@@ -386,18 +386,18 @@ function RecentRow({ item, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-[#f5f5f4] text-left"
+      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)] text-left"
     >
       {item._type === 'person' ? (
         <Avatar person={item.person} />
       ) : (
-        <span style={{ color: '#AFABAC', flexShrink: 0 }}>
+        <span style={{ color: 'var(--text-disabled)', flexShrink: 0 }}>
           {item._type === 'ticket' ? <TicketStubIcon /> : <ClipboardIcon />}
         </span>
       )}
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#1d1f21] truncate">{item.name}</div>
-        {label && <div className="text-xs text-[#9ea0a2]">{label}</div>}
+        <div className="text-sm text-[var(--text)] truncate">{item.name}</div>
+        {label && <div className="text-xs text-[var(--text-disabled)]">{label}</div>}
       </div>
     </button>
   );
@@ -411,14 +411,14 @@ function TicketResultRow({ ticket, query, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-3 w-full px-4 py-2 hover:bg-[#f5f5f4] text-left"
+      className="flex items-center gap-3 w-full px-4 py-2 hover:bg-[var(--background-medium)] text-left"
     >
-      <span style={{ color: '#3F6AC4', flexShrink: 0 }}><TicketStubIcon /></span>
+      <span style={{ color: 'var(--selected-text)', flexShrink: 0 }}><TicketStubIcon /></span>
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#1d1f21] truncate">
+        <div className="text-sm text-[var(--text)] truncate">
           <HighlightMatch text={ticket.name} query={query} />
         </div>
-        <div className="text-xs text-[#9ea0a2]">{label} · {ticket.id}</div>
+        <div className="text-xs text-[var(--text-disabled)]">{label} · {ticket.id}</div>
       </div>
       <Avatar person={person} />
     </button>
@@ -427,28 +427,28 @@ function TicketResultRow({ ticket, query, onClick }) {
 
 function TaskResultRow({ task, query }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[#f5f5f4]">
-      <span style={{ color: '#6D6E6F', flexShrink: 0 }}><ClipboardIcon /></span>
+    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)]">
+      <span style={{ color: 'var(--icon)', flexShrink: 0 }}><ClipboardIcon /></span>
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#1d1f21] truncate">
+        <div className="text-sm text-[var(--text)] truncate">
           <HighlightMatch text={task.name} query={query} />
         </div>
-        <div className="text-xs text-[#9ea0a2]">{task.project} · {task.id}</div>
+        <div className="text-xs text-[var(--text-disabled)]">{task.project} · {task.id}</div>
       </div>
-      <span style={{ fontSize: 11, color: '#9ea0a2', flexShrink: 0 }}>{task.due}</span>
+      <span style={{ fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0 }}>{task.due}</span>
     </div>
   );
 }
 
 function KBResultRow({ article, query }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[#f5f5f4]">
-      <span style={{ color: '#3F6AC4', flexShrink: 0 }}><ClipboardIcon /></span>
+    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)]">
+      <span style={{ color: 'var(--selected-text)', flexShrink: 0 }}><ClipboardIcon /></span>
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#1d1f21] truncate">
+        <div className="text-sm text-[var(--text)] truncate">
           <HighlightMatch text={article.title} query={query} />
         </div>
-        <div className="text-xs text-[#9ea0a2]">Article · {article.id}</div>
+        <div className="text-xs text-[var(--text-disabled)]">Article · {article.id}</div>
       </div>
     </div>
   );
@@ -456,10 +456,10 @@ function KBResultRow({ article, query }) {
 
 function PersonResultRow({ person, query }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[#f5f5f4]">
+    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)]">
       <Avatar person={person} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#1d1f21] truncate">
+        <div className="text-sm text-[var(--text)] truncate">
           <HighlightMatch text={person.name} query={query} />
         </div>
       </div>
@@ -470,12 +470,12 @@ function PersonResultRow({ person, query }) {
 function ResultSection({ title, items, renderItem }) {
   return (
     <div>
-      <div className="px-4 pt-3 pb-1 text-xs font-semibold text-[#6D6E6F]">
+      <div className="px-4 pt-3 pb-1 text-xs font-semibold text-[var(--text-weak)]">
         {title}
       </div>
       {items.map((item, i) => <div key={item.id ?? item.name ?? i}>{renderItem(item)}</div>)}
       {items.length >= 3 && (
-        <button type="button" className="flex items-center gap-1 px-4 py-1.5 text-xs text-[#3F6AC4] hover:bg-[#f5f5f4] w-full">
+        <button type="button" className="flex items-center gap-1 px-4 py-1.5 text-xs text-[var(--selected-text)] hover:bg-[var(--background-medium)] w-full">
           Show more →
         </button>
       )}
@@ -642,7 +642,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
     <div className="fixed inset-0 z-[300]">
       <div
         ref={panelRef}
-        className="absolute bg-white flex flex-col overflow-hidden"
+        className="absolute bg-[var(--surface)] flex flex-col overflow-hidden"
         style={{
           top: pillRect ? pillRect.top : 8,
           left: pillRect ? pillRect.left : '50%',
@@ -661,7 +661,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
           className="flex items-center gap-2.5 shrink-0"
           style={{ height: pillRect?.height ?? 28, padding: '0 10px 0 32px', position: 'relative' }}
         >
-          <span className="absolute flex items-center" style={{ left: 12, top: '50%', transform: 'translateY(-50%)', color: '#3F6AC4', pointerEvents: 'none' }}>
+          <span className="absolute flex items-center" style={{ left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--selected-text)', pointerEvents: 'none' }}>
             <SearchIcon size={12} />
           </span>
           <input
@@ -671,17 +671,17 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
-            className="flex-1 text-xs text-[#1d1f21] placeholder:text-[#9ea0a2] focus:outline-none bg-transparent"
+            className="flex-1 text-xs text-[var(--text)] placeholder:text-[var(--text-disabled)] focus:outline-none bg-transparent"
             style={{ minWidth: 0 }}
           />
         </div>
 
-        <div style={{ height: 1, background: '#EDEAE9', flexShrink: 0 }} />
+        <div style={{ height: 1, background: 'var(--border)', flexShrink: 0 }} />
 
         {/* ── Pills row ── */}
         <div
           className="flex items-center gap-2 px-4 py-2.5 shrink-0 overflow-x-auto"
-          style={{ borderBottom: '1px solid #EDEAE9', scrollbarWidth: 'none' }}
+          style={{ borderBottom: '1px solid var(--border)', scrollbarWidth: 'none' }}
         >
           {/* Single mode scope selector */}
           <ModeScopePill
@@ -694,7 +694,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
 
           {/* Divider — only when a mode is scoped */}
           {ctxConfig && (
-            <span style={{ width: 1, height: 16, background: '#D1D5DB', flexShrink: 0, margin: '0 2px' }} />
+            <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0, margin: '0 2px' }} />
           )}
 
           {/* Mode sub-pills when scoped, entity pills otherwise */}
@@ -713,7 +713,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
         <div className="flex-1 min-h-0 overflow-y-auto">
           {!q ? (
             <div className="py-2">
-              <div className="px-4 pt-2 pb-1 text-xs font-semibold text-[#6D6E6F]">
+              <div className="px-4 pt-2 pb-1 text-xs font-semibold text-[var(--text-weak)]">
                 Recents
               </div>
               {recents.map(item => (
@@ -792,7 +792,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
                 />
               )}
               {!hasResults && (
-                <div className="px-4 py-10 text-sm text-[#9ea0a2] text-center">
+                <div className="px-4 py-10 text-sm text-[var(--text-disabled)] text-center">
                   No results for &ldquo;{query}&rdquo;
                   {ctxConfig && <div className="mt-1 text-xs">in {ctxConfig.label}</div>}
                 </div>
@@ -802,8 +802,8 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
         </div>
 
         {/* ── Footer ── */}
-        <div className="shrink-0 px-4 py-3" style={{ borderTop: '1px solid #EDEAE9' }}>
-          <button type="button" className="flex items-center gap-2 text-sm text-[#3F6AC4] hover:underline w-full">
+        <div className="shrink-0 px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
+          <button type="button" className="flex items-center gap-2 text-sm text-[var(--selected-text)] hover:underline w-full">
             <SearchIcon size={14} />
             View all results
           </button>

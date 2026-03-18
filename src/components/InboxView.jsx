@@ -57,9 +57,9 @@ function DotsHIcon() {
 function CheckCircleIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.5" stroke="#9EA0A2" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="6.5" stroke="var(--text-disabled)" strokeWidth="1.2" />
       <path d="M5.5 8l2 2 3-3.5"
-            stroke="#9EA0A2" strokeWidth="1.25"
+            stroke="var(--text-disabled)" strokeWidth="1.25"
             strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -69,7 +69,7 @@ function CheckCircleIcon() {
 function DarkSquareIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
-      <rect x="2" y="2" width="12" height="12" rx="2.5" fill="#1E1F21" />
+      <rect x="2" y="2" width="12" height="12" rx="2.5" fill="var(--text)" />
     </svg>
   );
 }
@@ -87,9 +87,9 @@ function ColorSquareIcon({ color }) {
 function WarningCircleIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.5" stroke="#E8AC44" strokeWidth="1.2" />
-      <path d="M8 5.5v3.5" stroke="#E8AC44" strokeWidth="1.35" strokeLinecap="round" />
-      <circle cx="8" cy="11" r="0.8" fill="#E8AC44" />
+      <circle cx="8" cy="8" r="6.5" stroke="var(--warning-text)" strokeWidth="1.2" />
+      <path d="M8 5.5v3.5" stroke="var(--warning-text)" strokeWidth="1.35" strokeLinecap="round" />
+      <circle cx="8" cy="11" r="0.8" fill="var(--warning-text)" />
     </svg>
   );
 }
@@ -99,7 +99,7 @@ function ChatBubbleIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
       <path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v6A1.5 1.5 0 0112.5 11H9L6 14v-3H3.5A1.5 1.5 0 012 9.5v-6z"
-            stroke="#9EA0A2" strokeWidth="1.2" strokeLinejoin="round" />
+            stroke="var(--text-disabled)" strokeWidth="1.2" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -109,7 +109,7 @@ function GoalIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
       <path d="M8 2.5L14 13.5H2L8 2.5z"
-            stroke="#9EA0A2" strokeWidth="1.2" strokeLinejoin="round" />
+            stroke="var(--text-disabled)" strokeWidth="1.2" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -118,7 +118,7 @@ function GoalIcon() {
 function EmptyCircleIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.5" stroke="#9EA0A2" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="6.5" stroke="var(--text-disabled)" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -127,10 +127,10 @@ function EmptyCircleIcon() {
 function ApprovalIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
-      <rect x="2" y="2" width="12" height="12" rx="2" stroke="#9EA0A2" strokeWidth="1.2" />
-      <circle cx="8" cy="7" r="2" stroke="#9EA0A2" strokeWidth="1.1" />
+      <rect x="2" y="2" width="12" height="12" rx="2" stroke="var(--text-disabled)" strokeWidth="1.2" />
+      <circle cx="8" cy="7" r="2" stroke="var(--text-disabled)" strokeWidth="1.1" />
       <path d="M4.5 13.5c0-1.933 1.567-3 3.5-3s3.5 1.067 3.5 3"
-            stroke="#9EA0A2" strokeWidth="1.1" strokeLinecap="round" />
+            stroke="var(--text-disabled)" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   );
 }
@@ -508,7 +508,7 @@ export default function InboxView({ defaultTab = 'Activity' }) {
         {/* Header */}
         <div className="shrink-0 px-8 pt-7">
 
-          <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', marginBottom: '12px' }}>
+          <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', marginBottom: '12px' }}>
             Inbox
           </h1>
 

@@ -46,7 +46,7 @@ const STATUS_BADGE = {
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="#9ea0a2" strokeWidth="1.5" strokeLinecap="round">
+    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round">
       <circle cx="7" cy="7" r="5" /><path d="M12 12l-2.5-2.5" />
     </svg>
   );
@@ -96,10 +96,10 @@ function SourceIcon({ type, size = 16 }) {
   if (type === 'notion') {
     return (
       <svg viewBox="0 0 16 16" width={size} height={size} aria-label="Notion">
-        <rect x="1" y="1" width="14" height="14" rx="3" fill="#1E1F21" />
+        <rect x="1" y="1" width="14" height="14" rx="3" fill="var(--text)" />
         <path d="M5 4h4.5L12 6.5V12H5V4z" fill="white" stroke="none"/>
-        <path d="M9.5 4v2.5H12" stroke="#1E1F21" strokeWidth="0.8" fill="none"/>
-        <path d="M6.5 7.5h3M6.5 9.5h3" stroke="#9ea0a2" strokeWidth="0.8" strokeLinecap="round"/>
+        <path d="M9.5 4v2.5H12" stroke="var(--text)" strokeWidth="0.8" fill="none"/>
+        <path d="M6.5 7.5h3M6.5 9.5h3" stroke="var(--text-disabled)" strokeWidth="0.8" strokeLinecap="round"/>
       </svg>
     );
   }
@@ -305,7 +305,7 @@ function ManageIntegrationPanel({ project, allArticles, onClose }) {
                   display: 'flex', alignItems: 'center', gap: 6,
                   transition: 'all 0.1s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#ffd8de'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--danger-background-strong)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'var(--danger-background)'; }}
               >
                 <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -411,8 +411,8 @@ function Toggle({ value, onChange }) {
       }}
     >
       <span style={{
-        width: 16, height: 16, borderRadius: '50%', background: 'white',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        width: 16, height: 16, borderRadius: '50%', background: 'var(--surface)',
+        boxShadow: 'var(--shadow-sm)',
         transform: value ? 'translateX(16px)' : 'translateX(0)',
         transition: 'transform 0.2s',
         display: 'block',
@@ -448,10 +448,10 @@ function SourceChip({ type }) {
 
 function TableHeader() {
   return (
-    <div className="flex items-stretch w-full bg-white sticky top-0 z-[2]" style={{ borderBottom: '1px solid var(--border)' }}>
+    <div className="flex items-stretch w-full bg-[var(--surface)] sticky top-0 z-[2]" style={{ borderBottom: '1px solid var(--border)' }}>
       <div className={`${COL} w-[44px] shrink-0 justify-center`}>#</div>
-      <div className={`${COL} sticky left-[44px] bg-white z-[3] w-[280px] shrink-0`} style={divStyle}>Article name</div>
-      <div className={`${COL} sticky left-[324px] bg-white z-[3] w-[120px] shrink-0`} style={divStyle}>Source</div>
+      <div className={`${COL} sticky left-[44px] bg-[var(--surface)] z-[3] w-[280px] shrink-0`} style={divStyle}>Article name</div>
+      <div className={`${COL} sticky left-[324px] bg-[var(--surface)] z-[3] w-[120px] shrink-0`} style={divStyle}>Source</div>
       <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Author</div>
       <div className={`${COL} w-[120px] shrink-0`} style={divStyle}>Status</div>
       <div className={`${COL} w-[150px] shrink-0`} style={divStyle}>Category</div>
@@ -698,7 +698,7 @@ function LearningsTab({ projectId, allArticles }) {
 const PROJ_BG = { 'it-kb': '#E87264', 'hr-kb': '#4CA57E', 'eng-kb': '#4573D2', 'onb-kb': '#A97FD4' };
 
 function KBProjectIcon({ project, size = 28 }) {
-  const bg = PROJ_BG[project.id] ?? '#9ea0a2';
+  const bg = PROJ_BG[project.id] ?? 'var(--text-disabled)';
   const iconSize = Math.round(size * 0.54);
   return (
     <div style={{
@@ -735,7 +735,7 @@ function KBLandingPage({ isAgent }) {
 
       {/* ── Header ── */}
       <div style={{ flexShrink: 0, padding: '28px 32px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: 0 }}>
+        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
           Browse knowledge bases
         </h1>
         {!isAgent && (
@@ -774,7 +774,7 @@ function KBLandingPage({ isAgent }) {
               width: '100%', height: 36, paddingLeft: 34, paddingRight: 12,
               fontSize: 13, fontFamily: SFT,
               border: '1px solid var(--border)', borderRadius: 8, outline: 'none',
-              color: 'var(--text)', background: 'white',
+              color: 'var(--text)', background: 'var(--surface)',
             }}
             onFocus={e => e.target.style.borderColor = 'var(--icon)'}
             onBlur={e => e.target.style.borderColor = 'var(--border)'}
@@ -786,7 +786,7 @@ function KBLandingPage({ isAgent }) {
       <div style={{
         position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center',
         padding: '0 32px', height: 36,
-        background: 'white',
+        background: 'var(--surface)',
       }}>
         <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
         <span style={{ ...typoMeta, flex: 1, minWidth: 200, fontWeight: 500 }}>Name</span>
@@ -797,7 +797,7 @@ function KBLandingPage({ isAgent }) {
       </div>
 
       {/* ── Rows ── */}
-      <div style={{ flex: 1, overflowY: 'auto', background: 'white' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: 'var(--surface)' }}>
         {filtered.map(proj => {
           const cfg = proj.source ? (INTEGRATION_CONFIG[proj.source.type] ?? {}) : null;
           const articleCount = articleCountByProject[proj.id] ?? 0;
@@ -814,7 +814,7 @@ function KBLandingPage({ isAgent }) {
                 cursor: 'pointer', transition: 'background 0.1s',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-weak)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'white'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; }}
             >
               <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
               {/* Name */}
@@ -924,7 +924,7 @@ export default function KnowledgeBaseView({ role }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <KBProjectIcon project={project} size={32} />
             <div>
-              <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: '#1E1F21', margin: '0 0 4px' }}>
+              <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 4px' }}>
                 {project.name}
               </h1>
               <p style={{ ...typoMeta, margin: 0 }}>

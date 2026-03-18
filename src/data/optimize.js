@@ -1,6 +1,12 @@
 // ─── Optimize / diagnostic gap data ───────────────────────────────────────────
 // Surfaced for service managers to understand what's blocking resolution quality.
 // Three buckets: content gaps, action gaps, data gaps.
+//
+// ROI fields:
+//   hoursSaved   — estimated agent-hours saved per month if fixed
+//   effortLabel  — 'Quick win' | 'Half day' | 'Multi-day'
+//   effortHours  — numeric hours to implement (used for ROI score)
+//   avgTimeAdded — plain-text description of time cost per ticket today
 
 export const OPTIMIZE_GAPS = {
 
@@ -12,6 +18,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Agents manually walk users through re-enrollment every time — no article exists. Affects hardware swap tickets disproportionately and adds 30+ minutes per case.',
       ticketCount: 8,
       impact: 'high',
+      hoursSaved: 28,
+      effortLabel: 'Quick win',
+      effortHours: 3,
+      avgTimeAdded: '~35 min added per ticket — agents walk through MFA setup verbally every time',
       sourceTickets: [
         { id: 'TICKET-62', name: 'Report Lost Laptop for Patrick Tuckey' },
         { id: 'TICKET-67', name: 'Help Updating MacBook to Latest macOS' },
@@ -25,6 +35,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Agents handle Salesforce and M365 transfer tickets ad hoc with no reference. No article explains what systems need updating, in what order, or who needs to sign off.',
       ticketCount: 5,
       impact: 'high',
+      hoursSaved: 15,
+      effortLabel: 'Quick win',
+      effortHours: 4,
+      avgTimeAdded: '~3 hrs added per ticket — no checklist means agents handle each case from scratch',
       sourceTickets: [
         { id: 'TICKET-95', name: 'Salesforce Access Update — Department Transfer (Sarah Lee)' },
         { id: 'TICKET-69', name: 'Wrong Microsoft 365 License After Department Transfer' },
@@ -38,6 +52,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Three tickets this week hit this exact gap. Agents are giving inconsistent advice and resolution times are 2–3× longer than standard WiFi tickets.',
       ticketCount: 3,
       impact: 'medium',
+      hoursSaved: 6,
+      effortLabel: 'Quick win',
+      effortHours: 2,
+      avgTimeAdded: '2–3× longer than standard VPN tickets — agents give inconsistent advice without a reference',
       sourceTickets: [
         { id: 'TICKET-65', name: 'Phone Not Connecting to WiFi in Vancouver Office' },
         { id: 'TICKET-63', name: 'Unable to Connect to WiFi After Troubleshooting' },
@@ -56,6 +74,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'L1 agents lack Okta unlock permissions. Simple account locks that should resolve in under 5 minutes are escalated to L2, adding an average of 2+ hours to resolution.',
       ticketCount: 12,
       impact: 'high',
+      hoursSaved: 24,
+      effortLabel: 'Quick win',
+      effortHours: 2,
+      avgTimeAdded: '~2 hrs added per ticket — L1 escalates to L2 for a task that takes 5 min',
       sourceTickets: [
         { id: 'TICKET-95', name: 'Salesforce Access Update — Department Transfer (Sarah Lee)' },
         { id: 'TICKET-66', name: 'Urgent Request for SFDC License Access' },
@@ -70,6 +92,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Agents manually chase HR for confirmation, then manually update licenses across systems. Each case takes 1–2 days that could be automated with an identity sync trigger on HR-confirmed org changes.',
       ticketCount: 5,
       impact: 'high',
+      hoursSaved: 50,
+      effortLabel: 'Multi-day',
+      effortHours: 40,
+      avgTimeAdded: '1–2 days per ticket — agents chase HR then manually update 4 systems',
       sourceTickets: [
         { id: 'TICKET-95', name: 'Salesforce Access Update — Department Transfer (Sarah Lee)' },
         { id: 'TICKET-69', name: 'Wrong Microsoft 365 License After Department Transfer' },
@@ -84,6 +110,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Agents email HR or use an informal Slack channel. No routing rule exists, so there\'s no SLA, no audit trail, and no visibility into whether the handoff happened.',
       ticketCount: 4,
       impact: 'medium',
+      hoursSaved: 8,
+      effortLabel: 'Quick win',
+      effortHours: 3,
+      avgTimeAdded: 'No SLA on handoff — tickets sit in the IT queue for hours before reaching HR',
       sourceTickets: [
         { id: 'TICKET-68', name: 'Paycheck Short — Missing Overtime Pay for Feb' },
       ],
@@ -102,6 +132,10 @@ export const OPTIMIZE_GAPS = {
       cxScore: 2.3,
       ticketCount: 11,
       impact: 'high',
+      hoursSaved: 22,
+      effortLabel: 'Quick win',
+      effortHours: 4,
+      avgTimeAdded: '9 of 11 users reopened or escalated — generic steps added confusion instead of resolving it',
       sourceTickets: [
         { id: 'TICKET-95', name: 'Salesforce Access Update — Department Transfer (Sarah Lee)' },
         { id: 'TICKET-66', name: 'Urgent Request for SFDC License Access' },
@@ -116,6 +150,10 @@ export const OPTIMIZE_GAPS = {
       cxScore: 1.8,
       ticketCount: 7,
       impact: 'high',
+      hoursSaved: 21,
+      effortLabel: 'Quick win',
+      effortHours: 3,
+      avgTimeAdded: 'All 7 affected tickets were reopened — users found their issue still unresolved after auto-close',
       sourceTickets: [
         { id: 'TICKET-63', name: 'Unable to Connect to WiFi After Troubleshooting' },
         { id: 'TICKET-60', name: 'Phone Unable to Connect to Office WiFi' },
@@ -130,6 +168,10 @@ export const OPTIMIZE_GAPS = {
       cxScore: 2.7,
       ticketCount: 5,
       impact: 'medium',
+      hoursSaved: 20,
+      effortLabel: 'Quick win',
+      effortHours: 2,
+      avgTimeAdded: '4–6 hr wait for L2 on issues L1 can resolve in under 15 min',
       sourceTickets: [
         { id: 'TICKET-65', name: 'Phone Not Connecting to WiFi in Vancouver Office' },
         { id: 'TICKET-63', name: 'Unable to Connect to WiFi After Troubleshooting' },
@@ -144,6 +186,10 @@ export const OPTIMIZE_GAPS = {
       cxScore: 2.1,
       ticketCount: 4,
       impact: 'medium',
+      hoursSaved: 12,
+      effortLabel: 'Quick win',
+      effortHours: 3,
+      avgTimeAdded: '3.2 hr avg time-to-human — generic AI response delayed escalation on urgent payroll issues',
       sourceTickets: [
         { id: 'TICKET-68', name: 'Paycheck Short — Missing Overtime Pay for Feb' },
       ],
@@ -160,6 +206,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Device ID is required to look up warranty status and check specs. Without it, every hardware ticket starts with a round-trip to the requester, adding hours to time-to-first-action.',
       ticketCount: 6,
       impact: 'medium',
+      hoursSaved: 12,
+      effortLabel: 'Quick win',
+      effortHours: 4,
+      avgTimeAdded: '~2 hrs added per ticket — agents can\'t begin diagnosis until a follow-up round-trip completes',
       sourceTickets: [
         { id: 'TICKET-67', name: 'Help Updating MacBook to Latest macOS' },
         { id: 'TICKET-62', name: 'Report Lost Laptop for Patrick Tuckey' },
@@ -173,6 +223,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Without role context, agents can\'t confirm whether the requested access level is appropriate without a separate HR lookup or internal message. Adds 1–3 hours to access tickets.',
       ticketCount: 9,
       impact: 'high',
+      hoursSaved: 18,
+      effortLabel: 'Quick win',
+      effortHours: 4,
+      avgTimeAdded: '1–3 hrs added per ticket — agents look up role separately before validating access level',
       sourceTickets: [
         { id: 'TICKET-66', name: 'Urgent Request for SFDC License Access' },
         { id: 'TICKET-64', name: 'Request View Access to Figma and FigJam' },
@@ -187,6 +241,10 @@ export const OPTIMIZE_GAPS = {
       detail: 'Troubleshooting steps differ significantly between macOS, Windows, iOS, and Android. Without this upfront, agents give generic guidance and often need a follow-up to get the right information.',
       ticketCount: 5,
       impact: 'medium',
+      hoursSaved: 8,
+      effortLabel: 'Quick win',
+      effortHours: 3,
+      avgTimeAdded: '~1.5 hrs added per ticket — agents give generic steps then need a follow-up to confirm device type',
       sourceTickets: [
         { id: 'TICKET-65', name: 'Phone Not Connecting to WiFi in Vancouver Office' },
         { id: 'TICKET-60', name: 'Phone Unable to Connect to Office WiFi' },

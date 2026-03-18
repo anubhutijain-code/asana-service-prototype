@@ -40,7 +40,7 @@ function TranscriptChevron({ open }) {
 
 function DocIcon() {
   return (
-    <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0, color: '#6D6E6F' }}>
+    <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0, color: 'var(--icon)' }}>
       <path d="M7.5 0H2C1.4477 0 1 0.4477 1 1V11C1 11.5523 1.4477 12 2 12H10C10.5523 12 11 11.5523 11 11V3.5L7.5 0ZM7.5 1.207L9.793 3.5H7.5V1.207ZM10 11H2V1H6.5V4H10V11ZM3 5.5H9V6.5H3V5.5ZM3 7.5H9V8.5H3V7.5ZM3 9.5H7V10.5H3V9.5Z" />
     </svg>
   );
@@ -48,8 +48,8 @@ function DocIcon() {
 
 function SendUpIcon({ active }) {
   return (
-    <svg viewBox="0 0 12 12" width="12" height="12" fill={active ? 'white' : '#9ea0a2'} aria-hidden="true">
-      <path d="M6 1L6 11M6 1L2 5M6 1L10 5" stroke={active ? 'white' : '#9ea0a2'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    <svg viewBox="0 0 12 12" width="12" height="12" fill={active ? 'white' : 'var(--text-disabled)'} aria-hidden="true">
+      <path d="M6 1L6 11M6 1L2 5M6 1L10 5" stroke={active ? 'white' : 'var(--text-disabled)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
@@ -104,7 +104,7 @@ function MentionToken({ agent, onRemove }) {
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', height: 24,
-      borderRadius: 4, background: '#E8E5E4', overflow: 'hidden', flexShrink: 0,
+      borderRadius: 4, background: 'var(--background-strong)', overflow: 'hidden', flexShrink: 0,
     }}>
       {/* Coloured avatar square */}
       <div style={{
@@ -118,7 +118,7 @@ function MentionToken({ agent, onRemove }) {
       </div>
       {/* Name */}
       <span style={{
-        fontSize: 12, color: '#1D1F21', fontFamily: SFT,
+        fontSize: 12, color: 'var(--text)', fontFamily: SFT,
         padding: '0 6px', whiteSpace: 'nowrap', lineHeight: '24px',
       }}>
         {agent.name}
@@ -126,16 +126,16 @@ function MentionToken({ agent, onRemove }) {
       {/* Remove button — only when interactive */}
       {onRemove && (
         <>
-          <div style={{ width: 1, height: 14, background: '#C9C9C8', flexShrink: 0 }} />
+          <div style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0 }} />
           <button
             type="button"
             onMouseDown={e => { e.preventDefault(); onRemove(); }}
             style={{
               width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 14, lineHeight: 1, color: '#6D6E6F', background: 'none', border: 'none',
+              fontSize: 14, lineHeight: 1, color: 'var(--icon)', background: 'none', border: 'none',
               cursor: 'pointer', flexShrink: 0, fontFamily: SFT,
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#D8D5D4'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
           >
             ×
@@ -153,11 +153,33 @@ const CHAT_TABS = [
   { id: 'ai',   label: 'AI Agent' },
 ];
 
-function ChatTabBar({ active, onSelect, viewOnly = false }) {
+function ChatTabBarMoreIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <circle cx="4"  cy="8" r="1.5" />
+      <circle cx="8"  cy="8" r="1.5" />
+      <circle cx="12" cy="8" r="1.5" />
+    </svg>
+  );
+}
+
+function ChatTabBar({ active, onSelect, viewOnly = false, moreMenuItems = [] }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function down(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', down);
+    return () => document.removeEventListener('mousedown', down);
+  }, [menuOpen]);
+
   return (
     <div
       className="shrink-0 flex items-end gap-5 px-6"
-      style={{ height: 44, borderBottom: '1px solid #EDEAE9' }}
+      style={{ height: 44, borderBottom: '1px solid var(--border)' }}
     >
       {CHAT_TABS.map(({ id, label }) => {
         const isActive = active === id;
@@ -172,22 +194,68 @@ function ChatTabBar({ active, onSelect, viewOnly = false }) {
               paddingBottom: 2,
               fontSize: 14,
               fontWeight: isActive ? 500 : 400,
-              color: isActive ? '#1E1F21' : '#6D6E6F',
-              borderBottom: isActive ? '2px solid #1E1F21' : '2px solid transparent',
+              color: isActive ? 'var(--text)' : 'var(--icon)',
+              borderBottom: isActive ? '2px solid var(--text)' : '2px solid transparent',
               whiteSpace: 'nowrap',
               cursor: 'pointer',
             }}
           >
-            {id === 'ai' && <AiSparkleIcon color={isActive ? '#1E1F21' : '#6D6E6F'} />}
+            {id === 'ai' && <AiSparkleIcon color={isActive ? 'var(--text)' : 'var(--icon)'} />}
             {label}
           </button>
         );
       })}
-      {viewOnly && (
-        <div className="ml-auto mb-1">
-          <Pill label="View only" icon={<LockIcon color="#6D6E6F" />} bg="#F3F4F6" color="#6D6E6F" />
-        </div>
-      )}
+      <div className="ml-auto flex items-center gap-2 mb-1">
+        {viewOnly && <Pill label="View only" icon={<LockIcon color="var(--icon)" />} bg="#F3F4F6" color="var(--icon)" />}
+        {moreMenuItems.length > 0 && (
+          <div style={{ position: 'relative' }} ref={menuRef}>
+            <button
+              type="button"
+              aria-label="More options"
+              onClick={() => setMenuOpen(o => !o)}
+              style={{
+                width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', borderRadius: 6, cursor: 'pointer', color: 'var(--icon)',
+                background: menuOpen ? 'var(--background-medium)' : 'transparent',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+              onMouseLeave={e => { if (!menuOpen) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <ChatTabBarMoreIcon />
+            </button>
+            {menuOpen && (
+              <div style={{
+                position: 'absolute', right: 0, top: 'calc(100% + 4px)',
+                border: '1px solid var(--border)', borderRadius: 6,
+                boxShadow: 'var(--shadow-md)', background: 'var(--surface)',
+                zIndex: 50, minWidth: 228, padding: '4px 0',
+              }}>
+                {moreMenuItems.map((item, i) =>
+                  item.divider ? (
+                    <div key={i} style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+                  ) : (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => { setMenuOpen(false); item.onClick?.(); }}
+                      style={{
+                        display: 'block', width: '100%', padding: '7px 12px',
+                        border: 'none', background: 'transparent', textAlign: 'left',
+                        fontSize: 13, color: item.blue ? 'var(--selected-text)' : 'var(--text)', cursor: 'pointer',
+                        fontFamily: '"SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      {item.label}
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -200,13 +268,13 @@ function OutboundBubble({ text, senderLabel, time, avatar }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', gap: 8 }}>
       <div style={{
-        background: '#F5F5F4', borderRadius: 12, padding: '12px 14px',
+        background: 'var(--background-medium)', borderRadius: 12, padding: '12px 14px',
         width: BUBBLE_WIDTH, display: 'flex', flexDirection: 'column', gap: 8,
       }}>
-        <p style={{ fontSize: 14, lineHeight: '22px', color: '#1E1F21', margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
+        <p style={{ fontSize: 14, lineHeight: '22px', color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-          <span style={{ fontSize: 12, color: '#6D6E6F' }}>{senderLabel}</span>
-          <span style={{ fontSize: 11, color: '#9ea0a2' }}>{time}</span>
+          <span style={{ fontSize: 12, color: 'var(--icon)' }}>{senderLabel}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-disabled)' }}>{time}</span>
         </div>
       </div>
       {avatar}
@@ -219,8 +287,8 @@ function PrivateBubble({ text, senderLabel, time, avatar, mentionedAgent }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', gap: 8 }}>
       <div style={{
-        background: '#FFF8F5',
-        border: '1px solid #F0DDD4',
+        background: 'var(--warning-background)',
+        border: '1px solid var(--border)',
         borderRadius: 12,
         padding: '10px 14px',
         width: BUBBLE_WIDTH,
@@ -230,10 +298,10 @@ function PrivateBubble({ text, senderLabel, time, avatar, mentionedAgent }) {
         {mentionedAgent ? (
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
             <MentionToken agent={mentionedAgent} />
-            <p style={{ fontSize: 14, lineHeight: '22px', color: '#1E1F21', margin: 0, whiteSpace: 'pre-wrap', flex: 1, minWidth: 0 }}>{text}</p>
+            <p style={{ fontSize: 14, lineHeight: '22px', color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap', flex: 1, minWidth: 0 }}>{text}</p>
           </div>
         ) : (
-          <p style={{ fontSize: 14, lineHeight: '22px', color: '#1E1F21', margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
+          <p style={{ fontSize: 14, lineHeight: '22px', color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
         )}
         {/* Bottom row: pill left, sender+time right */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
@@ -244,8 +312,8 @@ function PrivateBubble({ text, senderLabel, time, avatar, mentionedAgent }) {
             color="#9D5700"
           />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1, flexShrink: 0 }}>
-            <span style={{ fontSize: 12, color: '#6D6E6F' }}>{senderLabel}</span>
-            <span style={{ fontSize: 11, color: '#9ea0a2' }}>{time}</span>
+            <span style={{ fontSize: 12, color: 'var(--icon)' }}>{senderLabel}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-disabled)' }}>{time}</span>
           </div>
         </div>
       </div>
@@ -257,9 +325,9 @@ function PrivateBubble({ text, senderLabel, time, avatar, mentionedAgent }) {
 function SystemEvent({ text }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <div style={{ flex: 1, height: 1, background: '#EDEAE9' }} />
-      <span style={{ fontSize: 12, color: '#9ea0a2', whiteSpace: 'nowrap' }}>{text}</span>
-      <div style={{ flex: 1, height: 1, background: '#EDEAE9' }} />
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      <span style={{ fontSize: 12, color: 'var(--text-disabled)', whiteSpace: 'nowrap' }}>{text}</span>
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
     </div>
   );
 }
@@ -267,12 +335,12 @@ function SystemEvent({ text }) {
 function InboundMessage({ text, name, time, bg, fg, initials, svgSrc }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
-      <p style={{ fontSize: 14, lineHeight: '22px', color: '#1E1F21', margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
+      <p style={{ fontSize: 14, lineHeight: '22px', color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <PhotoAvatar bg={bg} fg={fg} initials={initials} size={32} svgSrc={svgSrc} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#1E1F21', lineHeight: '18px' }}>{name}</span>
-          <span style={{ fontSize: 11, color: '#9ea0a2', lineHeight: '16px' }}>{time}</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', lineHeight: '18px' }}>{name}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-disabled)', lineHeight: '16px' }}>{time}</span>
         </div>
       </div>
     </div>
@@ -322,20 +390,20 @@ function renderMsg(msg, i) {
 function TranscriptMessage({ msg }) {
   if (msg.type === 'system') {
     return (
-      <div style={{ borderLeft: '2px solid #EDEAE9', paddingLeft: 12 }}>
-        <p style={{ fontSize: 12, lineHeight: '18px', color: '#9ea0a2', margin: 0, fontStyle: 'italic' }}>{msg.text}</p>
+      <div style={{ borderLeft: '2px solid var(--border)', paddingLeft: 12 }}>
+        <p style={{ fontSize: 12, lineHeight: '18px', color: 'var(--text-disabled)', margin: 0, fontStyle: 'italic' }}>{msg.text}</p>
       </div>
     );
   }
   const isBot = msg.type === 'outbound';
   const name = isBot ? msg.senderLabel : msg.name;
   return (
-    <div style={{ borderLeft: '2px solid #EDEAE9', paddingLeft: 12 }}>
+    <div style={{ borderLeft: '2px solid var(--border)', paddingLeft: 12 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 3 }}>
-        <span style={{ fontSize: 12, fontWeight: 500, color: '#6D6E6F' }}>{name}</span>
+        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--icon)' }}>{name}</span>
         <span style={{ fontSize: 11, color: '#C4C4C4' }}>{msg.time}</span>
       </div>
-      <p style={{ fontSize: 13, lineHeight: '20px', color: '#6D6E6F', margin: 0 }}>{msg.text}</p>
+      <p style={{ fontSize: 13, lineHeight: '20px', color: 'var(--icon)', margin: 0 }}>{msg.text}</p>
     </div>
   );
 }
@@ -350,12 +418,12 @@ function TranscriptBlock({ messages }) {
         className="flex items-center cursor-pointer border-0 bg-transparent"
         style={{ gap: 12, width: '100%' }}
       >
-        <div style={{ flex: 1, height: 1, background: '#EDEAE9' }} />
-        <span style={{ fontSize: 12, color: '#9ea0a2', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        <span style={{ fontSize: 12, color: 'var(--text-disabled)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
           Prior conversation · {messages.length} messages
           <TranscriptChevron open={open} />
         </span>
-        <div style={{ flex: 1, height: 1, background: '#EDEAE9' }} />
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
       </button>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, background: '#F9F8F8', borderRadius: 8, padding: '14px 16px' }}>
@@ -406,7 +474,7 @@ function MentionPicker({ query, onSelect }) {
   return (
     <div style={{
       position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 4,
-      background: 'white', border: '1px solid #EDEAE9', borderRadius: 8,
+      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
       boxShadow: '0 4px 16px rgba(0,0,0,0.12)', padding: '4px 0', zIndex: 200,
     }}>
       {filtered.map(agent => (
@@ -418,7 +486,7 @@ function MentionPicker({ query, onSelect }) {
             display: 'flex', alignItems: 'center', gap: 8, width: '100%',
             padding: '7px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
           }}
-          onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
           onMouseLeave={e => e.currentTarget.style.background = 'none'}
         >
           <img
@@ -426,7 +494,7 @@ function MentionPicker({ query, onSelect }) {
             style={{ width: 24, height: 24, borderRadius: '50%' }}
             alt={agent.name}
           />
-          <span style={{ fontSize: 13, color: '#1E1F21', fontWeight: 500 }}>{agent.name}</span>
+          <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>{agent.name}</span>
         </button>
       ))}
     </div>
@@ -471,7 +539,7 @@ function ComposeBar({
   }, [showSendMenu]);
 
   return (
-    <div className="shrink-0 px-6 py-3" style={{ borderTop: '1px solid #EDEAE9', position: 'relative' }}>
+    <div className="shrink-0 px-6 py-3" style={{ borderTop: '1px solid var(--border)', position: 'relative' }}>
       {/* @mention floating picker */}
       {showMentionPicker && (
         <MentionPicker query={mentionQuery} onSelect={onSelectAgent} />
@@ -481,10 +549,10 @@ function ComposeBar({
         className="flex items-center gap-2"
         style={{
           minHeight: 44,
-          border: '1px solid #EDEAE9',
+          border: '1px solid var(--border)',
           borderRadius: 8,
           padding: '4px 6px 4px 10px',
-          background: 'white',
+          background: 'var(--surface)',
           gap: 8,
         }}
       >
@@ -500,14 +568,14 @@ function ComposeBar({
           onChange={e => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           className="flex-1 border-0 bg-transparent outline-none"
-          style={{ fontSize: 14, color: '#1E1F21', minWidth: 0 }}
+          style={{ fontSize: 14, color: 'var(--text)', minWidth: 0 }}
         />
 
         {/* Send split button */}
         <div
           ref={sendMenuRef}
           className="flex items-center shrink-0"
-          style={{ borderRadius: 6, border: '1px solid #C9C9C8', overflow: 'visible', position: 'relative' }}
+          style={{ borderRadius: 6, border: '1px solid var(--border)', overflow: 'visible', position: 'relative' }}
         >
           <button
             type="button"
@@ -515,23 +583,23 @@ function ComposeBar({
             className="cursor-pointer border-0 transition-colors"
             style={{
               height: 28, padding: '0 10px', fontSize: 12, fontWeight: 500,
-              background: 'white', color: '#1E1F21', borderRadius: '5px 0 0 5px',
+              background: 'var(--surface)', color: 'var(--text)', borderRadius: '5px 0 0 5px',
               whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
-            onMouseLeave={e => e.currentTarget.style.background = 'white'}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
           >
             {SEND_OPTIONS.find(o => o.id === sendMode).label}
           </button>
-          <div style={{ width: 1, height: 16, background: '#C9C9C8', flexShrink: 0 }} />
+          <div style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} />
           <button
             type="button"
             aria-label="More send options"
             onClick={() => setShowSendMenu(v => !v)}
             className="cursor-pointer border-0 flex items-center justify-center transition-colors"
-            style={{ height: 28, width: 24, background: 'white', color: '#6D6E6F', borderRadius: '0 5px 5px 0' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
-            onMouseLeave={e => e.currentTarget.style.background = 'white'}
+            style={{ height: 28, width: 24, background: 'var(--surface)', color: 'var(--icon)', borderRadius: '0 5px 5px 0' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
           >
             <ChevronDownTiny />
           </button>
@@ -540,7 +608,7 @@ function ComposeBar({
           {showSendMenu && (
             <div style={{
               position: 'absolute', bottom: 32, right: 0,
-              background: 'white', border: '1px solid #EDEAE9', borderRadius: 8,
+              background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
               boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
               padding: '4px 0', minWidth: 160, zIndex: 300,
             }}>
@@ -555,10 +623,10 @@ function ComposeBar({
                       display: 'flex', alignItems: 'center', gap: 8, width: '100%',
                       padding: '7px 12px', fontSize: 13, border: 'none', cursor: 'pointer',
                       textAlign: 'left', fontWeight: selected ? 500 : 400,
-                      color: '#1E1F21', background: selected ? '#F5F5F4' : 'none',
+                      color: 'var(--text)', background: selected ? 'var(--background-medium)' : 'none',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#EFEFEE'}
-                    onMouseLeave={e => e.currentTarget.style.background = selected ? '#F5F5F4' : 'none'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+                    onMouseLeave={e => e.currentTarget.style.background = selected ? 'var(--background-medium)' : 'none'}
                   >
                     <span style={{ width: 14, flexShrink: 0, color: '#4573D2', fontSize: 12 }}>
                       {selected ? '✓' : ''}
@@ -623,27 +691,27 @@ function AIAgentPanel({ ticket }) {
         style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16, overscrollBehavior: 'none' }}
       >
         {intentData && (
-          <div style={{ borderRadius: 8, border: '1px solid #E8F0FF', background: '#F7F9FF', padding: '12px 14px' }}>
+          <div style={{ borderRadius: 8, border: '1px solid var(--border)', background: 'var(--selected-background)', padding: '12px 14px' }}>
             <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
-              <AiSparkleIcon color="#4573D2" />
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#4573D2', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Intent</span>
+              <AiSparkleIcon color="var(--selected-background-strong)" />
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Intent</span>
             </div>
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#1E1F21', margin: '0 0 6px', lineHeight: '20px' }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 6px', lineHeight: '20px' }}>
               {intentData.intent}
             </p>
             <div className="flex items-center gap-2 flex-wrap" style={{ marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: '#6D6E6F' }}>{intentData.confidence}% confidence</span>
+              <span style={{ fontSize: 12, color: 'var(--icon)' }}>{intentData.confidence}% confidence</span>
               {intentData.tags.map(tag => (
-                <span key={tag} style={{ fontSize: 11, padding: '1px 7px', borderRadius: 100, background: '#EEF4FF', color: '#4573D2', fontWeight: 500 }}>
+                <span key={tag} style={{ fontSize: 11, padding: '1px 7px', borderRadius: 100, background: 'var(--selected-background)', color: 'var(--selected-text)', fontWeight: 500 }}>
                   {tag}
                 </span>
               ))}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span style={{ fontSize: 12, padding: '2px 9px', borderRadius: 100, background: '#FEF3C7', color: '#92400E', fontWeight: 500 }}>
+              <span style={{ fontSize: 12, padding: '2px 9px', borderRadius: 100, background: 'var(--warning-background)', color: 'var(--warning-text)', fontWeight: 500 }}>
                 {intentData.sentiment}
               </span>
-              <span style={{ fontSize: 12, padding: '2px 9px', borderRadius: 100, background: '#FEE2E2', color: '#DC2626', fontWeight: 500 }}>
+              <span style={{ fontSize: 12, padding: '2px 9px', borderRadius: 100, background: 'var(--danger-background)', color: 'var(--danger-text)', fontWeight: 500 }}>
                 {intentData.urgency}
               </span>
             </div>
@@ -652,7 +720,7 @@ function AIAgentPanel({ ticket }) {
 
         {kbArticles.length > 0 && (
           <div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#1E1F21', display: 'block', marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 8 }}>
               Knowledge base
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -660,13 +728,13 @@ function AIAgentPanel({ ticket }) {
                 <div
                   key={article.id}
                   className="flex items-center gap-2"
-                  style={{ padding: '7px 10px', borderRadius: 6, background: '#F5F5F4', cursor: 'default' }}
+                  style={{ padding: '7px 10px', borderRadius: 6, background: 'var(--background-medium)', cursor: 'default' }}
                 >
                   <DocIcon />
-                  <span style={{ flex: 1, fontSize: 13, color: '#1E1F21', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {article.title}
                   </span>
-                  <span style={{ fontSize: 11, color: '#6D6E6F', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, color: 'var(--icon)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                     {article.category}
                   </span>
                 </div>
@@ -681,8 +749,8 @@ function AIAgentPanel({ ticket }) {
               msg.role === 'user' ? (
                 <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <div style={{
-                    maxWidth: '80%', background: '#F5F5F4', borderRadius: '10px 10px 2px 10px',
-                    padding: '8px 12px', fontSize: 13, color: '#1E1F21', lineHeight: '20px',
+                    maxWidth: '80%', background: 'var(--background-medium)', borderRadius: '10px 10px 2px 10px',
+                    padding: '8px 12px', fontSize: 13, color: 'var(--text)', lineHeight: '20px',
                   }}>
                     {msg.text}
                   </div>
@@ -690,15 +758,15 @@ function AIAgentPanel({ ticket }) {
               ) : (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <div style={{
-                    width: 24, height: 24, borderRadius: '50%', background: '#EEF4FF',
+                    width: 24, height: 24, borderRadius: '50%', background: 'var(--selected-background)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, marginTop: 2,
                   }}>
-                    <AiSparkleIcon color="#4573D2" />
+                    <AiSparkleIcon color="var(--selected-background-strong)" />
                   </div>
                   <div style={{
-                    maxWidth: '85%', background: '#EEF4FF', borderRadius: '10px 10px 10px 2px',
-                    padding: '8px 12px', fontSize: 13, color: '#1E1F21', lineHeight: '20px',
+                    maxWidth: '85%', background: 'var(--selected-background)', borderRadius: '10px 10px 10px 2px',
+                    padding: '8px 12px', fontSize: 13, color: 'var(--text)', lineHeight: '20px',
                   }}>
                     {msg.text}
                   </div>
@@ -711,10 +779,10 @@ function AIAgentPanel({ ticket }) {
         <div style={{ height: 4, flexShrink: 0 }} />
       </div>
 
-      <div className="shrink-0 px-4 py-3" style={{ borderTop: '1px solid #EDEAE9' }}>
+      <div className="shrink-0 px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
         <div
           className="flex items-center gap-2"
-          style={{ height: 38, border: '1px solid #EDEAE9', borderRadius: 8, padding: '0 6px 0 12px', background: 'white' }}
+          style={{ height: 38, border: '1px solid var(--border)', borderRadius: 8, padding: '0 6px 0 12px', background: 'var(--surface)' }}
         >
           <input
             type="text"
@@ -723,14 +791,14 @@ function AIAgentPanel({ ticket }) {
             onChange={e => setAskInput(e.target.value)}
             onKeyDown={handleAskKeyDown}
             className="flex-1 border-0 bg-transparent outline-none"
-            style={{ fontSize: 13, color: '#1E1F21' }}
+            style={{ fontSize: 13, color: 'var(--text)' }}
           />
           <button
             type="button"
             onClick={handleAsk}
             aria-label="Send"
             className="flex items-center justify-center cursor-pointer border-0 flex-shrink-0 transition-colors"
-            style={{ width: 26, height: 26, borderRadius: 6, background: askInput.trim() ? '#4573D2' : '#F5F5F4' }}
+            style={{ width: 26, height: 26, borderRadius: 6, background: askInput.trim() ? 'var(--selected-background-strong)' : 'var(--background-medium)' }}
           >
             <SendUpIcon active={!!askInput.trim()} />
           </button>
@@ -751,6 +819,7 @@ export default function TicketChatPanel({
   initInternal = [],
   initTranscript = [],
   transcriptEventText,
+  moreMenuItems = [],
 }) {
   const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState([
@@ -854,9 +923,9 @@ export default function TicketChatPanel({
 
   if (notesMode) {
     return (
-      <div className="flex flex-col h-full overflow-hidden bg-white">
-        <div className="shrink-0 flex items-center px-6" style={{ height: 44, borderBottom: '1px solid #EDEAE9' }}>
-          <span style={{ fontSize: 14, fontWeight: 500, color: '#1E1F21' }}>Chat</span>
+      <div className="flex flex-col h-full overflow-hidden bg-[var(--surface)]">
+        <div className="shrink-0 flex items-center px-6" style={{ height: 44, borderBottom: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>Chat</span>
         </div>
         <MessageList messages={messages} />
         <ComposeBar
@@ -876,8 +945,8 @@ export default function TicketChatPanel({
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white">
-      <ChatTabBar active={activeTab} onSelect={handleTabSelect} viewOnly={commentOnly} />
+    <div className="flex flex-col h-full overflow-hidden bg-[var(--surface)]">
+      <ChatTabBar active={activeTab} onSelect={handleTabSelect} viewOnly={commentOnly} moreMenuItems={moreMenuItems} />
 
       {activeTab === 'chat' && (
         <>
@@ -886,34 +955,34 @@ export default function TicketChatPanel({
           {showSuggestedReply && (
             <div
               className="shrink-0"
-              style={{ borderTop: '1px solid #E8F0FF', background: '#F7F9FF', padding: '10px 16px 12px' }}
+              style={{ borderTop: '1px solid var(--border)', background: 'var(--selected-background)', padding: '10px 16px 12px' }}
             >
               <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
                 <div className="flex items-center gap-1.5">
-                  <AiSparkleIcon color="#4573D2" />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#4573D2', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Suggested reply</span>
+                  <AiSparkleIcon color="var(--selected-background-strong)" />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Suggested reply</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setReplySuggDismissed(true)}
                   aria-label="Dismiss suggestion"
-                  style={{ fontSize: 13, lineHeight: 1, color: '#9ea0a2', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#6D6E6F'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#9ea0a2'}
+                  style={{ fontSize: 13, lineHeight: 1, color: 'var(--text-disabled)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--icon)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
                 >
                   ✕
                 </button>
               </div>
-              <p style={{ fontSize: 12, color: '#1E1F21', lineHeight: '19px', margin: '0 0 10px' }}>
+              <p style={{ fontSize: 12, color: 'var(--text)', lineHeight: '19px', margin: '0 0 10px' }}>
                 {suggestedReply}
               </p>
               <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => setInput(suggestedReply)}
-                  style={{ fontSize: 12, fontWeight: 500, color: '#4573D2', background: '#EEF4FF', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#DBEAFE'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#EEF4FF'}
+                  style={{ fontSize: 12, fontWeight: 500, color: 'var(--selected-text)', background: 'var(--selected-background)', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--selected-background-strong)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'var(--selected-background)'}
                 >
                   Use reply
                 </button>

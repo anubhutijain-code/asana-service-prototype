@@ -71,12 +71,12 @@ const TEAM_MEMBERS = [
 function Section({ title, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div style={{ borderBottom: '1px solid #EDEAE9' }}>
+    <div style={{ borderBottom: '1px solid var(--border)' }}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between cursor-pointer border-0 bg-transparent"
-        style={{ padding: '14px 20px', fontSize: 14, fontWeight: 600, color: '#1E1F21' }}
+        style={{ padding: '14px 20px', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}
       >
         {title}
         <ChevronDownIcon open={open} />
@@ -91,8 +91,8 @@ function Section({ title, children, defaultOpen = true }) {
 function FieldRow({ label, children }) {
   return (
     <div className="flex items-center" style={{ minHeight: 36, gap: 8, paddingBottom: 4 }}>
-      <span style={{ width: 90, flexShrink: 0, fontSize: 12, color: '#9ea0a2' }}>{label}</span>
-      <div style={{ flex: 1, fontSize: 13, color: '#1E1F21' }}>{children}</div>
+      <span style={{ width: 90, flexShrink: 0, fontSize: 12, color: 'var(--text-disabled)' }}>{label}</span>
+      <div style={{ flex: 1, fontSize: 13, color: 'var(--text)' }}>{children}</div>
     </div>
   );
 }
@@ -112,7 +112,7 @@ function AssigneeToken({ bg, fg, initials, name }) {
         borderRadius: 4,
         background: 'transparent',
       }}
-      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
       <img
@@ -120,7 +120,7 @@ function AssigneeToken({ bg, fg, initials, name }) {
         style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
         alt={name}
       />
-      <span style={{ fontSize: 13, color: '#1E1F21', whiteSpace: 'nowrap' }}>{name}</span>
+      <span style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>{name}</span>
     </button>
   );
 }
@@ -145,11 +145,11 @@ function LinkedTaskCard({ approvalState, onViewApproval }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        border: '1px solid #EDEAE9',
+        border: '1px solid var(--border)',
         borderRadius: 8,
         padding: 12,
         cursor: 'pointer',
-        boxShadow: hovered ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+        boxShadow: hovered ? 'var(--shadow-md)' : 'none',
         transition: 'box-shadow 0.15s',
       }}
     >
@@ -163,7 +163,7 @@ function LinkedTaskCard({ approvalState, onViewApproval }) {
             color={s.color}
           />
         </div>
-        <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: '#1E1F21', lineHeight: '20px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: '20px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           Approve SFDC License for Martin Ludington
         </span>
       </div>
@@ -175,7 +175,7 @@ function LinkedTaskCard({ approvalState, onViewApproval }) {
           style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0 }}
           alt="Jen Williams"
         />
-        <span style={{ fontSize: 12, color: '#6D6E6F' }}>Jen Williams · Due today</span>
+        <span style={{ fontSize: 12, color: 'var(--text-weak)' }}>Jen Williams · Due today</span>
       </div>
     </div>
   );
@@ -188,12 +188,12 @@ function AssigneeOption({ member, selected, onSelect }) {
     <button
       type="button"
       className="w-full flex items-center gap-2 border-0 cursor-pointer"
-      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: '#1E1F21' }}
-      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: 'var(--text)' }}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       onClick={onSelect}
     >
-      <span style={{ width: 16, flexShrink: 0, fontSize: 12, color: '#4573D2' }}>
+      <span style={{ width: 16, flexShrink: 0, fontSize: 12, color: 'var(--selected-text)' }}>
         {selected ? '✓' : ''}
       </span>
       <img
@@ -211,7 +211,7 @@ function AssigneeOption({ member, selected, onSelect }) {
 function FileCard({ name, meta }) {
   return (
     <div className="flex items-center gap-2.5"
-      style={{ flex: 1, border: '1px solid #EDEAE9', borderRadius: 8, padding: '10px 12px', background: 'white', minWidth: 0 }}>
+      style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px', background: 'var(--surface)', minWidth: 0 }}>
       {/* PDF-style icon (Subtract.svg shape) */}
       <div style={{ width: 36, height: 40, flexShrink: 0, position: 'relative' }}>
         <svg viewBox="0 0 32 32" width="36" height="40" aria-hidden="true">
@@ -221,8 +221,8 @@ function FileCard({ name, meta }) {
         </svg>
       </div>
       <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: '#1E1F21', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</p>
-        <p style={{ fontSize: 11, color: '#9ea0a2', margin: 0 }}>{meta}</p>
+        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-disabled)', margin: 0 }}>{meta}</p>
       </div>
     </div>
   );
@@ -231,7 +231,7 @@ function FileCard({ name, meta }) {
 function AddFileCard() {
   return (
     <button type="button" className="flex items-center justify-center cursor-pointer"
-      style={{ width: 72, height: 62, border: '1.5px dashed #D1D5DB', borderRadius: 8, background: 'white', color: '#9ea0a2', flexShrink: 0 }}>
+      style={{ width: 72, height: 62, border: '1.5px dashed var(--border)', borderRadius: 8, background: 'var(--surface)', color: 'var(--text-disabled)', flexShrink: 0 }}>
       <PlusIcon />
     </button>
   );
@@ -240,10 +240,10 @@ function AddFileCard() {
 // ─── LinkedHRTicketCard ───────────────────────────────────────────────────────
 
 const HR_STATUS_PILL = {
-  'Not started':   { bg: '#F3F4F6', color: '#6D6E6F' },
-  'Investigating': { bg: '#EFF6FF', color: '#1D4ED8' },
-  'On hold':       { bg: '#FFFBEB', color: '#92400E' },
-  'Resolved':      { bg: '#DCFCE7', color: '#166534' },
+  'Not started':   { bg: 'var(--priority-low-bg)',        color: 'var(--priority-low-text)' },
+  'Investigating': { bg: 'var(--selected-background)',    color: 'var(--selected-text)' },
+  'On hold':       { bg: 'var(--warning-background)',     color: 'var(--warning-text)' },
+  'Resolved':      { bg: 'var(--success-background)',     color: 'var(--success-text)' },
 };
 
 function LinkedHRTicketCard({ hrTicket, onGoToLinkedHRTicket }) {
@@ -259,19 +259,19 @@ function LinkedHRTicketCard({ hrTicket, onGoToLinkedHRTicket }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        border: '1px solid #EDEAE9',
+        border: '1px solid var(--border)',
         borderRadius: 8,
         padding: 12,
         cursor: onGoToLinkedHRTicket ? 'pointer' : 'default',
-        boxShadow: hovered && onGoToLinkedHRTicket ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+        boxShadow: hovered && onGoToLinkedHRTicket ? 'var(--shadow-md)' : 'none',
         transition: 'box-shadow 0.15s',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <Pill label={status} bg={bg} color={color} icon={<PillStatusIcon status={status} />} />
-        <span style={{ fontSize: 12, color: '#9ea0a2' }}>{hrTicket.id}</span>
+        <span style={{ fontSize: 12, color: 'var(--text-disabled)' }}>{hrTicket.id}</span>
       </div>
-      <p style={{ fontSize: 13, fontWeight: 500, color: '#1E1F21', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {hrTicket.name}
       </p>
     </div>
@@ -308,11 +308,11 @@ export default function TicketInfoSidebar({
   }, [assigneeDropdownOpen]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white" style={{ borderLeft: '1px solid #EDEAE9' }}>
+    <div className="flex flex-col h-full overflow-hidden bg-[var(--surface)]" style={{ borderLeft: '1px solid var(--border)' }}>
 
       {/* ── Tabs (Details / Workflow) — only when ticket has workflow steps ── */}
       {steps?.length > 0 && (
-        <div className="shrink-0 flex" style={{ borderBottom: '1px solid #EDEAE9', padding: '0 20px', gap: 24 }}>
+        <div className="shrink-0 flex" style={{ borderBottom: '1px solid var(--border)', padding: '0 20px', gap: 24 }}>
           {['details', 'workflow'].map(tab => (
             <button
               key={tab}
@@ -321,11 +321,11 @@ export default function TicketInfoSidebar({
               style={{
                 background: 'none',
                 border: 'none',
-                borderBottom: sidebarTab === tab ? '2px solid #1E1F21' : '2px solid transparent',
+                borderBottom: sidebarTab === tab ? '2px solid var(--text)' : '2px solid transparent',
                 padding: '10px 0',
                 fontSize: 13,
                 fontWeight: sidebarTab === tab ? 600 : 400,
-                color: sidebarTab === tab ? '#1E1F21' : '#6D6E6F',
+                color: sidebarTab === tab ? 'var(--text)' : 'var(--text-weak)',
                 cursor: 'pointer',
                 textTransform: 'capitalize',
               }}
@@ -337,7 +337,7 @@ export default function TicketInfoSidebar({
       )}
 
       {/* ── Priority / Status / SLA pills strip ── */}
-      <div className="shrink-0 flex items-center gap-2" style={{ padding: '10px 16px', borderBottom: '1px solid #EDEAE9' }}>
+      <div className="shrink-0 flex items-center gap-2" style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}>
 
         {/* Priority pill */}
         {ticket.priority && (
@@ -354,16 +354,16 @@ export default function TicketInfoSidebar({
                 dropdown onClick={() => setPriorityDropdownOpen(o => !o)}
               />
               {priorityDropdownOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'white', border: '1px solid #EDEAE9', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: 140, overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: 'var(--shadow-md)', minWidth: 140, overflow: 'hidden' }}>
                   {PRIORITY_OPTIONS.map(opt => (
                     <button key={opt} type="button"
                       className="w-full flex items-center gap-2 border-0 cursor-pointer"
-                      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: '#1E1F21' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: 'var(--text)' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       onClick={() => { onPriorityChange(opt); setPriorityDropdownOpen(false); }}
                     >
-                      <span style={{ width: 16, flexShrink: 0, fontSize: 12, color: '#4573D2' }}>{localPriority === opt ? '✓' : ''}</span>
+                      <span style={{ width: 16, flexShrink: 0, fontSize: 12, color: 'var(--selected-text)' }}>{localPriority === opt ? '✓' : ''}</span>
                       <span style={{ padding: '1px 6px', borderRadius: 4, fontSize: 12, fontWeight: 500, background: (PRIORITY_COLORS[opt] ?? PRIORITY_COLORS.Low).bg, color: (PRIORITY_COLORS[opt] ?? PRIORITY_COLORS.Low).color }}>{opt}</span>
                     </button>
                   ))}
@@ -376,25 +376,25 @@ export default function TicketInfoSidebar({
         {/* Status pill */}
         {readOnly ? (
           <Pill label={localStatus} icon={<PillStatusIcon status={localStatus} />}
-            bg="white" border={STATUS_BORDER[localStatus] ?? '#D1D5DB'}
+            bg="var(--surface)" border={STATUS_BORDER[localStatus] ?? 'var(--border)'}
           />
         ) : (
           <div style={{ position: 'relative' }} ref={statusRef}>
             <Pill as="button" label={localStatus} icon={<PillStatusIcon status={localStatus} />}
-              bg="white" border={STATUS_BORDER[localStatus] ?? '#D1D5DB'} dropdown
+              bg="var(--surface)" border={STATUS_BORDER[localStatus] ?? 'var(--border)'} dropdown
               onClick={() => setStatusDropdownOpen(o => !o)}
             />
             {statusDropdownOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'white', border: '1px solid #EDEAE9', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: 170, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: 'var(--shadow-md)', minWidth: 170, overflow: 'hidden' }}>
                 {STATUS_OPTIONS.map(opt => (
                   <button key={opt} type="button"
                     className="w-full flex items-center gap-2 border-0 cursor-pointer"
-                    style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: '#1E1F21' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                    style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: 'var(--text)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     onClick={() => { onStatusChange(opt); setStatusDropdownOpen(false); }}
                   >
-                    <span style={{ width: 16, flexShrink: 0, fontSize: 12, color: '#4573D2' }}>{localStatus === opt ? '✓' : ''}</span>
+                    <span style={{ width: 16, flexShrink: 0, fontSize: 12, color: 'var(--selected-text)' }}>{localStatus === opt ? '✓' : ''}</span>
                     <PillStatusIcon status={opt} />
                     {opt}
                   </button>
@@ -406,7 +406,7 @@ export default function TicketInfoSidebar({
 
         {/* SLA */}
         {ticket.sla && (
-          <div className="flex items-center gap-1.5 ml-auto" style={{ color: '#6D6E6F', fontSize: 12 }}>
+          <div className="flex items-center gap-1.5 ml-auto" style={{ color: 'var(--text-weak)', fontSize: 12 }}>
             <SlaRingIcon />
             <span>{ticket.sla}</span>
           </div>
@@ -446,7 +446,7 @@ export default function TicketInfoSidebar({
           {ticket.submitter?.org      && <FieldRow label="Org">{ticket.submitter.org}</FieldRow>}
           {ticket.submitter?.deviceId && (
             <FieldRow label="Device ID">
-              <span style={{ color: '#4573D2', cursor: 'pointer' }}>{ticket.submitter.deviceId}</span>
+              <span style={{ color: 'var(--selected-text)', cursor: 'pointer' }}>{ticket.submitter.deviceId}</span>
             </FieldRow>
           )}
         </Section>
@@ -473,7 +473,7 @@ export default function TicketInfoSidebar({
                 minHeight: 36,
                 gap: 8,
                 paddingBottom: 4,
-                background: assigneeRowHovered ? '#F5F5F4' : 'transparent',
+                background: assigneeRowHovered ? 'var(--background-medium)' : 'transparent',
                 borderRadius: 4,
                 textAlign: 'left',
               }}
@@ -481,7 +481,7 @@ export default function TicketInfoSidebar({
               onMouseLeave={() => setAssigneeRowHovered(false)}
               onClick={() => setAssigneeDropdownOpen(o => !o)}
             >
-              <span style={{ width: 90, flexShrink: 0, fontSize: 12, color: '#9ea0a2' }}>Assignee</span>
+              <span style={{ width: 90, flexShrink: 0, fontSize: 12, color: 'var(--text-disabled)' }}>Assignee</span>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                 {localAssignee ? (
                   <>
@@ -490,19 +490,19 @@ export default function TicketInfoSidebar({
                       style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                       alt={localAssignee.name}
                     />
-                    <span style={{ fontSize: 13, color: '#1E1F21', whiteSpace: 'nowrap' }}>{localAssignee.name}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>{localAssignee.name}</span>
                   </>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px dashed #D1D5DB', flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: '#9ea0a2' }}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px dashed var(--border)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: 'var(--text-disabled)' }}>
                       {assigneeRowHovered ? 'Assign…' : 'No assignee'}
                     </span>
                   </div>
                 )}
               </div>
               {(assigneeRowHovered || assigneeDropdownOpen) && (
-                <span aria-hidden="true" style={{ fontSize: 11, color: '#9ea0a2', paddingRight: 4, flexShrink: 0 }}>▾</span>
+                <span aria-hidden="true" style={{ fontSize: 11, color: 'var(--text-disabled)', paddingRight: 4, flexShrink: 0 }}>▾</span>
               )}
             </button>
 
@@ -513,10 +513,10 @@ export default function TicketInfoSidebar({
                 top: '100%',
                 left: 98,
                 zIndex: 50,
-                background: 'white',
-                border: '1px solid #EDEAE9',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
                 borderRadius: 6,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: 'var(--shadow-md)',
                 minWidth: 200,
                 overflow: 'hidden',
               }}>
@@ -525,8 +525,8 @@ export default function TicketInfoSidebar({
                     <button
                       type="button"
                       className="w-full flex items-center gap-2 border-0 cursor-pointer"
-                      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: '#6D6E6F' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
+                      style={{ height: 36, padding: '0 12px', background: 'transparent', fontSize: 13, color: 'var(--text-weak)' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       onClick={() => {
                         setLocalAssignee(null);
@@ -535,10 +535,10 @@ export default function TicketInfoSidebar({
                       }}
                     >
                       <span style={{ width: 16, flexShrink: 0 }} />
-                      <div style={{ width: 24, height: 24, borderRadius: '50%', border: '1.5px dashed #D1D5DB', flexShrink: 0 }} />
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', border: '1.5px dashed var(--border)', flexShrink: 0 }} />
                       <span>No assignee</span>
                     </button>
-                    <div style={{ height: 1, background: '#EDEAE9', margin: '2px 0' }} />
+                    <div style={{ height: 1, background: 'var(--border)', margin: '2px 0' }} />
                   </>
                 )}
                 {TEAM_MEMBERS.map(member => (
@@ -568,16 +568,16 @@ export default function TicketInfoSidebar({
                       src={`https://placehold.co/24x24/${p.bg}/${p.fg}?text=${p.initials}`}
                       alt={p.name}
                       title={p.name}
-                      style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, outline: '2px solid white', marginLeft: i === 0 ? 0 : -8, position: 'relative', zIndex: i }}
+                      style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, outline: '2px solid var(--surface)', marginLeft: i === 0 ? 0 : -8, position: 'relative', zIndex: i }}
                     />
                   ))}
                 </div>
               )}
               <button
                 type="button"
-                style={{ height: 22, padding: '0 8px', fontSize: 11, borderRadius: 4, border: '1px solid #C9C9C8', background: 'white', color: '#6D6E6F', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
-                onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                style={{ height: 22, padding: '0 8px', fontSize: 11, borderRadius: 4, border: '1px solid var(--border-strong)', background: 'var(--surface)', color: 'var(--text-weak)', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
               >
                 Add
               </button>
@@ -595,19 +595,19 @@ export default function TicketInfoSidebar({
           </FieldRow>
           {ticket.category && (
             <FieldRow label="Category">
-              <Pill as="button" label={ticket.category} bg="#F3F4F6" color="#6D6E6F" dropdown />
+              <Pill as="button" label={ticket.category} bg="var(--priority-low-bg)" color="var(--priority-low-text)" dropdown />
             </FieldRow>
           )}
 
           {/* AI summary */}
           {ticket.aiSummary && (
-            <div style={{ marginTop: 12, padding: '10px 12px', background: '#F9F9F9', borderRadius: 8 }}>
+            <div style={{ marginTop: 12, padding: '10px 12px', background: 'var(--background-medium)', borderRadius: 8 }}>
               <div className="flex items-center gap-1.5" style={{ marginBottom: 6 }}>
                 <AiGradientIcon />
-                <span style={{ fontSize: 11, color: '#6D6E6F' }}>Asana IT summary of the ticket details</span>
-                <span style={{ fontSize: 11, color: '#9ea0a2' }}>· 1d</span>
+                <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>Asana IT summary of the ticket details</span>
+                <span style={{ fontSize: 11, color: 'var(--text-disabled)' }}>· 1d</span>
               </div>
-              <p style={{ fontSize: 13, lineHeight: '20px', color: '#1E1F21', margin: 0 }}>
+              <p style={{ fontSize: 13, lineHeight: '20px', color: 'var(--text)', margin: 0 }}>
                 {ticket.aiSummary}
               </p>
             </div>
@@ -619,12 +619,12 @@ export default function TicketInfoSidebar({
               type="button"
               onClick={() => setAttachmentsOpen(o => !o)}
               className="flex items-center gap-1.5 cursor-pointer border-0 bg-transparent"
-              style={{ fontSize: 12, color: '#6D6E6F', marginBottom: attachmentsOpen ? 10 : 0 }}
+              style={{ fontSize: 12, color: 'var(--text-weak)', marginBottom: attachmentsOpen ? 10 : 0 }}
             >
               <ChevronDownIcon open={attachmentsOpen} />
-              <span style={{ fontWeight: 500, color: '#1E1F21' }}>Attachments</span>
-              <span style={{ color: '#9ea0a2' }}>3</span>
-              <span style={{ marginLeft: 4, color: '#9ea0a2' }}>
+              <span style={{ fontWeight: 500, color: 'var(--text)' }}>Attachments</span>
+              <span style={{ color: 'var(--text-disabled)' }}>3</span>
+              <span style={{ marginLeft: 4, color: 'var(--text-disabled)' }}>
                 <PlusIcon />
               </span>
             </button>

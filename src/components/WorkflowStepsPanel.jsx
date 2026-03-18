@@ -11,8 +11,8 @@ const SHADOW_DONE    = '0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04)';
 
 function CheckIcon() {
   return (
-    <svg viewBox="0 0 10 10" width="10" height="10" fill="none">
-      <path d="M1.5 5l2.5 2.5L8.5 2" stroke="#0D7F56" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 10 10" width="10" height="10" fill="none" style={{ color: 'var(--success-text)' }}>
+      <path d="M1.5 5l2.5 2.5L8.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -21,7 +21,7 @@ function ChevronIcon({ open }) {
   return (
     <svg
       viewBox="0 0 12 12" width="12" height="12" fill="currentColor"
-      style={{ flexShrink: 0, color: '#C2BFBC', transition: 'transform 0.15s', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+      style={{ flexShrink: 0, color: 'var(--border-strong)', transition: 'transform 0.15s', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
     >
       <path d="M9.09 3.93L6 6.52 2.91 3.93a.75.75 0 00-1.06 1.07l3.58 3a.75.75 0 001.06 0l3.57-3A.75.75 0 009.09 3.93z" />
     </svg>
@@ -47,8 +47,8 @@ function ParallelIcon() {
 function SpinnerIcon() {
   return (
     <svg className="animate-spin" viewBox="0 0 10 10" width="12" height="12" style={{ flexShrink: 0 }}>
-      <circle cx="5" cy="5" r="3.5" stroke="#D1D5DB" strokeWidth="1.5" fill="none" />
-      <path d="M5 1.5A3.5 3.5 0 0 1 8.5 5" stroke="#4573D2" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <circle cx="5" cy="5" r="3.5" stroke="var(--border)" strokeWidth="1.5" fill="none" />
+      <path d="M5 1.5A3.5 3.5 0 0 1 8.5 5" stroke="var(--selected-background-strong)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -91,10 +91,10 @@ function AutoRunAnimation({ animSteps, onComplete }) {
         if (i >= visibleCount) return null;
         const isRunning = i === visibleCount - 1 && visibleCount < animSteps.length;
         return (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: isRunning ? '#1E1F21' : '#6D6E6F' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: isRunning ? 'var(--text)' : 'var(--icon)' }}>
             {isRunning ? <SpinnerIcon /> : (
-              <svg viewBox="0 0 10 10" width="12" height="12" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M1.5 5l2.5 2.5L8.5 2" stroke="#0D7F56" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <svg viewBox="0 0 10 10" width="12" height="12" fill="none" style={{ flexShrink: 0, color: 'var(--success-text)' }}>
+                <path d="M1.5 5l2.5 2.5L8.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
             {text}
@@ -110,20 +110,20 @@ function AutoRunAnimation({ animSteps, onComplete }) {
 function StepBadge({ status, number }) {
   if (status === 'completed') {
     return (
-      <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#E9FAF1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--success-background)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <CheckIcon />
       </div>
     );
   }
   if (status === 'active') {
     return (
-      <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#4573D2', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white' }}>
+      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--selected-background-strong)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--selected-text-strong)' }}>
         {number}
       </div>
     );
   }
   return (
-    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#E8E5E4', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: '#9ea0a2' }}>
+    <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--background-strong)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: 'var(--text-disabled)' }}>
       {number}
     </div>
   );
@@ -143,8 +143,8 @@ function LinkedTicketCard({ ticket, onClick }) {
       onMouseEnter={() => clickable && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        border: '1px solid #EDEAE9', borderRadius: 7,
-        padding: '8px 10px', background: 'white',
+        border: '1px solid var(--border)', borderRadius: 7,
+        padding: '8px 10px', background: 'var(--surface)',
         cursor: clickable ? 'pointer' : 'default',
         boxShadow: hovered ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
         transition: 'box-shadow 0.15s',
@@ -153,14 +153,14 @@ function LinkedTicketCard({ ticket, onClick }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
         <span style={{
           padding: '1px 6px', borderRadius: 3, fontSize: 10, fontWeight: 500,
-          background: isResolved ? '#DCFCE7' : '#F3F4F6',
-          color: isResolved ? '#166534' : '#6D6E6F',
+          background: isResolved ? 'var(--success-background)' : 'var(--background-medium)',
+          color: isResolved ? 'var(--success-text)' : 'var(--icon)',
         }}>
           {ticket.status}
         </span>
-        {ticket.id && <span style={{ fontSize: 11, color: '#9ea0a2' }}>{ticket.id}</span>}
+        {ticket.id && <span style={{ fontSize: 11, color: 'var(--text-disabled)' }}>{ticket.id}</span>}
       </div>
-      <div style={{ fontSize: 12, fontWeight: 500, color: '#1E1F21', lineHeight: '16px' }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', lineHeight: '16px' }}>
         {ticket.name}
       </div>
     </div>
@@ -178,8 +178,8 @@ function LinkedPill({ ticket, onClick }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 4,
         padding: '1px 7px', borderRadius: 4, fontSize: 11,
-        background: isResolved ? '#DCFCE7' : '#F3F4F6',
-        color: isResolved ? '#166534' : '#6D6E6F',
+        background: isResolved ? 'var(--success-background)' : 'var(--background-medium)',
+        color: isResolved ? 'var(--success-text)' : 'var(--icon)',
         fontWeight: 500, marginTop: 3,
         cursor: clickable ? 'pointer' : 'default',
       }}
@@ -192,7 +192,7 @@ function LinkedPill({ ticket, onClick }) {
 
 // ─── Action buttons ───────────────────────────────────────────────────────────
 
-const SECONDARY_BTN = { height: 28, padding: '0 12px', background: 'white', color: '#1E1F21', border: '1px solid #CFCBCB', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer' };
+const SECONDARY_BTN = { height: 28, padding: '0 12px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-strong)', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer' };
 
 function MarkDoneBtn({ onClick }) {
   return (
@@ -200,8 +200,8 @@ function MarkDoneBtn({ onClick }) {
       type="button"
       onClick={e => { e.stopPropagation(); onClick(); }}
       style={SECONDARY_BTN}
-      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
-      onMouseLeave={e => e.currentTarget.style.background = 'white'}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
     >
       Mark done
     </button>
@@ -214,8 +214,8 @@ function CreateTaskBtn({ label, onClick }) {
       type="button"
       onClick={e => { e.stopPropagation(); onClick(); }}
       style={{ ...SECONDARY_BTN, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-      onMouseEnter={e => e.currentTarget.style.background = '#F5F5F4'}
-      onMouseLeave={e => e.currentTarget.style.background = 'white'}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
     >
       {label} <ExternalIcon />
     </button>
@@ -269,7 +269,7 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
     <div
       onClick={!isActive ? e => { e.stopPropagation(); onToggle(); } : undefined}
       style={{
-        background: 'white',
+        background: 'var(--surface)',
         borderRadius: nested ? 0 : 8,
         boxShadow: nested ? 'none' : isActive ? SHADOW_ACTIVE : isCompleted ? SHADOW_DONE : SHADOW_DEFAULT,
         padding: '10px 14px',
@@ -284,14 +284,14 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontSize: 13, fontWeight: isActive ? 600 : 500,
-            color: isCompleted ? '#6D6E6F' : '#1E1F21',
+            color: isCompleted ? 'var(--icon)' : 'var(--text)',
             lineHeight: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {step.label}
           </div>
           {/* Team line — always show for non-completed, hide when completed (saves space) */}
           {!isCompleted && (
-            <div style={{ fontSize: 11, color: '#9ea0a2', marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
               {step.assignee && <AssigneeAvatar person={step.assignee} />}
               {step.team}
             </div>
@@ -302,7 +302,7 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
           )}
         </div>
         {isCompleted && step.completedAt && !expanded && (
-          <span style={{ fontSize: 11, color: '#9ea0a2', flexShrink: 0, marginRight: 4 }}>{step.completedAt}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0, marginRight: 4 }}>{step.completedAt}</span>
         )}
         {/* Expand chevron for non-active */}
         {!isActive && <ChevronIcon open={showExpanded} />}
@@ -311,16 +311,16 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
       {/* ── Expanded section ── */}
       {showExpanded && (
         // stopPropagation so clicks inside don't re-collapse the card
-        <div onClick={e => e.stopPropagation()} style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #EDEAE9' }}>
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
 
           {/* COMPLETED ──────────────────────────── */}
           {isCompleted && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {step.completedAt && (
-                <div style={{ fontSize: 11, color: '#9ea0a2' }}>Completed at {step.completedAt} · {step.team}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-disabled)' }}>Completed at {step.completedAt} · {step.team}</div>
               )}
               {step.outcomeNote && (
-                <p style={{ fontSize: 12, color: '#6D6E6F', lineHeight: '18px', margin: 0 }}>{step.outcomeNote}</p>
+                <p style={{ fontSize: 12, color: 'var(--icon)', lineHeight: '18px', margin: 0 }}>{step.outcomeNote}</p>
               )}
               {step.linkedTicket && (
                 <LinkedTicketCard ticket={step.linkedTicket} onClick={onLinkedTicketClick ? () => onLinkedTicketClick(step.linkedTicket) : undefined} />
@@ -331,10 +331,10 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
           {/* PENDING ────────────────────────────── */}
           {isPending && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {step.body && <p style={{ fontSize: 12, color: '#6D6E6F', lineHeight: '18px', margin: 0 }}>{step.body}</p>}
+              {step.body && <p style={{ fontSize: 12, color: 'var(--icon)', lineHeight: '18px', margin: 0 }}>{step.body}</p>}
               {isLinked && step.linkedTicket && (
                 <div>
-                  <div style={{ fontSize: 11, color: '#9ea0a2', marginBottom: 5 }}>Will create a task in:</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginBottom: 5 }}>Will create a task in:</div>
                   <LinkedTicketCard ticket={{ ...step.linkedTicket, status: 'Not created yet' }} />
                 </div>
               )}
@@ -351,7 +351,7 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
                 />
               ) : (
                 <>
-                  {step.body && <p style={{ fontSize: 13, color: '#3D4046', lineHeight: '20px', margin: 0 }}>{step.body}</p>}
+                  {step.body && <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: '20px', margin: 0 }}>{step.body}</p>}
                   <MarkDoneBtn onClick={() => onDone(step.id)} />
                 </>
               )}
@@ -390,25 +390,25 @@ function ParallelGroup({ groupSteps, startIndex, expandedIds, onToggle, onDone, 
 
   return (
     <div style={{
-      background: 'white',
+      background: 'var(--surface)',
       borderRadius: 8,
       boxShadow: anyActive ? SHADOW_ACTIVE : SHADOW_DEFAULT,
       transition: 'box-shadow 0.15s',
     }}>
       <div style={{
         padding: '7px 14px',
-        background: '#F9F8F8',
-        borderBottom: '1px solid #EDEAE9',
+        background: 'var(--background-weak)',
+        borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 6,
-        fontSize: 11, color: '#6D6E6F',
+        fontSize: 11, color: 'var(--icon)',
         borderRadius: '8px 8px 0 0',
       }}>
         <ParallelIcon />
         <span style={{ fontWeight: 500 }}>Parallel — both must complete</span>
-        <span style={{ marginLeft: 'auto', fontWeight: 500, color: '#9ea0a2' }}>{completedInGroup}/{groupSteps.length}</span>
+        <span style={{ marginLeft: 'auto', fontWeight: 500, color: 'var(--text-disabled)' }}>{completedInGroup}/{groupSteps.length}</span>
       </div>
       {groupSteps.map((step, i) => (
-        <div key={step.id} style={i > 0 ? { borderTop: '1px solid #EDEAE9' } : {}}>
+        <div key={step.id} style={i > 0 ? { borderTop: '1px solid var(--border)' } : {}}>
           <StepCard
             step={step}
             stepNumber={startIndex + i + 1}
@@ -542,18 +542,18 @@ export default function WorkflowStepsPanel({ initialSteps, onLinkedTicketClick, 
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#F0EFED' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: 'var(--background-medium)' }}>
 
       {/* Header — white strip, 44px to align with ChatTabBar */}
-      <div style={{ background: 'white', height: 44, padding: '0 20px', borderBottom: '1px solid #EDEAE9', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+      <div style={{ background: 'var(--surface)', height: 44, padding: '0 20px', borderBottom: '1px solid var(--border)', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#1E1F21' }}>Workflow steps</span>
-          <span style={{ fontSize: 11, fontWeight: 500, padding: '1px 7px', borderRadius: 999, background: '#EDEAE9', color: '#6D6E6F' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Workflow steps</span>
+          <span style={{ fontSize: 11, fontWeight: 500, padding: '1px 7px', borderRadius: 999, background: 'var(--background-strong)', color: 'var(--icon)' }}>
             {completedCount}/{steps.length}
           </span>
         </div>
-        <div style={{ height: 3, borderRadius: 2, background: '#EDEAE9', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: '#4573D2', borderRadius: 2, transition: 'width 0.3s ease' }} />
+        <div style={{ height: 3, borderRadius: 2, background: 'var(--background-strong)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${progress}%`, background: 'var(--selected-background-strong)', borderRadius: 2, transition: 'width 0.3s ease' }} />
         </div>
       </div>
 

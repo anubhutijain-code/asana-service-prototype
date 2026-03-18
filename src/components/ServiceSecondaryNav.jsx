@@ -336,16 +336,16 @@ function AgentNavContent({ activeItem, onSelect }) {
   return (
     <>
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={5} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
-      <NavItem label="My performance" Icon={WorkloadIcon} active={activeItem === 'My Performance'} onClick={() => onSelect('My Performance')} />
-      <NavItem label="Collaborating" Icon={FollowingIcon} badge={2} active={activeItem === 'Collaborating'} onClick={() => onSelect('Collaborating')} />
+      <NavItem label="@mentions" Icon={FollowingIcon} badge={2} active={activeItem === 'Collaborating'} onClick={() => onSelect('Collaborating')} />
 
       <SectionLabel label="Queues" />
-      <NavItem label="IT Support" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets' || activeItem === 'IT Unassigned' || activeItem === 'IT All Active'} onClick={() => onSelect('IT Tickets')} />
-      <NavItem label="HR" Icon={TicketsIcon} badge={9} active={activeItem === 'HR Tickets' || activeItem === 'HR Unassigned' || activeItem === 'HR All Active'} onClick={() => onSelect('HR Tickets')} />
+      <NavItem label="IT Ops - T1" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets' || activeItem === 'IT Unassigned' || activeItem === 'IT All Active'} onClick={() => onSelect('IT Tickets')} />
 
-      <SectionLabel label="Reference" />
-      <NavItem label="Knowledge" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
+      <SectionLabel label="Reporting" />
+      <NavItem label="My performance" Icon={WorkloadIcon} active={activeItem === 'My Performance'} onClick={() => onSelect('My Performance')} />
+
+      <SectionLabel label="Toolkit" />
+      <NavItem label="Knowledge Base" Icon={LightBulbIcon} active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       <NavItem label="Assets" Icon={AssetsIcon} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
     </>
   );
@@ -376,25 +376,23 @@ function Agent3NavContent({ activeItem, onSelect }) {
 function Admin2NavContent({ activeItem, onSelect }) {
   return (
     <>
-      <NavItem label="Overview" Icon={ProjectsIcon} active={activeItem === 'Home'} onClick={() => onSelect('Home')} />
-
-      <SectionLabel label="Triage" />
-      <NavItem label="Escalations" Icon={EscalationIcon} badge={3} active={activeItem === 'Escalations'} onClick={() => onSelect('Escalations')} />
+      <NavItem label="Overview"   Icon={OverviewIcon}  active={activeItem === 'Home'}       onClick={() => onSelect('Home')} />
       <NavItem label="My Tickets" Icon={MyQueueIcon} badge={4} active={activeItem === 'My Tickets'} onClick={() => onSelect('My Tickets')} />
-      <NavItem label="IT Support" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets'} onClick={() => onSelect('IT Tickets')} />
-      <NavItem label="HR"         Icon={TicketsIcon} badge={9}  active={activeItem === 'HR Tickets'} onClick={() => onSelect('HR Tickets')} />
-      <NavItem label="Conversations" Icon={InboxIcon} badge={24} active={activeItem === 'Requests'} onClick={() => onSelect('Requests')} />
 
-      <SectionLabel label="Insights" />
-      <NavItem label="Dashboard"  Icon={DashboardIcon}   active={activeItem === 'Dashboard'}  onClick={() => onSelect('Dashboard')} />
-<NavItem label="Optimize" Icon={OptimizeIcon} active={activeItem === 'Optimize V2' || activeItem === 'Optimize'} onClick={() => onSelect('Optimize V2')} />
+      <SectionLabel label="Queues" onAdd={() => onSelect('Create Queue')} />
+      <NavItem label="IT Ops - T1" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets'} onClick={() => onSelect('IT Tickets')} />
+      <NavItem label="HR Payroll"  Icon={TicketsIcon} badge={9}  active={activeItem === 'HR Tickets'} onClick={() => onSelect('HR Tickets')} />
 
-      <SectionLabel label="Resources" />
-      <NavItem label="Automations" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />
-      <NavItem label="Knowledge" Icon={LightBulbIcon}
-        active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
-      <NavItem label="Assets" Icon={AssetsIcon} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
-      <NavItem label="Settings" Icon={SettingsIcon} active={activeItem === 'Settings'} onClick={() => onSelect('Settings')} />
+      <SectionLabel label="Reporting" />
+      <NavItem label="Performance"    Icon={DashboardIcon}  active={activeItem === 'Dashboard'}                              onClick={() => onSelect('Dashboard')} />
+      <NavItem label="AI Deflections" Icon={InboxIcon} badge={24} active={activeItem === 'Requests'}                        onClick={() => onSelect('Requests')} />
+      <NavItem label="Optimize"       Icon={OptimizeIcon}   active={activeItem === 'Optimize V2' || activeItem === 'Optimize'} onClick={() => onSelect('Optimize V2')} />
+
+      <SectionLabel label="Toolkit" />
+      <NavItem label="Playbooks"     Icon={AutomationIcon} active={activeItem === 'Automations'}  onClick={() => onSelect('Automations')} />
+      <NavItem label="Knowledge Base" Icon={LightBulbIcon}  active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
+      <NavItem label="Assets"        Icon={AssetsIcon}     active={activeItem === 'Assets'}       onClick={() => onSelect('Assets')} />
+      <NavItem label="Queue settings" Icon={SettingsIcon}  active={activeItem === 'Settings'}     onClick={() => onSelect('Settings')} />
     </>
   );
 }
@@ -429,7 +427,7 @@ export default function ServiceSecondaryNav({ activeItem, onSelect, role }) {
                        hover:bg-background-medium hover:border-border-strong transition-colors duration-150 cursor-pointer"
           >
             <svg viewBox="0 0 12 12" width="11" height="11" fill="none" aria-hidden="true">
-              <path d="M6 1v10M1 6h10" stroke="#1E1F21" strokeWidth="1.8" strokeLinecap="round"/>
+              <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
             Create queue
           </button>
