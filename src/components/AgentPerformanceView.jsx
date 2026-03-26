@@ -104,9 +104,8 @@ function KpiCard({ label, value, suffix, better }) {
         background: 'var(--background-weak)',
         borderRadius: 10,
         padding: '18px 20px',
-        boxShadow: hov
-          ? '0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06)'
-          : '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
+        border: '1px solid var(--border)',
+        boxShadow: hov ? 'var(--elevation-md)' : 'var(--elevation-sm)',
         transition: 'box-shadow 0.15s',
       }}
     >

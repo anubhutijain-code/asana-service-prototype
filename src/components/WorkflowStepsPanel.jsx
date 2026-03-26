@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from 'react';
 const BASE_URL = import.meta.env.BASE_URL;
 
 // ─── Shadow tokens ─────────────────────────────────────────────────────────────
-const SHADOW_ACTIVE  = '0 2px 8px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.07)';
-const SHADOW_DEFAULT = '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)';
-const SHADOW_DONE    = '0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04)';
+const SHADOW_ACTIVE  = 'var(--elevation-md)';
+const SHADOW_DEFAULT = 'var(--elevation-sm)';
+const SHADOW_DONE    = 'var(--shadow-sm)';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -271,6 +271,7 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
       style={{
         background: 'var(--surface)',
         borderRadius: nested ? 0 : 8,
+        border: nested ? 'none' : '1px solid var(--border)',
         boxShadow: nested ? 'none' : isActive ? SHADOW_ACTIVE : isCompleted ? SHADOW_DONE : SHADOW_DEFAULT,
         padding: '10px 14px',
         opacity: isPending ? 0.55 : 1,
@@ -392,6 +393,7 @@ function ParallelGroup({ groupSteps, startIndex, expandedIds, onToggle, onDone, 
     <div style={{
       background: 'var(--surface)',
       borderRadius: 8,
+      border: '1px solid var(--border)',
       boxShadow: anyActive ? SHADOW_ACTIVE : SHADOW_DEFAULT,
       transition: 'box-shadow 0.15s',
     }}>

@@ -1,9 +1,10 @@
 // ─── Admin2HomeView — Command Center Home ────────────────────────────────────
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { TEAM_DATA, TICKET_TOPICS } from '../data/dashboard';
+import { TEAM_DATA } from '../data/dashboard';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -70,19 +71,39 @@ function getBadgeStatus(count) {
 
 const WL_THRESHOLD = WL_CAPACITY * 0.85; // 34
 
-function WorkloadTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  const idx = Math.round(Number(label));
-  const date = TEAM_DATA.dates?.[idx] ?? '';
-  const base = payload.find(p => p.dataKey === 'base');
-  if (!base) return null;
-  return (
-    <div style={{ ...CARD_STYLE, padding: '8px 12px', boxShadow: 'var(--shadow-md)', fontFamily: SFT, fontSize: 12 }}>
-      {date && <p style={{ color: 'var(--text-weak)', marginBottom: 4, fontSize: 11 }}>{date}</p>}
-      <p style={{ color: 'var(--text)', margin: 0, fontWeight: 500 }}>
-        {base.name}: {base.value} open
+function WorkloadPortalTooltip({ tooltip }) {
+  if (!tooltip) return null;
+  const { x, y, agent, open, date } = tooltip;
+  return createPortal(
+    <div style={{
+      position: 'fixed', left: x + 14, top: y - 14,
+      zIndex: 9999, pointerEvents: 'none',
+      ...CARD_STYLE, padding: '10px 14px', boxShadow: 'var(--shadow-md)', fontFamily: SFT, minWidth: 180,
+    }}>
+      {date && <p style={{ color: 'var(--text-weak)', margin: '0 0 6px', fontSize: 11 }}>{date}</p>}
+      <p style={{ color: open >= WL_THRESHOLD ? 'var(--danger-text)' : 'var(--text)', margin: '0 0 8px', fontWeight: 600, fontSize: 13 }}>
+        {open} open
       </p>
-    </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>Resolved (wk)</span>
+          <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 500 }}>{agent.resolvedThisWeek}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>Avg resolution</span>
+          <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 500 }}>{agent.avgResolution}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>SLA health</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: slaColor(agent.slaHealth) }}>{agent.slaHealth}%</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>CSAT</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: csatColor(agent.csat) }}>{agent.csat.toFixed(1)}</span>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -276,45 +297,171 @@ function IntegrationsCard() {
   );
 }
 
-// ── Ticket Topics Card (sparklines per category) ──────────────────────────────
+// ── CSAT Card ─────────────────────────────────────────────────────────────────
 
-// Same blue scale as DashboardView TopicVolumeCard (darkest → lightest by volume)
-const TOPIC_BLUES = [
-  'var(--chart-0)', 'var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)',
-  'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)', 'var(--chart-7)',
+const CSAT_DATA = {
+  happy:   { count: 32, pct: 71, spark: [58, 63, 68, 65, 70, 68, 71] },
+  neutral: { count: 8,  pct: 18, spark: [22, 20, 19, 21, 17, 18, 18] },
+  sad:     { count: 5,  pct: 11, spark: [14, 12, 11, 13, 10, 10, 11] },
+  total: 45,
+  responseRate: 78,
+  prevResponseRate: 66,
+};
+
+function SmileyIcon({ type, size = 28 }) {
+  const cfg = {
+    happy:   { stroke: 'var(--success-text)', fill: 'var(--success-background)' },
+    neutral: { stroke: 'var(--warning-text)', fill: 'var(--warning-background)' },
+    sad:     { stroke: 'var(--danger-text)',  fill: 'var(--danger-background)'  },
+  }[type];
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill={cfg.fill} stroke={cfg.stroke} strokeWidth="1.5"/>
+      <circle cx="9"  cy="10" r="1.2" fill={cfg.stroke}/>
+      <circle cx="15" cy="10" r="1.2" fill={cfg.stroke}/>
+      {type === 'happy'   && <path d="M8.5 14 Q12 17.5 15.5 14"  stroke={cfg.stroke} strokeWidth="1.5" strokeLinecap="round" fill="none"/>}
+      {type === 'neutral' && <line x1="9" y1="14.5" x2="15" y2="14.5" stroke={cfg.stroke} strokeWidth="1.5" strokeLinecap="round"/>}
+      {type === 'sad'     && <path d="M8.5 15.5 Q12 12 15.5 15.5" stroke={cfg.stroke} strokeWidth="1.5" strokeLinecap="round" fill="none"/>}
+    </svg>
+  );
+}
+
+const FACE_COLOR = {
+  happy:   'var(--success-text)',
+  neutral: 'var(--warning-text)',
+  sad:     'var(--danger-text)',
+};
+
+const CSAT_AGENTS = [
+  { name: 'Jamie Chen',    initials: 'JC', color: '#4273D1', happy: 18, neutral: 2, sad: 0 },
+  { name: 'Priya Nair',    initials: 'PN', color: '#5DA182', happy: 8,  neutral: 3, sad: 1 },
+  { name: 'Devon Walsh',   initials: 'DW', color: '#7C5EA8', happy: 4,  neutral: 2, sad: 1 },
+  { name: 'Marcus Rivera', initials: 'MR', color: '#D43D5D', happy: 2,  neutral: 1, sad: 3 },
 ];
 
-function TicketTopicsCard() {
+function CsatCard() {
+  const [hov, setHov] = useState(false);
+  const { happy, neutral, sad, total, responseRate, prevResponseRate } = CSAT_DATA;
+  const rateDelta = responseRate - prevResponseRate;
+  const faces = [
+    { type: 'happy',   label: 'Happy',   ...happy   },
+    { type: 'neutral', label: 'Neutral', ...neutral },
+    { type: 'sad',     label: 'Sad',     ...sad     },
+  ];
+
   return (
-    <div style={{ ...CARD_STYLE, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '20px 24px 16px', flexShrink: 0 }}>
-        <h4 style={H4}>Ticket topics</h4>
-        <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '4px 0 0' }}>7-day volume by category</p>
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{ ...CARD_STYLE, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}
+    >
+      {/* ── Default view ── */}
+      {/* Header */}
+      <div style={{ padding: '20px 24px 14px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <h4 style={H4}>CSAT</h4>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>
+            {total} ratings · this week
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>
+            {responseRate}% response rate
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--success-text)', fontFamily: SFT, fontWeight: 500 }}>
+            ↑ {rateDelta}pp vs last week
+          </span>
+        </div>
       </div>
-      <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
-        {TICKET_TOPICS.slice(0, 5).map((topic, i) => (
-          <div key={topic.name} style={{
-            flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-            borderBottom: i < 4 ? '1px solid var(--border)' : 'none',
-            minHeight: 0,
-          }}>
-            <span style={{ width: 88, fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {topic.name}
-            </span>
-            <div style={{ flex: 1, minWidth: 0, height: 26 }}>
-              <ResponsiveContainer width="100%" height={26}>
-                <AreaChart data={topic.spark.map((v, idx) => ({ i: idx, v }))} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
-                  <YAxis domain={['dataMin - 2', 'dataMax + 2']} hide />
-                  <Area type="monotone" dataKey="v" stroke={TOPIC_BLUES[i]} fill={TOPIC_BLUES[i]}
-                    fillOpacity={0.18} strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                </AreaChart>
-              </ResponsiveContainer>
+
+      {/* 3 sentiments — 2 rows each, dividers between */}
+      <div style={{ padding: '0 24px 20px' }}>
+        {faces.map((item, i) => {
+          const color = FACE_COLOR[item.type];
+          const sparkData = item.spark.map((v, idx) => ({ i: idx, v }));
+          return (
+            <div key={item.type} style={{ borderBottom: i < faces.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 12, paddingBottom: 6 }}>
+                <SmileyIcon type={item.type} size={20} />
+                <span style={{ fontSize: 13, color: 'var(--text-weak)', fontFamily: SFT, flex: 1 }}>{item.label}</span>
+                <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', fontFamily: SFT }}>{item.count}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-disabled)', fontFamily: SFT, width: 32, textAlign: 'right' }}>{item.pct}%</span>
+              </div>
+              <div style={{ height: 32, marginBottom: 10 }}>
+                <ResponsiveContainer width="100%" height={32}>
+                  <AreaChart data={sparkData} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
+                    <YAxis domain={['dataMin - 2', 'dataMax + 2']} hide />
+                    <Area type="monotone" dataKey="v" stroke={color} fill={color}
+                      fillOpacity={0.15} strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <span style={{ width: 28, fontSize: 11, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, textAlign: 'right', flexShrink: 0 }}>
-              {topic.count}
-            </span>
-          </div>
-        ))}
+          );
+        })}
+      </div>
+
+      {/* ── Hover overlay: CSAT by agent ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'var(--background-weak)',
+        borderRadius: 8,
+        opacity: hov ? 1 : 0,
+        transform: hov ? 'translateY(0)' : 'translateY(6px)',
+        transition: 'opacity 0.16s ease, transform 0.16s ease',
+        pointerEvents: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}>
+        <div style={{ padding: '20px 24px 14px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
+          <h4 style={H4}>CSAT by agent</h4>
+          <p style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, margin: '3px 0 0' }}>
+            This week · {total} ratings
+          </p>
+        </div>
+        <div style={{ flex: 1, padding: '0 24px 20px', display: 'flex', flexDirection: 'column' }}>
+          {CSAT_AGENTS.map((agent, i) => {
+            const agentTotal = agent.happy + agent.neutral + agent.sad;
+            const happyPct = Math.round((agent.happy / agentTotal) * 100);
+            const neutralPct = Math.round((agent.neutral / agentTotal) * 100);
+            const sadPct = 100 - happyPct - neutralPct;
+            return (
+              <div key={agent.name} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                paddingTop: 10, paddingBottom: 10,
+                borderBottom: i < CSAT_AGENTS.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                {/* Avatar */}
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: agent.color, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff' }}>
+                  {agent.initials}
+                </div>
+                {/* Name */}
+                <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT, width: 100, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {agent.name}
+                </span>
+                {/* Distribution bar */}
+                <div style={{ flex: 1, height: 6, borderRadius: 3, overflow: 'hidden', display: 'flex' }}>
+                  <div style={{ width: `${happyPct}%`,  background: 'var(--success-text)' }} />
+                  <div style={{ width: `${neutralPct}%`, background: 'var(--warning-text)' }} />
+                  <div style={{ width: `${sadPct}%`,    background: 'var(--danger-text)'  }} />
+                </div>
+                {/* Smiley counts */}
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  {[
+                    { type: 'happy',   count: agent.happy   },
+                    { type: 'neutral', count: agent.neutral },
+                    { type: 'sad',     count: agent.sad     },
+                  ].map(s => (
+                    <span key={s.type} style={{ fontSize: 11, color: FACE_COLOR[s.type], fontFamily: SFT, fontWeight: 600, minWidth: 14, textAlign: 'center' }}>
+                      {s.count}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -351,10 +498,22 @@ function OptimizationsCard() {
 
 // ── Team Workload Card (same visual as Dashboard > Team tab) ──────────────────
 
+function slaColor(v) {
+  if (v >= 90) return 'var(--success-text)';
+  if (v >= 75) return 'var(--warning-text)';
+  return 'var(--danger-text)';
+}
+function csatColor(v) {
+  if (v >= 4.5) return 'var(--success-text)';
+  if (v >= 4.0) return 'var(--text)';
+  return 'var(--warning-text)';
+}
+
 function TeamWorkloadCard({ agents, todayIndex }) {
   const chartRowH = CHART_H;
   const scrollRef = useRef(null);
   const todayX = todayIndex * PX_PER_DAY;
+  const [tooltip, setTooltip] = useState(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -363,6 +522,8 @@ function TeamWorkloadCard({ agents, todayIndex }) {
   }, []);
 
   return (
+    <>
+    <WorkloadPortalTooltip tooltip={tooltip} />
     <div style={{ flex: 1, ...CARD_STYLE, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
       {/* Header */}
@@ -370,7 +531,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
         <h4 style={H4}>Team workload</h4>
       </div>
 
-      {/* Timeline — left fixed column + right scrollable (identical to TeamTab) */}
+      {/* Timeline — left fixed column + right scrollable */}
       <div style={{ display: 'flex', overflow: 'hidden', padding: '0 24px' }}>
 
         {/* Left column */}
@@ -415,30 +576,31 @@ function TeamWorkloadCard({ agents, todayIndex }) {
             {agents.map((agent, i) => (
               <div key={agent.id} style={{ height: chartRowH, borderBottom: i < agents.length - 1 ? '1px solid var(--border)' : 'none', overflow: 'hidden' }}>
                 <AreaChart
-                  data={agent.daily.map((v, idx) => ({
-                    idx,
-                    base: v,
-                    over: v > WL_THRESHOLD ? v : null,
-                  }))}
+                  data={agent.daily.map((v, idx) => ({ idx, base: v, over: v > WL_THRESHOLD ? v : null }))}
                   width={CHART_W}
                   height={chartRowH}
                   margin={{ top: 8, right: 0, bottom: 8, left: 0 }}
+                  onMouseMove={(data, event) => {
+                    if (data.activePayload?.length && event) {
+                      const base = data.activePayload.find(p => p.dataKey === 'base');
+                      const idx = Math.round(Number(data.activeLabel));
+                      setTooltip({ x: event.clientX, y: event.clientY, agent, open: base?.value ?? 0, date: TEAM_DATA.dates?.[idx] ?? '' });
+                    }
+                  }}
+                  onMouseLeave={() => setTooltip(null)}
                 >
                   <YAxis domain={[0, WL_CAPACITY]} hide />
                   <XAxis dataKey="idx" type="number" domain={[0, N_DAYS - 1]} hide />
-                  {/* Grey base — full data */}
                   <Area type="monotone" dataKey="base" name={agent.name}
                     stroke="var(--chart-neutral)" fill="var(--chart-neutral)" fillOpacity={0.15}
                     strokeWidth={1.5} dot={false}
                     activeDot={{ r: 3, fill: 'var(--chart-neutral)', strokeWidth: 0 }}
                   />
-                  {/* Red overload — full bar from bottom on over-capacity days */}
                   <Area type="monotone" dataKey="over"
                     stroke="var(--chart-danger)" fill="var(--chart-danger)" fillOpacity={0.3}
-                    strokeWidth={1.5} dot={false} connectNulls={false}
-                    activeDot={false}
+                    strokeWidth={1.5} dot={false} connectNulls={false} activeDot={false}
                   />
-                  <RechartsTooltip content={<WorkloadTooltip />} />
+                  <RechartsTooltip content={() => null} />
                 </AreaChart>
               </div>
             ))}
@@ -446,6 +608,7 @@ function TeamWorkloadCard({ agents, todayIndex }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -761,9 +924,8 @@ function KpiStatCard({ label, value, sub, color }) {
         background: 'var(--background-weak)',
         borderRadius: 10,
         padding: '18px 20px',
-        boxShadow: hov
-          ? 'var(--shadow-md)'
-          : 'var(--shadow-sm)',
+        border: '1px solid var(--border)',
+        boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
       }}
     >
@@ -820,7 +982,7 @@ export default function Admin2HomeView({ hideGreeting = false }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
             <IntegrationsCard />
             <OptimizationsCard />
-            <TicketTopicsCard />
+            <CsatCard />
           </div>
           <TeamWorkloadCard agents={agents} todayIndex={todayIndex} />
         </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Label,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -110,6 +111,7 @@ function KpiCard({ label, value, trend, trendGood, spark = [] }) {
         background: 'var(--background-weak)',
         borderRadius: 10,
         padding: '18px 20px',
+        border: '1px solid var(--border)',
         boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
       }}>
@@ -639,19 +641,50 @@ function getBadgeStatus(count) {
 
 const WL_THRESHOLD = CAPACITY * 0.85; // 34
 
-function WorkloadTooltip({ active, payload, label, dates }) {
-  if (!active || !payload?.length) return null;
-  const idx = Math.round(Number(label));
-  const date = dates?.[idx] ?? '';
-  const base = payload.find(p => p.dataKey === 'base');
-  if (!base) return null;
-  return (
-    <div style={{ ...CARD, padding: '8px 12px', boxShadow: 'var(--shadow-md)', fontFamily: SFT, fontSize: 12 }}>
-      {date && <p style={{ color: 'var(--text-weak)', marginBottom: 4, fontSize: 11 }}>{date}</p>}
-      <p style={{ color: 'var(--text)', margin: 0, fontWeight: 500 }}>
-        {base.name}: {base.value} open
+function slaColor(v) {
+  if (v >= 90) return 'var(--success-text)';
+  if (v >= 75) return 'var(--warning-text)';
+  return 'var(--danger-text)';
+}
+function csatColor(v) {
+  if (v >= 4.5) return 'var(--success-text)';
+  if (v >= 4.0) return 'var(--text)';
+  return 'var(--warning-text)';
+}
+
+function WorkloadPortalTooltip({ tooltip }) {
+  if (!tooltip) return null;
+  const { x, y, agent, open, date } = tooltip;
+  return createPortal(
+    <div style={{
+      position: 'fixed', left: x + 14, top: y - 14,
+      zIndex: 9999, pointerEvents: 'none',
+      ...CARD, padding: '10px 14px', boxShadow: 'var(--shadow-md)', fontFamily: SFT, minWidth: 180,
+    }}>
+      {date && <p style={{ color: 'var(--text-weak)', margin: '0 0 6px', fontSize: 11 }}>{date}</p>}
+      <p style={{ color: open >= WL_THRESHOLD ? 'var(--danger-text)' : 'var(--text)', margin: '0 0 8px', fontWeight: 600, fontSize: 13 }}>
+        {open} open
       </p>
-    </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>Resolved (wk)</span>
+          <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 500 }}>{agent.resolvedThisWeek}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>Avg resolution</span>
+          <span style={{ fontSize: 11, color: 'var(--text)', fontWeight: 500 }}>{agent.avgResolution}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>SLA health</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: slaColor(agent.slaHealth) }}>{agent.slaHealth}%</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-weak)' }}>CSAT</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: csatColor(agent.csat) }}>{agent.csat.toFixed(1)}</span>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -665,6 +698,7 @@ function TeamKpiCard({ label, value }) {
         background: 'var(--background-weak)',
         borderRadius: 10,
         padding: '18px 20px',
+        border: '1px solid var(--border)',
         boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
       }}>
@@ -722,6 +756,7 @@ function AgentDropdown({ agents, selectedAgent, onChange }) {
 
 function TeamTab() {
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
   const { dates, agents, summary, todayIndex } = TEAM_DATA;
   const todayX = todayIndex * PX_PER_DAY;
   const scrollRef = useRef(null);
@@ -749,6 +784,8 @@ function TeamTab() {
       ];
 
   return (
+    <>
+    <WorkloadPortalTooltip tooltip={tooltip} />
     <div>
       {/* Toolbar */}
       <div style={{ marginBottom: 12 }}>
@@ -836,35 +873,34 @@ function TeamTab() {
                 overflow: 'hidden',
               }}>
                 <AreaChart
-                  data={agent.daily.map((v, idx) => ({
-                    idx,
-                    base: v,
-                    over: v > WL_THRESHOLD ? v : null,
-                  }))}
+                  data={agent.daily.map((v, idx) => ({ idx, base: v, over: v > WL_THRESHOLD ? v : null }))}
                   width={CHART_W}
                   height={chartHeight}
                   margin={{ top: 8, right: 0, bottom: 8, left: 0 }}
                   syncId="wl"
+                  onMouseMove={(data, event) => {
+                    if (data.activePayload?.length && event) {
+                      const base = data.activePayload.find(p => p.dataKey === 'base');
+                      const idx = Math.round(Number(data.activeLabel));
+                      setTooltip({ x: event.clientX, y: event.clientY, agent, open: base?.value ?? 0, date: dates?.[idx] ?? '' });
+                    }
+                  }}
+                  onMouseLeave={() => setTooltip(null)}
                 >
                   <YAxis domain={[0, CAPACITY]} hide />
                   <XAxis dataKey="idx" type="number" domain={[0, N_DAYS - 1]} hide />
-                  {/* Grey base — full data */}
                   <Area
                     type="monotone" dataKey="base" name={agent.name}
                     stroke="var(--chart-neutral)" fill="var(--chart-neutral)" fillOpacity={0.15}
                     strokeWidth={1.5} dot={false}
                     activeDot={{ r: 3, fill: 'var(--chart-neutral)', strokeWidth: 0 }}
                   />
-                  {/* Red overload — full bar from bottom on over-capacity days */}
                   <Area
                     type="monotone" dataKey="over"
                     stroke="var(--chart-danger)" fill="var(--chart-danger)" fillOpacity={0.3}
-                    strokeWidth={1.5} dot={false} connectNulls={false}
-                    activeDot={false}
+                    strokeWidth={1.5} dot={false} connectNulls={false} activeDot={false}
                   />
-                  <RechartsTooltip
-                    content={(props) => <WorkloadTooltip {...props} dates={dates} />}
-                  />
+                  <RechartsTooltip content={() => null} />
                 </AreaChart>
               </div>
             ))}
@@ -874,6 +910,7 @@ function TeamTab() {
       </div>
 
     </div>
+    </>
   );
 }
 

@@ -2,9 +2,9 @@ import Modal, { ModalButton } from './ui/Modal';
 
 function CheckCircleIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <circle cx="7" cy="7" r="6.5" stroke="#16A34A" />
-      <path d="M4 7l2 2 4-4" stroke="#16A34A" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: 'var(--success-text)' }}>
+      <circle cx="7" cy="7" r="6.5" stroke="currentColor" />
+      <path d="M4 7l2 2 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -38,9 +38,9 @@ export default function CloseAndMoveModal({ open, ticket, onClose, onConfirm }) 
       </div>
 
       {/* Description */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', background: '#F0FDF4', borderRadius: 8, border: '1px solid #BBF7D0' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', background: 'var(--success-background)', borderRadius: 8, border: '1px solid var(--success-background-strong)' }}>
         <CheckCircleIcon />
-        <p style={{ fontSize: 13, color: '#15803D', margin: 0, lineHeight: '20px' }}>
+        <p style={{ fontSize: 13, color: 'var(--success-text)', margin: 0, lineHeight: '20px' }}>
           This ticket will be marked as <strong>Resolved</strong>. A new task will be created in the{' '}
           <strong>IT Escalations</strong> project so it can be tracked to completion by your team.
         </p>
