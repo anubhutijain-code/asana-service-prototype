@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Avatar from './ui/Avatar';
-import { KB_ARTICLES, KB_PROJECTS, formatDate } from '../data/knowledgeBase';
+import { KB_ARTICLES, KB_DRAFTS, KB_PROJECTS, formatDate } from '../data/knowledgeBase';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const SFD = '"SF Pro Display", "SF Pro Text", -apple-system, sans-serif';
@@ -221,18 +221,22 @@ export default function ArticleDetailView({ role }) {
   const navigate = useNavigate();
 
   const article = KB_ARTICLES.find(a => a.id === articleId && a.projectId === projectId);
+  const draft = !article ? KB_DRAFTS.find(d => d.id === articleId && d.projectId === projectId) : null;
+  const doc = article ?? (draft ? { ...draft, status: 'Draft', author: 'AI Generated', updatedAt: draft.generatedAt?.slice(0, 10) } : null);
   const project = KB_PROJECTS.find(p => p.id === projectId);
 
   const [starred, setStarred] = useState(false);
+  const [published, setPublished] = useState(false);
   const isAdmin = role === 'admin' || role === 'admin2';
-  const hasContent = article?.content?.length > 0;
+  const hasContent = doc?.content?.length > 0;
+  const isDraft = !!draft && !published;
 
   // Fake collaborators using article author + a couple extras
-  const collaborators = article
-    ? [article.author, 'Sarah Lin', 'James Carter'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3)
+  const collaborators = doc
+    ? [doc.author, 'Sarah Lin', 'James Carter'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3)
     : [];
 
-  if (!article) {
+  if (!doc) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8 }}>
         <p style={{ fontFamily: SFT, fontSize: 14, color: 'var(--text-weak)' }}>Article not found.</p>
@@ -279,8 +283,18 @@ export default function ArticleDetailView({ role }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
           <DocIcon />
           <span style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {article.title}
+            {doc.title}
           </span>
+          {isDraft && (
+            <span style={{ flexShrink: 0, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 600, fontFamily: SFT, background: 'var(--selected-background)', color: 'var(--selected-text)' }}>
+              AI Draft
+            </span>
+          )}
+          {published && (
+            <span style={{ flexShrink: 0, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 600, fontFamily: SFT, background: 'var(--success-background)', color: 'var(--success-text)' }}>
+              Published
+            </span>
+          )}
         </div>
 
         {/* Right actions */}
@@ -294,52 +308,73 @@ export default function ArticleDetailView({ role }) {
             ))}
           </div>
 
-          {/* Share */}
-          <button
-            type="button"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              height: 28, padding: '0 10px', borderRadius: 6,
-              border: '1px solid var(--border)', background: 'transparent',
-              fontFamily: SFT, fontSize: 12, fontWeight: 500, color: 'var(--text)',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent'; }}
-          >
-            <LockIcon />
-            Share
-          </button>
+          {isDraft ? (
+            /* Draft mode — publish CTA */
+            <button
+              type="button"
+              onClick={() => setPublished(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                height: 28, padding: '0 12px', borderRadius: 6,
+                border: 'none', background: 'var(--selected-background-strong)',
+                fontFamily: SFT, fontSize: 12, fontWeight: 500, color: '#fff',
+                cursor: 'pointer', transition: 'opacity 0.1s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              Publish article
+            </button>
+          ) : (
+            <>
+              {/* Share */}
+              <button
+                type="button"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  height: 28, padding: '0 10px', borderRadius: 6,
+                  border: '1px solid var(--border)', background: 'transparent',
+                  fontFamily: SFT, fontSize: 12, fontWeight: 500, color: 'var(--text)',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent'; }}
+              >
+                <LockIcon />
+                Share
+              </button>
 
-          {/* Star */}
-          <button
-            type="button"
-            onClick={() => setStarred(s => !s)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 28, height: 28, borderRadius: 6, border: 'none',
-              background: 'transparent', cursor: 'pointer',
-              color: starred ? '#f59e0b' : 'var(--text-disabled)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-          >
-            <StarIcon filled={starred} />
-          </button>
+              {/* Star */}
+              <button
+                type="button"
+                onClick={() => setStarred(s => !s)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: 6, border: 'none',
+                  background: 'transparent', cursor: 'pointer',
+                  color: starred ? '#f59e0b' : 'var(--text-disabled)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                <StarIcon filled={starred} />
+              </button>
 
-          {/* More */}
-          <button
-            type="button"
-            style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 28, height: 28, borderRadius: 6, border: 'none',
-              background: 'transparent', cursor: 'pointer', color: 'var(--text-disabled)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}
-          >
-            <MoreIcon />
-          </button>
+              {/* More */}
+              <button
+                type="button"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: 6, border: 'none',
+                  background: 'transparent', cursor: 'pointer', color: 'var(--text-disabled)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}
+              >
+                <MoreIcon />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -448,22 +483,22 @@ export default function ArticleDetailView({ role }) {
 
           {/* Article meta */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-            <Avatar name={article.author} size={20} />
-            <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)' }}>{article.author}</span>
+            <Avatar name={doc.author} size={20} />
+            <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)' }}>{doc.author}</span>
             <span style={{ color: 'var(--border-strong)', fontSize: 12 }}>·</span>
             <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)' }}>
-              Updated {formatDate(article.updatedAt)}
+              Updated {formatDate(doc.updatedAt)}
             </span>
           </div>
 
           {/* Title */}
           <h1 style={{ fontFamily: SFD, fontSize: 30, fontWeight: 700, color: 'var(--text)', margin: '0 0 32px', lineHeight: '38px' }}>
-            {article.title}
+            {doc.title}
           </h1>
 
           {/* Content */}
           {hasContent ? (
-            <ContentBlocks blocks={article.content} />
+            <ContentBlocks blocks={doc.content} />
           ) : (
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

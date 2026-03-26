@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Avatar from './ui/Avatar';
 import RightPanelOverlay from './RightPanelOverlay';
-import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, KB_DRAFTS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
 import { SFT, LIGA } from '../constants/typography';
 
@@ -516,7 +516,7 @@ function BulbIcon() {
   );
 }
 
-function LearningCard({ learning, linkedArticle, onAction }) {
+function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
   const badge = LEARNING_STATUS_BADGE[learning.status];
   const ticketCount = learning.sourceTickets.length;
   const isUpdate = learning.type === 'update-article';
@@ -595,10 +595,10 @@ function LearningCard({ learning, linkedArticle, onAction }) {
         </svg>
         <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From</span>
         {learning.sourceTickets.slice(0, 2).map(t => (
-          <span key={t.id} style={{
+          <span key={t.id} onClick={() => onTicketClick?.(t.id)} title={t.title} style={{
             fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)',
             background: 'var(--selected-background)', borderRadius: 4, padding: '1px 6px',
-            cursor: 'pointer', whiteSpace: 'nowrap',
+            cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textDecorationColor: 'var(--selected-text)',
           }}>
             {t.id}
           </span>
@@ -650,44 +650,252 @@ function LearningCard({ learning, linkedArticle, onAction }) {
   );
 }
 
+// ─── Confidence badge ─────────────────────────────────────────────────────────
+const CONFIDENCE_STYLE = {
+  high:   { bg: 'var(--success-background)',  color: 'var(--success-text)',  label: 'High confidence'   },
+  medium: { bg: 'var(--warning-background)',  color: 'var(--warning-text)',  label: 'Medium confidence' },
+  low:    { bg: 'var(--danger-background)',   color: 'var(--danger-text)',   label: 'Low confidence'    },
+};
+
+const DRAFT_STATUS_STYLE = {
+  draft:           { bg: 'var(--selected-background)', color: 'var(--selected-text)',  label: 'AI Draft'         },
+  agent_verified:  { bg: 'var(--success-background)',  color: 'var(--success-text)',   label: 'Agent verified'   },
+};
+
+function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" aria-hidden="true">
+      <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+    </svg>
+  );
+}
+
+function DraftCard({ draft, onAction, onTicketClick }) {
+  const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState(draft.status);
+  const conf = CONFIDENCE_STYLE[draft.confidence];
+  const draftBadge = DRAFT_STATUS_STYLE[status];
+  const previewPara = draft.content.find(c => c.type === 'p')?.text ?? '';
+
+  function handleReviewAndPublish() {
+    navigate(`/knowledge-base/${draft.projectId}/${draft.id}`);
+  }
+  function handleDismiss() { setStatus('dismissed'); onAction(draft.id, 'dismiss'); }
+
+  if (status === 'dismissed') return null;
+
+  return (
+    <div style={{
+      background: 'var(--background-weak)',
+      border: '1px solid var(--border)',
+      borderRadius: 10,
+      overflow: 'hidden',
+    }}>
+      {/* Header bar — AI draft indicator */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '8px 16px',
+        background: 'var(--selected-background)',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <span style={{ color: 'var(--selected-text)', display: 'flex', alignItems: 'center' }}><SparkleIcon /></span>
+        <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', letterSpacing: '-0.1px' }}>
+          AI generated draft
+        </span>
+        <span style={{ marginLeft: 'auto', fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)', opacity: 0.7 }}>
+          {formatRelativeTime(draft.generatedAt)}
+        </span>
+      </div>
+
+      <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* Title + badges */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+          <p style={{ fontFamily: SFT, fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, lineHeight: '20px', flex: 1 }}>
+            {draft.title}
+          </p>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <span style={{ padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: conf.bg, color: conf.color }}>
+              {conf.label}
+            </span>
+            {draftBadge && (
+              <span style={{ padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: draftBadge.bg, color: draftBadge.color }}>
+                {draftBadge.label}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Trigger reason */}
+        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>
+          {draft.triggerReason}
+        </p>
+
+        {/* Source tickets */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From</span>
+          {draft.sourceTickets.map(t => (
+            <span key={t.id} onClick={() => onTicketClick?.(t.id)} title={t.title} style={{
+              fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)',
+              background: 'var(--selected-background)', borderRadius: 4, padding: '1px 6px',
+              cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textDecorationColor: 'var(--selected-text)',
+            }}>
+              {t.id}
+            </span>
+          ))}
+        </div>
+
+        {/* Article preview */}
+        <div style={{
+          background: 'var(--background-medium)', borderRadius: 8, padding: '12px 14px',
+          cursor: 'pointer', border: '1px solid var(--border)',
+        }} onClick={() => setExpanded(e => !e)}>
+          {/* Preview section header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 10 : 0 }}>
+            <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-weak)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Draft preview</span>
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="var(--text-weak)" strokeWidth="1.6" strokeLinecap="round"
+              style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+              <path d="M2 4l4 4 4-4"/>
+            </svg>
+          </div>
+          {!expanded && (
+            <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: '6px 0 0', lineHeight: '18px',
+              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {previewPara}
+            </p>
+          )}
+          {expanded && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {draft.content.map((block, i) => {
+                if (block.type === 'h2') return (
+                  <p key={i} style={{ fontFamily: SFT, fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: '4px 0 0', lineHeight: '18px' }}>{block.text}</p>
+                );
+                if (block.type === 'p') return (
+                  <p key={i} style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>{block.text}</p>
+                );
+                if (block.type === 'li') return (
+                  <p key={i} style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: '0 0 0 12px', lineHeight: '18px' }}>· {block.text}</p>
+                );
+                if (block.type === 'link') return (
+                  <span key={i} style={{ fontFamily: SFT, fontSize: 12, color: 'var(--selected-text)', cursor: 'pointer' }}>↗ {block.text}</span>
+                );
+                return null;
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
+          <button type="button" onClick={handleReviewAndPublish}
+            style={{ height: 30, padding: '0 14px', fontSize: 12, fontFamily: SFT, fontWeight: 500, borderRadius: 6, border: 'none', cursor: 'pointer', background: 'var(--selected-background-strong)', color: '#fff', transition: 'opacity 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            Review &amp; publish
+          </button>
+          <button type="button" onClick={handleDismiss}
+            style={{ height: 30, padding: '0 4px', fontSize: 12, fontFamily: SFT, fontWeight: 400, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-disabled)', transition: 'color 0.1s', marginLeft: 2 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-weak)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LearningsTab({ projectId, allArticles }) {
   const allLearnings = KB_LEARNINGS.filter(l => l.projectId === projectId);
+  const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId);
   const articleMap = Object.fromEntries(allArticles.map(a => [a.id, a]));
-  const [statuses, setStatuses] = useState(() => {
+  const [activeSection, setActiveSection] = useState('drafts');
+  const navigate = useNavigate();
+
+  function handleTicketClick(ticketId) {
+    navigate(`/tickets/${ticketId}`);
+  }
+  const [draftActions, setDraftActions] = useState({});
+  const [learningStatuses, setLearningStatuses] = useState(() => {
     const s = {};
     allLearnings.forEach(l => { s[l.id] = l.status; });
     return s;
   });
 
-  function handleAction(id, action) {
-    if (action === 'dismiss') {
-      setStatuses(prev => ({ ...prev, [id]: 'dismissed' }));
-    } else if (action === 'create') {
-      setStatuses(prev => ({ ...prev, [id]: 'reviewed' }));
-    }
+  const visibleDrafts = allDrafts.filter(d => draftActions[d.id] !== 'dismiss');
+  const draftCount = visibleDrafts.length;
+  const gapCount = allLearnings.filter(l => (learningStatuses[l.id] ?? l.status) === 'new').length;
+
+  function handleDraftAction(id, action) { setDraftActions(prev => ({ ...prev, [id]: action })); }
+  function handleLearningAction(id, action) {
+    if (action === 'dismiss') setLearningStatuses(prev => ({ ...prev, [id]: 'dismissed' }));
+    else if (action === 'create') setLearningStatuses(prev => ({ ...prev, [id]: 'reviewed' }));
   }
 
-  if (allLearnings.length === 0) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 240, gap: 10, color: 'var(--text-disabled)' }}>
-        <BulbIcon />
-        <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No learnings yet — they appear as AI detects knowledge gaps from tickets.</p>
-      </div>
-    );
-  }
+  const sections = [
+    { id: 'drafts', label: 'AI Drafts', count: draftCount },
+    { id: 'gaps',   label: 'Gaps',      count: gapCount   },
+  ];
 
   return (
     <div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {allLearnings.map(l => (
-          <LearningCard
-            key={l.id}
-            learning={{ ...l, status: statuses[l.id] ?? l.status }}
-            linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
-            onAction={handleAction}
-          />
+      {/* Section toggle */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+        {sections.map(s => (
+          <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
+            style={{
+              height: 28, padding: '0 12px', borderRadius: 6, fontFamily: SFT, fontSize: 12, fontWeight: 500,
+              cursor: 'pointer', border: activeSection === s.id ? 'none' : '1px solid var(--border)',
+              background: activeSection === s.id ? 'var(--background-medium)' : 'transparent',
+              color: activeSection === s.id ? 'var(--text)' : 'var(--text-weak)',
+              display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s',
+            }}
+          >
+            {s.label}
+            {s.count > 0 && (
+              <span style={{
+                background: s.id === 'drafts' ? 'var(--selected-background-strong)' : 'var(--background-medium)',
+                color: s.id === 'drafts' ? '#fff' : 'var(--text-weak)',
+                borderRadius: 8, fontSize: 10, fontWeight: 700, padding: '1px 5px', lineHeight: '14px',
+              }}>{s.count}</span>
+            )}
+          </button>
         ))}
       </div>
+
+      {activeSection === 'drafts' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {draftCount === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
+              <SparkleIcon />
+              <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No drafts yet — AI will generate articles as it detects repeated unresolved patterns.</p>
+            </div>
+          ) : visibleDrafts.map(d => (
+            <DraftCard key={d.id} draft={d} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
+          ))}
+        </div>
+      )}
+
+      {activeSection === 'gaps' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {allLearnings.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
+              <BulbIcon />
+              <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No gaps detected yet.</p>
+            </div>
+          ) : allLearnings.map(l => (
+            <LearningCard
+              key={l.id}
+              learning={{ ...l, status: learningStatuses[l.id] ?? l.status }}
+              linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
+              onAction={handleLearningAction}
+              onTicketClick={handleTicketClick}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -884,7 +1092,8 @@ export default function KnowledgeBaseView({ role }) {
 
   const project = KB_PROJECTS.find(p => p.id === projectId);
   const allArticles = KB_ARTICLES.filter(a => a.projectId === projectId);
-  const learningsCount = KB_LEARNINGS.filter(l => l.projectId === projectId && l.status === 'new').length;
+  const draftsCount = KB_DRAFTS.filter(d => d.projectId === projectId && d.status !== 'dismissed').length;
+  const learningsCount = draftsCount + KB_LEARNINGS.filter(l => l.projectId === projectId && l.status === 'new').length;
   const searchFiltered = search
     ? allArticles.filter(a => a.title.toLowerCase().includes(search.toLowerCase()))
     : allArticles;
