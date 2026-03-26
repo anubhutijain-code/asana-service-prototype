@@ -1,9 +1,9 @@
 // ─── ArticleDetailView — Asana Notes–style document viewer ───────────────────
 
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Avatar from './ui/Avatar';
-import { KB_ARTICLES, KB_DRAFTS, KB_PROJECTS, formatDate } from '../data/knowledgeBase';
+import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, KB_PROJECTS, formatDate, formatRelativeTime } from '../data/knowledgeBase';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const SFD = '"SF Pro Display", "SF Pro Text", -apple-system, sans-serif';
@@ -216,20 +216,43 @@ function ContentBlocks({ blocks }) {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
+function SparkleIcon({ size = 13 }) {
+  return (
+    <svg viewBox="0 0 12 12" width={size} height={size} fill="currentColor" aria-hidden="true">
+      <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+    </svg>
+  );
+}
+
+function TicketIcon() {
+  return (
+    <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+      <rect x="1" y="1" width="12" height="12" rx="2"/><path d="M4 7h6M4 4.5h6M4 9.5h4"/>
+    </svg>
+  );
+}
+
 export default function ArticleDetailView({ role }) {
   const { projectId, articleId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const article = KB_ARTICLES.find(a => a.id === articleId && a.projectId === projectId);
   const draft = !article ? KB_DRAFTS.find(d => d.id === articleId && d.projectId === projectId) : null;
   const doc = article ?? (draft ? { ...draft, status: 'Draft', author: 'AI Generated', updatedAt: draft.generatedAt?.slice(0, 10) } : null);
   const project = KB_PROJECTS.find(p => p.id === projectId);
 
+  // Suggestion mode — when navigated from a gap card
+  const gapId = searchParams.get('gap');
+  const gap = gapId ? KB_LEARNINGS.find(l => l.id === gapId) : null;
+
   const [starred, setStarred] = useState(false);
   const [published, setPublished] = useState(false);
+  const [suggestionAccepted, setSuggestionAccepted] = useState(null); // null | 'accepted' | 'dismissed'
   const isAdmin = role === 'admin' || role === 'admin2';
   const hasContent = doc?.content?.length > 0;
   const isDraft = !!draft && !published;
+  const hasSuggestion = !!gap && !!gap.suggestedBlocks && suggestionAccepted === null;
 
   // Fake collaborators using article author + a couple extras
   const collaborators = doc
@@ -325,6 +348,36 @@ export default function ArticleDetailView({ role }) {
             >
               Publish article
             </button>
+          ) : hasSuggestion || suggestionAccepted === 'accepted' ? (
+            /* Suggestion mode — save / publish changes */
+            <>
+              <button
+                type="button"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 10px',
+                  borderRadius: 6, border: '1px solid var(--border)', background: 'transparent',
+                  fontFamily: SFT, fontSize: 12, fontWeight: 500, color: 'var(--text)', cursor: 'pointer',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                Save as draft
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSuggestionAccepted('accepted'); }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 12px',
+                  borderRadius: 6, border: 'none', background: 'var(--selected-background-strong)',
+                  fontFamily: SFT, fontSize: 12, fontWeight: 500, color: '#fff',
+                  cursor: 'pointer', transition: 'opacity 0.1s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Publish changes
+              </button>
+            </>
           ) : (
             <>
               {/* Share */}
@@ -477,43 +530,183 @@ export default function ArticleDetailView({ role }) {
         </div>
       )}
 
-      {/* ── Content area ───────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px 60px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', paddingTop: 48 }}>
+      {/* ── Content + right panel ──────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-          {/* Article meta */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-            <Avatar name={doc.author} size={20} />
-            <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)' }}>{doc.author}</span>
-            <span style={{ color: 'var(--border-strong)', fontSize: 12 }}>·</span>
-            <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)' }}>
-              Updated {formatDate(doc.updatedAt)}
-            </span>
-          </div>
+        {/* Main content scroll */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px 60px' }}>
+          <div style={{ maxWidth: 680, margin: '0 auto', paddingTop: 48 }}>
 
-          {/* Title */}
-          <h1 style={{ fontFamily: SFD, fontSize: 30, fontWeight: 700, color: 'var(--text)', margin: '0 0 32px', lineHeight: '38px' }}>
-            {doc.title}
-          </h1>
-
-          {/* Content */}
-          {hasContent ? (
-            <ContentBlocks blocks={doc.content} />
-          ) : (
-            <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              padding: '60px 0', gap: 8,
-            }}>
-              <svg viewBox="0 0 48 48" width="40" height="40" fill="none">
-                <rect x="8" y="4" width="28" height="40" rx="4" fill="var(--background-strong)" stroke="var(--border)" strokeWidth="1.5"/>
-                <path d="M14 14h16M14 20h16M14 26h10" stroke="var(--border-strong)" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <p style={{ fontFamily: SFT, fontSize: 14, color: 'var(--text-disabled)', margin: 0 }}>
-                {isAdmin ? 'Start writing to add content.' : 'No content yet.'}
-              </p>
+            {/* Article meta */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <Avatar name={doc.author} size={20} />
+              <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)' }}>{doc.author}</span>
+              <span style={{ color: 'var(--border-strong)', fontSize: 12 }}>·</span>
+              <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)' }}>
+                Updated {formatDate(doc.updatedAt)}
+              </span>
             </div>
-          )}
+
+            {/* Title */}
+            <h1 style={{ fontFamily: SFD, fontSize: 30, fontWeight: 700, color: 'var(--text)', margin: '0 0 32px', lineHeight: '38px' }}>
+              {doc.title}
+            </h1>
+
+            {/* Content */}
+            {hasContent ? (
+              <ContentBlocks blocks={doc.content} />
+            ) : (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '60px 0', gap: 8,
+              }}>
+                <svg viewBox="0 0 48 48" width="40" height="40" fill="none">
+                  <rect x="8" y="4" width="28" height="40" rx="4" fill="var(--background-strong)" stroke="var(--border)" strokeWidth="1.5"/>
+                  <path d="M14 14h16M14 20h16M14 26h10" stroke="var(--border-strong)" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <p style={{ fontFamily: SFT, fontSize: 14, color: 'var(--text-disabled)', margin: 0 }}>
+                  {isAdmin ? 'Start writing to add content.' : 'No content yet.'}
+                </p>
+              </div>
+            )}
+
+            {/* AI-suggested addition — shown highlighted until accepted or dismissed */}
+            {hasSuggestion && gap.suggestedBlocks && (
+              <div style={{ marginTop: 32, position: 'relative' }}>
+                <div style={{
+                  borderLeft: '3px solid #4AB86E',
+                  background: 'rgba(74, 184, 110, 0.07)',
+                  borderRadius: '0 8px 8px 0',
+                  padding: '16px 20px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                    <span style={{ color: '#4AB86E', display: 'flex' }}><SparkleIcon size={11} /></span>
+                    <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: '#4AB86E', letterSpacing: '0.1px' }}>
+                      AI suggested addition
+                    </span>
+                  </div>
+                  <ContentBlocks blocks={gap.suggestedBlocks} />
+                </div>
+              </div>
+            )}
+
+            {/* Accepted suggestion renders inline as normal content */}
+            {suggestionAccepted === 'accepted' && gap?.suggestedBlocks && (
+              <div style={{ marginTop: 32 }}>
+                <ContentBlocks blocks={gap.suggestedBlocks} />
+              </div>
+            )}
+
+          </div>
         </div>
+
+        {/* ── Right suggestion panel ────────────────────────────────────── */}
+        {(hasSuggestion) && (
+          <div style={{
+            width: 272, flexShrink: 0,
+            borderLeft: '1px solid var(--border)',
+            background: 'var(--background-weak)',
+            display: 'flex', flexDirection: 'column',
+            overflowY: 'auto',
+          }}>
+            {/* Panel header */}
+            <div style={{
+              padding: '12px 16px', borderBottom: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <span style={{ color: 'var(--selected-text)', display: 'flex' }}><SparkleIcon /></span>
+              <span style={{ fontFamily: SFT, fontSize: 13, fontWeight: 600, color: 'var(--text)', flex: 1 }}>1 suggestion</span>
+              <button
+                type="button"
+                onClick={() => setSuggestionAccepted('dismissed')}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-disabled)', borderRadius: 4 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}
+                title="Close panel"
+              >
+                <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
+              </button>
+            </div>
+
+            {/* Suggestion card */}
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Meta */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: 'var(--text-disabled)', display: 'flex' }}><TicketIcon /></span>
+                <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>
+                  {formatRelativeTime(gap.detectedAt)} · {gap.sourceTickets.length} ticket{gap.sourceTickets.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Gap description */}
+              <p style={{ fontFamily: SFT, fontSize: 13, color: 'var(--text)', lineHeight: '20px', margin: 0 }}>
+                {gap.gap}
+              </p>
+
+              {/* Suggested section title */}
+              <div style={{ padding: '8px 10px', background: 'rgba(74, 184, 110, 0.1)', borderRadius: 6, border: '1px solid rgba(74, 184, 110, 0.2)' }}>
+                <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: '#4AB86E', margin: '0 0 3px' }}>AI proposes</p>
+                <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>{gap.suggestion}</p>
+              </div>
+
+              {/* Source tickets */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From tickets</span>
+                {gap.sourceTickets.map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => navigate(`/tickets/${t.id}`)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '5px 8px', borderRadius: 5, border: '1px solid var(--border)',
+                      background: 'var(--background-weak)', cursor: 'pointer',
+                      textAlign: 'left', transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'var(--background-weak)'}
+                  >
+                    <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', flexShrink: 0 }}>{t.id}</span>
+                    <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-weak)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Accept / Dismiss */}
+              <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => setSuggestionAccepted('accepted')}
+                  style={{
+                    flex: 1, height: 32, borderRadius: 6, border: 'none',
+                    background: '#4AB86E', color: '#fff',
+                    fontFamily: SFT, fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                    transition: 'opacity 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  Accept
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSuggestionAccepted('dismissed')}
+                  style={{
+                    flex: 1, height: 32, borderRadius: 6,
+                    border: '1px solid var(--border)', background: 'transparent',
+                    fontFamily: SFT, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', cursor: 'pointer',
+                    transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
     </div>

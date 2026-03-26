@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Pill from './Pill';
 import { AI_INTENT, AI_KB_REFS, AI_SUGGESTED_REPLY, AI_CHAT_RESPONSES } from '../data/aiAssist';
-import { KB_ARTICLES } from '../data/knowledgeBase';
+import { KB_ARTICLES, KB_DRAFTS, TICKET_DRAFT_MAP } from '../data/knowledgeBase';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -643,6 +643,83 @@ function ComposeBar({
   );
 }
 
+// ─── KB Article Panel (with "Did this help?" + draft callout) ────────────────
+
+function KBArticlePanel({ articles, ticketId }) {
+  const [feedback, setFeedback] = useState({}); // articleId → 'yes' | 'no'
+  const draftId = ticketId ? TICKET_DRAFT_MAP[ticketId] : null;
+  const draft = draftId ? KB_DRAFTS.find(d => d.id === draftId) : null;
+
+  return (
+    <div>
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 8 }}>
+        Knowledge base
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {articles.map(article => {
+          const fb = feedback[article.id];
+          return (
+            <div key={article.id} style={{ borderRadius: 6, background: 'var(--background-medium)', overflow: 'hidden' }}>
+              <div className="flex items-center gap-2" style={{ padding: '7px 10px' }}>
+                <DocIcon />
+                <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {article.title}
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--icon)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {article.category}
+                </span>
+              </div>
+              {/* Did this help? */}
+              {!fb ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px 7px', borderTop: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: 'inherit' }}>Did this solve it?</span>
+                  {['yes', 'no'].map(val => (
+                    <button key={val} type="button"
+                      onClick={() => setFeedback(prev => ({ ...prev, [article.id]: val }))}
+                      style={{ height: 22, padding: '0 8px', fontSize: 11, borderRadius: 4, border: '1px solid var(--border)', cursor: 'pointer', background: 'var(--background-weak)', color: 'var(--text-weak)', transition: 'all 0.1s' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+                    >
+                      {val === 'yes' ? '👍 Yes' : '👎 No'}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '5px 10px 7px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, color: fb === 'yes' ? 'var(--success-text)' : 'var(--text-disabled)' }}>
+                    {fb === 'yes' ? '✓ Marked as helpful' : '✗ Marked as not helpful — logged as gap signal'}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* KB Draft callout — this ticket contributed to a draft */}
+      {draft && (
+        <div style={{
+          marginTop: 10, borderRadius: 8,
+          border: '1px solid var(--selected-background-strong)',
+          background: 'var(--selected-background)',
+          padding: '10px 12px',
+          display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg viewBox="0 0 12 12" width="11" height="11" fill="var(--selected-background-strong)" aria-hidden="true">
+              <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)' }}>AI drafted a KB article from this resolution</span>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--selected-text)', margin: 0, lineHeight: '17px', opacity: 0.85 }}>
+            "{draft.title}" — pending review in Knowledge Base
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── AI Agent Panel ───────────────────────────────────────────────────────────
 
 function AIAgentPanel({ ticket }) {
@@ -719,28 +796,7 @@ function AIAgentPanel({ ticket }) {
         )}
 
         {kbArticles.length > 0 && (
-          <div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 8 }}>
-              Knowledge base
-            </span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {kbArticles.map(article => (
-                <div
-                  key={article.id}
-                  className="flex items-center gap-2"
-                  style={{ padding: '7px 10px', borderRadius: 6, background: 'var(--background-medium)', cursor: 'default' }}
-                >
-                  <DocIcon />
-                  <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {article.title}
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--icon)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    {article.category}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <KBArticlePanel articles={kbArticles} ticketId={ticket?.id} />
         )}
 
         {aiMessages.length > 0 && (

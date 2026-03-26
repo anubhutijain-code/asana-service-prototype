@@ -176,6 +176,14 @@ export const KB_LEARNINGS = [
     category: 'Network',
     sourceTickets: [{ id: 'TICKET-38', title: 'VPN Drops When Connecting to AWS Resources' }],
     detectedAt: '2026-03-02T08:30:00Z',
+    suggestedBlocks: [
+      { type: 'h2', text: 'AWS Workspaces: Split-Tunnel Configuration' },
+      { type: 'p', text: 'If you use AWS Workspaces, split-tunnel mode may be required to route traffic correctly. By default, all traffic is sent through the VPN (full-tunnel), which can degrade performance for AWS-hosted applications.' },
+      { type: 'li', text: 'Open the GlobalProtect client and go to Settings → Advanced.' },
+      { type: 'li', text: 'Check "Enable split tunneling" and save.' },
+      { type: 'li', text: 'Disconnect and reconnect to the VPN for the change to take effect.' },
+      { type: 'p', text: 'If the option is greyed out, your GlobalProtect profile may need to be updated by an IT admin — submit a ticket referencing this guide.' },
+    ],
   },
   {
     id: 'learn-it-003', projectId: 'it-kb', status: 'new',
@@ -195,6 +203,15 @@ export const KB_LEARNINGS = [
     category: 'Hardware',
     sourceTickets: [{ id: 'TICKET-19', title: 'Can\'t Add London Office Printer (Ricoh MP C4504)' }],
     detectedAt: '2026-02-20T11:15:00Z',
+    suggestedBlocks: [
+      { type: 'h2', text: 'Ricoh MP C4504 — London Office' },
+      { type: 'p', text: 'The London office uses the Ricoh MP C4504 multifunction printer. Follow these steps to add it to your Mac or Windows device.' },
+      { type: 'li', text: 'Mac: Go to System Settings → Printers & Scanners → click +.' },
+      { type: 'li', text: 'Select "Add Printer or Scanner" and wait for the Ricoh MP C4504 to appear.' },
+      { type: 'li', text: 'If it doesn\'t appear automatically, click "IP" and enter 10.8.4.22 as the address.' },
+      { type: 'li', text: 'Choose "PCL 6" from the driver dropdown, then click Add.' },
+      { type: 'li', text: 'Windows: Open Devices → Add a printer → enter \\\\print-lon\\ricoh-c4504.' },
+    ],
   },
   {
     id: 'learn-it-005', projectId: 'it-kb', status: 'dismissed',
@@ -225,6 +242,14 @@ export const KB_LEARNINGS = [
     category: 'Finance',
     sourceTickets: [{ id: 'TICKET-73', title: 'Can I Expense a Standing Desk for Home Office?' }, { id: 'TICKET-74', title: 'Reimbursement Limit for Monitor Purchase' }],
     detectedAt: '2026-02-27T12:00:00Z',
+    suggestedBlocks: [
+      { type: 'h2', text: 'Home Office Equipment Allowance' },
+      { type: 'p', text: 'Full-time remote employees are eligible for a one-time home office equipment allowance of up to $500 per calendar year.' },
+      { type: 'li', text: 'Eligible: monitors, keyboards, mice, webcams, ergonomic chairs.' },
+      { type: 'li', text: 'Desks and standing desks: up to $300 with manager approval.' },
+      { type: 'li', text: 'Submit receipts via Expensify within 30 days of purchase using category "Home Office."' },
+      { type: 'p', text: 'The allowance does not roll over — unused balance resets January 1 each year.' },
+    ],
   },
   {
     id: 'learn-hr-003', projectId: 'hr-kb', status: 'reviewed',
@@ -235,6 +260,13 @@ export const KB_LEARNINGS = [
     category: 'Benefits',
     sourceTickets: [{ id: 'TICKET-49', title: 'Is My Dentist Still In-Network After Plan Change?' }],
     detectedAt: '2026-02-22T10:30:00Z',
+    suggestedBlocks: [
+      { type: 'h2', text: 'April 2026 Dental Network Change' },
+      { type: 'p', text: 'Effective April 1, 2026, Bright Smiles Dental Network replaces Delta Dental for in-network providers. Most previously in-network dentists have opted in, but verify yours before your next appointment.' },
+      { type: 'li', text: 'Search in-network providers at the Bright Smiles portal (link in benefits portal).' },
+      { type: 'li', text: 'Deductibles and out-of-pocket maximums reset on April 1 if you switch to a new provider.' },
+      { type: 'li', text: 'Contact HR Benefits at benefits@company.com with any questions.' },
+    ],
   },
 ];
 

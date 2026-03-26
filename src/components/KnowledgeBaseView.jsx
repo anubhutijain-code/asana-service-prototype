@@ -517,6 +517,7 @@ function BulbIcon() {
 }
 
 function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
+  const navigate = useNavigate();
   const badge = LEARNING_STATUS_BADGE[learning.status];
   const ticketCount = learning.sourceTickets.length;
   const isUpdate = learning.type === 'update-article';
@@ -613,7 +614,13 @@ function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
           <button
             type="button"
-            onClick={() => onAction(learning.id, 'create')}
+            onClick={() => {
+              if (isUpdate && linkedArticle) {
+                navigate(`/knowledge-base/${learning.projectId}/${learning.linkedArticleId}?gap=${learning.id}`);
+              } else {
+                onAction(learning.id, 'create');
+              }
+            }}
             style={{
               height: 30, padding: '0 12px', fontSize: 12, fontFamily: SFT, fontWeight: 500,
               borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer',
@@ -627,7 +634,7 @@ function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
               ? <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 6A5 5 0 1 1 3.5 10.3M1 9.5V6.5h3"/></svg>
               : <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M6 1v10M1 6h10"/></svg>
             }
-            {isUpdate ? 'Update article' : 'Create article'}
+            {isUpdate ? 'Review suggestion' : 'Create article'}
           </button>
           {learning.status === 'new' && (
             <button
@@ -672,7 +679,6 @@ function SparkleIcon() {
 
 function DraftCard({ draft, onAction, onTicketClick }) {
   const navigate = useNavigate();
-  const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(draft.status);
   const conf = CONFIDENCE_STYLE[draft.confidence];
   const draftBadge = DRAFT_STATUS_STYLE[status];
@@ -745,45 +751,11 @@ function DraftCard({ draft, onAction, onTicketClick }) {
           ))}
         </div>
 
-        {/* Article preview */}
-        <div style={{
-          background: 'var(--background-medium)', borderRadius: 8, padding: '12px 14px',
-          cursor: 'pointer', border: '1px solid var(--border)',
-        }} onClick={() => setExpanded(e => !e)}>
-          {/* Preview section header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 10 : 0 }}>
-            <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-weak)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Draft preview</span>
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="var(--text-weak)" strokeWidth="1.6" strokeLinecap="round"
-              style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
-              <path d="M2 4l4 4 4-4"/>
-            </svg>
-          </div>
-          {!expanded && (
-            <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: '6px 0 0', lineHeight: '18px',
-              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {previewPara}
-            </p>
-          )}
-          {expanded && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {draft.content.map((block, i) => {
-                if (block.type === 'h2') return (
-                  <p key={i} style={{ fontFamily: SFT, fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: '4px 0 0', lineHeight: '18px' }}>{block.text}</p>
-                );
-                if (block.type === 'p') return (
-                  <p key={i} style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>{block.text}</p>
-                );
-                if (block.type === 'li') return (
-                  <p key={i} style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: '0 0 0 12px', lineHeight: '18px' }}>· {block.text}</p>
-                );
-                if (block.type === 'link') return (
-                  <span key={i} style={{ fontFamily: SFT, fontSize: 12, color: 'var(--selected-text)', cursor: 'pointer' }}>↗ {block.text}</span>
-                );
-                return null;
-              })}
-            </div>
-          )}
-        </div>
+        {/* Article preview (collapsed) */}
+        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {previewPara}
+        </p>
 
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
@@ -811,12 +783,9 @@ function LearningsTab({ projectId, allArticles }) {
   const allLearnings = KB_LEARNINGS.filter(l => l.projectId === projectId);
   const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId);
   const articleMap = Object.fromEntries(allArticles.map(a => [a.id, a]));
-  const [activeSection, setActiveSection] = useState('drafts');
   const navigate = useNavigate();
 
-  function handleTicketClick(ticketId) {
-    navigate(`/tickets/${ticketId}`);
-  }
+  function handleTicketClick(ticketId) { navigate(`/tickets/${ticketId}`); }
   const [draftActions, setDraftActions] = useState({});
   const [learningStatuses, setLearningStatuses] = useState(() => {
     const s = {};
@@ -825,8 +794,6 @@ function LearningsTab({ projectId, allArticles }) {
   });
 
   const visibleDrafts = allDrafts.filter(d => draftActions[d.id] !== 'dismiss');
-  const draftCount = visibleDrafts.length;
-  const gapCount = allLearnings.filter(l => (learningStatuses[l.id] ?? l.status) === 'new').length;
 
   function handleDraftAction(id, action) { setDraftActions(prev => ({ ...prev, [id]: action })); }
   function handleLearningAction(id, action) {
@@ -834,67 +801,47 @@ function LearningsTab({ projectId, allArticles }) {
     else if (action === 'create') setLearningStatuses(prev => ({ ...prev, [id]: 'reviewed' }));
   }
 
-  const sections = [
-    { id: 'drafts', label: 'AI Drafts', count: draftCount },
-    { id: 'gaps',   label: 'Gaps',      count: gapCount   },
-  ];
+  const isEmpty = visibleDrafts.length === 0 && allLearnings.length === 0;
 
   return (
-    <div>
-      {/* Section toggle */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-        {sections.map(s => (
-          <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
-            style={{
-              height: 28, padding: '0 12px', borderRadius: 6, fontFamily: SFT, fontSize: 12, fontWeight: 500,
-              cursor: 'pointer', border: activeSection === s.id ? 'none' : '1px solid var(--border)',
-              background: activeSection === s.id ? 'var(--background-medium)' : 'transparent',
-              color: activeSection === s.id ? 'var(--text)' : 'var(--text-weak)',
-              display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s',
-            }}
-          >
-            {s.label}
-            {s.count > 0 && (
-              <span style={{
-                background: s.id === 'drafts' ? 'var(--selected-background-strong)' : 'var(--background-medium)',
-                color: s.id === 'drafts' ? '#fff' : 'var(--text-weak)',
-                borderRadius: 8, fontSize: 10, fontWeight: 700, padding: '1px 5px', lineHeight: '14px',
-              }}>{s.count}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {activeSection === 'drafts' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {draftCount === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
-              <SparkleIcon />
-              <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No drafts yet — AI will generate articles as it detects repeated unresolved patterns.</p>
-            </div>
-          ) : visibleDrafts.map(d => (
-            <DraftCard key={d.id} draft={d} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
-          ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {isEmpty ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
+          <SparkleIcon />
+          <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No AI suggestions yet.</p>
         </div>
-      )}
+      ) : (
+        <>
+          {/* AI Drafts — full articles ready for review */}
+          {visibleDrafts.length > 0 && (
+            <>
+              <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: '4px 0 0', letterSpacing: '0.2px' }}>
+                AI drafts · {visibleDrafts.length}
+              </p>
+              {visibleDrafts.map(d => (
+                <DraftCard key={d.id} draft={d} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
+              ))}
+            </>
+          )}
 
-      {activeSection === 'gaps' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {allLearnings.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
-              <BulbIcon />
-              <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No gaps detected yet.</p>
-            </div>
-          ) : allLearnings.map(l => (
-            <LearningCard
-              key={l.id}
-              learning={{ ...l, status: learningStatuses[l.id] ?? l.status }}
-              linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
-              onAction={handleLearningAction}
-              onTicketClick={handleTicketClick}
-            />
-          ))}
-        </div>
+          {/* Gaps — signals that need attention */}
+          {allLearnings.length > 0 && (
+            <>
+              <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: visibleDrafts.length > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
+                Gaps · {allLearnings.length}
+              </p>
+              {allLearnings.map(l => (
+                <LearningCard
+                  key={l.id}
+                  learning={{ ...l, status: learningStatuses[l.id] ?? l.status }}
+                  linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
+                  onAction={handleLearningAction}
+                  onTicketClick={handleTicketClick}
+                />
+              ))}
+            </>
+          )}
+        </>
       )}
     </div>
   );
