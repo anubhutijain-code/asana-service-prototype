@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Pill from './Pill';
 import { AI_INTENT, AI_KB_REFS, AI_SUGGESTED_REPLY, AI_CHAT_RESPONSES } from '../data/aiAssist';
-import { KB_ARTICLES, KB_DRAFTS, TICKET_DRAFT_MAP } from '../data/knowledgeBase';
+import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, TICKET_DRAFT_MAP, TICKET_LEARNING_MAP } from '../data/knowledgeBase';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -649,6 +649,8 @@ function KBArticlePanel({ articles, ticketId }) {
   const [feedback, setFeedback] = useState({}); // articleId → 'yes' | 'no'
   const draftId = ticketId ? TICKET_DRAFT_MAP[ticketId] : null;
   const draft = draftId ? KB_DRAFTS.find(d => d.id === draftId) : null;
+  const learningId = ticketId ? TICKET_LEARNING_MAP[ticketId] : null;
+  const learning = learningId ? KB_LEARNINGS.find(l => l.id === learningId) : null;
 
   return (
     <div>
@@ -713,6 +715,27 @@ function KBArticlePanel({ articles, ticketId }) {
           </div>
           <p style={{ fontSize: 12, color: 'var(--selected-text)', margin: 0, lineHeight: '17px', opacity: 0.85 }}>
             "{draft.title}" — pending review in Knowledge Base
+          </p>
+        </div>
+      )}
+
+      {/* KB Learning callout — this ticket informed a KB gap/suggestion */}
+      {learning && !draft && (
+        <div style={{
+          marginTop: 10, borderRadius: 8,
+          border: '1px solid var(--border)',
+          background: 'var(--background-medium)',
+          padding: '10px 12px',
+          display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg viewBox="0 0 12 12" width="11" height="11" fill="var(--text-disabled)" aria-hidden="true">
+              <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-weak)' }}>Resolution informed a KB suggestion</span>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '17px' }}>
+            {learning.gap}
           </p>
         </div>
       )}
@@ -1000,12 +1023,50 @@ export default function TicketChatPanel({
     );
   }
 
+  const learningId = ticket?.id ? TICKET_LEARNING_MAP[ticket.id] : null;
+  const ticketLearning = learningId ? KB_LEARNINGS.find(l => l.id === learningId) : null;
+  const draftId = ticket?.id ? TICKET_DRAFT_MAP[ticket.id] : null;
+  const ticketDraft = draftId ? KB_DRAFTS.find(d => d.id === draftId) : null;
+
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[var(--surface)]">
       <ChatTabBar active={activeTab} onSelect={handleTabSelect} viewOnly={commentOnly} moreMenuItems={moreMenuItems} />
 
       {activeTab === 'chat' && (
         <>
+          {/* KB draft provenance banner */}
+          {ticketDraft && (
+            <div style={{
+              flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8,
+              padding: '8px 16px', borderBottom: '1px solid var(--border)',
+              background: 'var(--selected-background)',
+            }}>
+              <svg viewBox="0 0 12 12" width="11" height="11" fill="var(--selected-background-strong)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true">
+                <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+              </svg>
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--selected-text)', lineHeight: '17px' }}>
+                <span style={{ fontWeight: 600 }}>Resolution used in KB draft · </span>
+                "{ticketDraft.title}" — pending review
+              </p>
+            </div>
+          )}
+
+          {/* KB learning provenance banner */}
+          {ticketLearning && !ticketDraft && (
+            <div style={{
+              flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8,
+              padding: '8px 16px', borderBottom: '1px solid var(--border)',
+              background: 'var(--background-medium)',
+            }}>
+              <svg viewBox="0 0 12 12" width="11" height="11" fill="var(--text-disabled)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true">
+                <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+              </svg>
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--text-weak)', lineHeight: '17px' }}>
+                <span style={{ fontWeight: 600 }}>Resolution used in KB suggestion · </span>
+                {ticketLearning.gap}
+              </p>
+            </div>
+          )}
           <MessageList messages={messages} transcript={initTranscript} transcriptEventText={transcriptEventText} />
           {/* Suggested reply */}
           {showSuggestedReply && (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Avatar from './ui/Avatar';
 import RightPanelOverlay from './RightPanelOverlay';
 import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, KB_DRAFTS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
@@ -698,37 +698,23 @@ function DraftCard({ draft, onAction, onTicketClick }) {
       borderRadius: 10,
       overflow: 'hidden',
     }}>
-      {/* Header bar — AI draft indicator */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '8px 16px',
-        background: 'var(--selected-background)',
-        borderBottom: '1px solid var(--border)',
-      }}>
-        <span style={{ color: 'var(--selected-text)', display: 'flex', alignItems: 'center' }}><SparkleIcon /></span>
-        <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', letterSpacing: '-0.1px' }}>
-          AI generated draft
-        </span>
-        <span style={{ marginLeft: 'auto', fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)', opacity: 0.7 }}>
-          {formatRelativeTime(draft.generatedAt)}
-        </span>
-      </div>
-
       <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {/* Title + badges */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
           <p style={{ fontFamily: SFT, fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, lineHeight: '20px', flex: 1 }}>
             {draft.title}
           </p>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 600, fontFamily: SFT, background: 'var(--selected-background)', color: 'var(--selected-text)' }}>
+              <SparkleIcon size={9} />
+              AI draft
+            </span>
             <span style={{ padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: conf.bg, color: conf.color }}>
               {conf.label}
             </span>
-            {draftBadge && (
-              <span style={{ padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: draftBadge.bg, color: draftBadge.color }}>
-                {draftBadge.label}
-              </span>
-            )}
+            <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>
+              {formatRelativeTime(draft.generatedAt)}
+            </span>
           </div>
         </div>
 
@@ -760,9 +746,9 @@ function DraftCard({ draft, onAction, onTicketClick }) {
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
           <button type="button" onClick={handleReviewAndPublish}
-            style={{ height: 30, padding: '0 14px', fontSize: 12, fontFamily: SFT, fontWeight: 500, borderRadius: 6, border: 'none', cursor: 'pointer', background: 'var(--selected-background-strong)', color: '#fff', transition: 'opacity 0.1s' }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            style={{ height: 30, padding: '0 14px', fontSize: 12, fontFamily: SFT, fontWeight: 500, borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer', background: 'transparent', color: 'var(--text)', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             Review &amp; publish
           </button>
@@ -779,70 +765,177 @@ function DraftCard({ draft, onAction, onTicketClick }) {
   );
 }
 
+function UpdateDraftCard({ learning, linkedArticle, onDismiss, onTicketClick }) {
+  const navigate = useNavigate();
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+
+  function handleReview() {
+    navigate(`/knowledge-base/${learning.projectId}/${learning.linkedArticleId}?gap=${learning.id}`);
+  }
+  function handleDismiss() { setDismissed(true); onDismiss?.(learning.id); }
+
+  return (
+    <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* Title row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <p style={{ fontFamily: SFT, fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, lineHeight: '20px', flex: 1 }}>
+            {linkedArticle?.title ?? 'Existing article'}
+          </p>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 600, fontFamily: SFT, background: 'var(--success-background)', color: 'var(--success-text)' }}>
+              <SparkleIcon size={9} />
+              AI suggested edit
+            </span>
+            <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>
+              {formatRelativeTime(learning.detectedAt)}
+            </span>
+          </div>
+        </div>
+
+        {/* Gap description */}
+        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>
+          {learning.gap}
+        </p>
+
+        {/* Source tickets */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From</span>
+          {learning.sourceTickets.map(t => (
+            <span key={t.id} onClick={() => onTicketClick?.(t.id)} title={t.title} style={{
+              fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)',
+              background: 'var(--selected-background)', borderRadius: 4, padding: '1px 6px',
+              cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textDecorationColor: 'var(--selected-text)',
+            }}>
+              {t.id}
+            </span>
+          ))}
+        </div>
+
+        {/* Preview of suggested content */}
+        {learning.suggestedBlocks?.[0] && (
+          <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {learning.suggestedBlocks.find(b => b.type === 'p')?.text ?? learning.suggestedBlocks[0].text}
+          </p>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
+          <button type="button" onClick={handleReview}
+            style={{ height: 30, padding: '0 14px', fontSize: 12, fontFamily: SFT, fontWeight: 500, borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer', background: 'transparent', color: 'var(--text)', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            Review edit
+          </button>
+          <button type="button" onClick={handleDismiss}
+            style={{ height: 30, padding: '0 4px', fontSize: 12, fontFamily: SFT, fontWeight: 400, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-disabled)' }}
+            onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+            onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DraftsTab({ projectId, allArticles }) {
+  const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId);
+  const updateSuggestions = KB_LEARNINGS.filter(l => l.projectId === projectId && l.type === 'update-article' && l.suggestedBlocks);
+  const articleMap = Object.fromEntries((allArticles ?? []).map(a => [a.id, a]));
+  const navigate = useNavigate();
+  const [draftActions, setDraftActions] = useState({});
+  const [dismissedUpdates, setDismissedUpdates] = useState({});
+
+  function handleTicketClick(ticketId) { navigate(`/tickets/${ticketId}`); }
+  function handleDraftAction(id, action) { setDraftActions(prev => ({ ...prev, [id]: action })); }
+  function handleUpdateDismiss(id) { setDismissedUpdates(prev => ({ ...prev, [id]: true })); }
+
+  const visibleDrafts = allDrafts.filter(d => draftActions[d.id] !== 'dismiss');
+  const visibleUpdates = updateSuggestions.filter(l => !dismissedUpdates[l.id]);
+
+  if (visibleDrafts.length === 0 && visibleUpdates.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
+        <SparkleIcon />
+        <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No AI drafts yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {visibleDrafts.length > 0 && (
+        <>
+          <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: '4px 0 0', letterSpacing: '0.2px' }}>
+            New articles · {visibleDrafts.length}
+          </p>
+          {visibleDrafts.map(d => (
+            <DraftCard key={d.id} draft={d} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
+          ))}
+        </>
+      )}
+      {visibleUpdates.length > 0 && (
+        <>
+          <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: visibleDrafts.length > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
+            Article updates · {visibleUpdates.length}
+          </p>
+          {visibleUpdates.map(l => (
+            <UpdateDraftCard
+              key={l.id}
+              learning={l}
+              linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
+              onDismiss={handleUpdateDismiss}
+              onTicketClick={handleTicketClick}
+            />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 function LearningsTab({ projectId, allArticles }) {
   const allLearnings = KB_LEARNINGS.filter(l => l.projectId === projectId);
-  const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId);
   const articleMap = Object.fromEntries(allArticles.map(a => [a.id, a]));
   const navigate = useNavigate();
 
   function handleTicketClick(ticketId) { navigate(`/tickets/${ticketId}`); }
-  const [draftActions, setDraftActions] = useState({});
   const [learningStatuses, setLearningStatuses] = useState(() => {
     const s = {};
     allLearnings.forEach(l => { s[l.id] = l.status; });
     return s;
   });
 
-  const visibleDrafts = allDrafts.filter(d => draftActions[d.id] !== 'dismiss');
-
-  function handleDraftAction(id, action) { setDraftActions(prev => ({ ...prev, [id]: action })); }
   function handleLearningAction(id, action) {
     if (action === 'dismiss') setLearningStatuses(prev => ({ ...prev, [id]: 'dismissed' }));
     else if (action === 'create') setLearningStatuses(prev => ({ ...prev, [id]: 'reviewed' }));
   }
 
-  const isEmpty = visibleDrafts.length === 0 && allLearnings.length === 0;
+  if (allLearnings.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
+        <SparkleIcon />
+        <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No gaps detected yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {isEmpty ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
-          <SparkleIcon />
-          <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No AI suggestions yet.</p>
-        </div>
-      ) : (
-        <>
-          {/* AI Drafts — full articles ready for review */}
-          {visibleDrafts.length > 0 && (
-            <>
-              <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: '4px 0 0', letterSpacing: '0.2px' }}>
-                AI drafts · {visibleDrafts.length}
-              </p>
-              {visibleDrafts.map(d => (
-                <DraftCard key={d.id} draft={d} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
-              ))}
-            </>
-          )}
-
-          {/* Gaps — signals that need attention */}
-          {allLearnings.length > 0 && (
-            <>
-              <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: visibleDrafts.length > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
-                Gaps · {allLearnings.length}
-              </p>
-              {allLearnings.map(l => (
-                <LearningCard
-                  key={l.id}
-                  learning={{ ...l, status: learningStatuses[l.id] ?? l.status }}
-                  linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
-                  onAction={handleLearningAction}
-                  onTicketClick={handleTicketClick}
-                />
-              ))}
-            </>
-          )}
-        </>
-      )}
+      {allLearnings.map(l => (
+        <LearningCard
+          key={l.id}
+          learning={{ ...l, status: learningStatuses[l.id] ?? l.status }}
+          linkedArticle={l.linkedArticleId ? articleMap[l.linkedArticleId] : null}
+          onAction={handleLearningAction}
+          onTicketClick={handleTicketClick}
+        />
+      ))}
     </div>
   );
 }
@@ -1030,17 +1123,23 @@ function KBLandingPage({ isAgent }) {
 export default function KnowledgeBaseView({ role }) {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState([]);
   const [manageOpen, setManageOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('articles');
+
+  const activeTab = searchParams.get('tab') ?? 'articles';
+  function setActiveTab(tab) {
+    setSearchParams(tab === 'articles' ? {} : { tab }, { replace: false });
+  }
 
   const isAgent = role === 'agent';
 
   const project = KB_PROJECTS.find(p => p.id === projectId);
   const allArticles = KB_ARTICLES.filter(a => a.projectId === projectId);
-  const draftsCount = KB_DRAFTS.filter(d => d.projectId === projectId && d.status !== 'dismissed').length;
-  const learningsCount = draftsCount + KB_LEARNINGS.filter(l => l.projectId === projectId && l.status === 'new').length;
+  const draftsCount = KB_DRAFTS.filter(d => d.projectId === projectId && d.status !== 'dismissed').length
+    + KB_LEARNINGS.filter(l => l.projectId === projectId && l.type === 'update-article' && l.suggestedBlocks).length;
+  const learningsCount = KB_LEARNINGS.filter(l => l.projectId === projectId && l.status === 'new').length;
   const searchFiltered = search
     ? allArticles.filter(a => a.title.toLowerCase().includes(search.toLowerCase()))
     : allArticles;
@@ -1060,7 +1159,10 @@ export default function KnowledgeBaseView({ role }) {
 
   const TABS = [
     { id: 'articles',  label: 'Articles',  count: allArticles.length },
-    ...(!isAgent ? [{ id: 'learnings', label: 'Learnings', count: learningsCount, dot: learningsCount > 0 }] : []),
+    ...(!isAgent ? [
+      { id: 'drafts',    label: 'Drafts',    count: draftsCount,    dot: draftsCount > 0 },
+      { id: 'learnings', label: 'Learnings', count: learningsCount, dot: learningsCount > 0 },
+    ] : []),
   ];
 
   return (
@@ -1132,7 +1234,11 @@ export default function KnowledgeBaseView({ role }) {
         </div>
       </div>
 
-      {activeTab === 'articles' ? (
+      {activeTab === 'drafts' ? (
+        <div className="flex-1 min-h-0 overflow-y-auto px-8 py-5">
+          <DraftsTab projectId={projectId} allArticles={allArticles} />
+        </div>
+      ) : activeTab === 'articles' ? (
         <>
           {/* ── Toolbar ── */}
           <div className="shrink-0 px-6 py-4">

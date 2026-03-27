@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { OPTIMIZE_GAPS } from '../data/optimize';
+import { KB_LEARNINGS } from '../data/knowledgeBase';
 
 // ─── Category config ───────────────────────────────────────────────────────────
 
@@ -223,10 +225,39 @@ function GapCard({ item, selected, status, onSelect }) {
 export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClose, onTicketClick }) {
   if (!item) return null;
 
+  const navigate = useNavigate();
   const isOpen = !status || status === 'open';
   const isInReview = status === 'in-review';
   const isDone = status === 'done';
   const isDismissed = status === 'dismissed';
+
+  // For content gaps linked to KB learnings, resolve the KB navigation target
+  const isContentGap = tabConfig?.id === 'content';
+  const kbLearning = isContentGap && item.learningId
+    ? KB_LEARNINGS.find(l => l.id === item.learningId)
+    : null;
+
+  function handlePrimaryAction() {
+    if (kbLearning) {
+      if (item.draftId) {
+        navigate(`/knowledge-base/${item.kbProjectId}/${item.draftId}`);
+      } else if (kbLearning.type === 'update-article') {
+        navigate(`/knowledge-base/${item.kbProjectId}/${kbLearning.linkedArticleId}?gap=${item.learningId}`);
+      } else {
+        navigate(`/knowledge-base/${item.kbProjectId}?tab=drafts`);
+      }
+    } else {
+      onStatusChange('done');
+    }
+  }
+
+  const primaryLabel = kbLearning
+    ? item.draftId
+      ? 'Review draft'
+      : kbLearning.type === 'update-article'
+        ? 'Review suggested edit'
+        : tabConfig.actionLabel
+    : tabConfig.actionLabel;
 
   const rank = ALL_ITEMS_RANKED.findIndex(i => i.id === item.id) + 1;
   const total = ALL_ITEMS_RANKED.length;
@@ -378,7 +409,7 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
         {!isDone && !isDismissed && (
           <button
             type="button"
-            onClick={() => onStatusChange('done')}
+            onClick={handlePrimaryAction}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               height: 32, padding: '0 14px', borderRadius: 7,
@@ -391,7 +422,7 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
             {tabConfig.actionIcon}
-            {tabConfig.actionLabel}
+            {primaryLabel}
           </button>
         )}
 
