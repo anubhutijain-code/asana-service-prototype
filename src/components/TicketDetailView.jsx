@@ -10,6 +10,8 @@ import ApprovalTaskView from './ApprovalTaskView';
 import CreateHRTicketModal from './CreateHRTicketModal';
 import RouteToHRModal from './RouteToHRModal';
 import CloseAndMoveModal from './CloseAndMoveModal';
+import ConvertToProjectPanel from './ConvertToProjectPanel';
+import { session } from '../data/sessionState';
 // ─── Payroll ticket chat content (TICKET-68) ──────────────────────────────────
 
 const PAYROLL_TRANSCRIPT = [
@@ -43,6 +45,8 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
   const [pendingHRCreate, setPendingHRCreate] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closedAndMoved, setClosedAndMoved] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [projectLaunched, setProjectLaunched] = useState(() => session.launchedProjects.has(ticket.id));
 
   // Pills bar state
   const [localStatus,   setLocalStatus]   = useState(ticket.status);
@@ -199,6 +203,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         onRouteToHR={() => setShowRouteModal(true)}
         onCreateTicketHR={() => setHrCreateOpen(true)}
         onCloseAndMove={() => setShowCloseModal(true)}
+        onConvertToProject={() => setConvertOpen(true)}
         readOnly={routedToHR}
       />
 
@@ -206,7 +211,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
       {routedToHR && (
         <div
           className="shrink-0 flex items-center gap-1"
-          style={{ height: 38, padding: '0 24px', background: '#FFFBEB', borderBottom: '1px solid #FDE68A', fontSize: 13, color: '#92400E' }}
+          style={{ height: 38, padding: '0 24px', background: 'var(--warning-background)', borderBottom: '1px solid var(--warning-background-strong)', fontSize: 13, color: 'var(--warning-text)' }}
         >
           <span>Ticket routed to HR queue</span>
           {hrLinkedTicket && (
@@ -215,13 +220,32 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
               <button
                 type="button"
                 onClick={() => onGoToLinkedHRTicket?.(hrLinkedTicket.id)}
-                style={{ background: 'none', border: 'none', padding: '0 2px', color: '#92400E', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+                style={{ background: 'none', border: 'none', padding: '0 2px', color: 'var(--warning-text)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
               >
                 {hrLinkedTicket.id}
               </button>
             </>
           )}
-          <span style={{ marginLeft: 'auto', fontSize: 12, color: '#B45309', fontWeight: 500 }}>View only</span>
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--warning-text)', fontWeight: 500, opacity: 0.8 }}>View only</span>
+        </div>
+      )}
+
+      {/* Banner: project launched from this ticket */}
+      {projectLaunched && (
+        <div className="shrink-0 flex items-center gap-2" style={{ height: 40, padding: '0 24px', background: '#EDF7EE', borderBottom: '1px solid #C3E6C6', fontSize: 13 }}>
+          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#2E7D32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 7l4 4 6-6"/>
+          </svg>
+          <span style={{ color: '#2E7D32', fontWeight: 500 }}>Project created</span>
+          <span style={{ color: '#2E7D32' }}>—</span>
+          <button
+            type="button"
+            onClick={() => navigate('/projects/vendor-onboarding')}
+            style={{ background: 'none', border: 'none', padding: 0, color: '#1B5E20', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+          >
+            Acme Corp — Vendor Onboarding →
+          </button>
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#4CAF50' }}>Ticket closed</span>
         </div>
       )}
 
@@ -229,13 +253,13 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
       {ticket.linkedFromId && (
         <div
           className="shrink-0 flex items-center gap-1"
-          style={{ height: 38, padding: '0 24px', background: '#FFFBEB', borderBottom: '1px solid #FDE68A', fontSize: 13, color: '#92400E' }}
+          style={{ height: 38, padding: '0 24px', background: 'var(--warning-background)', borderBottom: '1px solid var(--warning-background-strong)', fontSize: 13, color: 'var(--warning-text)' }}
         >
           <span>Employee is being updated via IT ticket</span>
           <button
             type="button"
             onClick={() => onGoToLinkedITTicket?.(ticket.linkedFromId)}
-            style={{ background: 'none', border: 'none', padding: '0 2px', color: '#92400E', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+            style={{ background: 'none', border: 'none', padding: '0 2px', color: 'var(--warning-text)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
           >
             {ticket.linkedFromId}
           </button>
@@ -247,14 +271,14 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
       {closedAndMoved && (
         <div
           className="shrink-0 flex items-center gap-1"
-          style={{ height: 38, padding: '0 24px', background: '#F0FDF4', borderBottom: '1px solid #BBF7D0', fontSize: 13, color: '#15803D' }}
+          style={{ height: 38, padding: '0 24px', background: 'var(--success-background)', borderBottom: '1px solid var(--success-background-strong)', fontSize: 13, color: 'var(--success-text)' }}
         >
           <span>Ticket resolved — task created in IT Escalations</span>
           <span style={{ margin: '0 2px' }}>—</span>
           <button
             type="button"
             onClick={() => navigate('/projects/it-escalations')}
-            style={{ background: 'none', border: 'none', padding: '0 2px', color: '#15803D', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+            style={{ background: 'none', border: 'none', padding: '0 2px', color: 'var(--success-text)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
           >
             View in IT Escalations
           </button>
@@ -370,6 +394,19 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
           dispatch({ type: 'UPDATE_TICKET', id: ticket.id, patch: { status: 'Closed', resolvedAt: Date.now() } });
         }}
       />
+
+      {convertOpen && (
+        <ConvertToProjectPanel
+          ticket={ticket}
+          onClose={() => setConvertOpen(false)}
+          onLaunched={() => {
+            session.launchedProjects.add(ticket.id);
+            setConvertOpen(false);
+            setProjectLaunched(true);
+            setLocalStatus('Closed');
+          }}
+        />
+      )}
     </div>
   );
 }

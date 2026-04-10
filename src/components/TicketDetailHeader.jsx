@@ -65,7 +65,7 @@ function LinkIcon() {
 
 // ─── TicketDetailHeader ───────────────────────────────────────────────────────
 
-export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, onRouteToHR, onCreateTicketHR, onCloseAndMove, readOnly = false }) {
+export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, onRouteToHR, onCreateTicketHR, onCloseAndMove, onConvertToProject, readOnly = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -136,6 +136,22 @@ export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, 
 
             {menuOpen && (
               <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: 'var(--shadow-md)', background: 'var(--surface)', zIndex: 50, minWidth: 200, padding: '4px 0' }}>
+                <button
+                  type="button"
+                  className="w-full text-left cursor-pointer border-0 bg-transparent"
+                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => { setMenuOpen(false); onConvertToProject?.(); }}
+                >
+                  <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: 'var(--selected-background-strong)' }}>
+                    <path d="M1 7h12M7 1l5 6-5 6"/>
+                  </svg>
+                  Convert to project
+                </button>
+
+                <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+
                 <button
                   type="button"
                   className="w-full text-left cursor-pointer border-0 bg-transparent"

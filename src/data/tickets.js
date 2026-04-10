@@ -74,6 +74,16 @@ const S_GENERAL_DONE = [
 ];
 
 export const TICKETS = [
+  { id: 'TICKET-101', date: 'Mar 1, 2026', name: 'New vendor onboarding: Acme Corp', hasImage: false, priority: 'Medium', status: 'Open', updated: 'today', sla: '2d', slaType: 'normal', assignee: null, requester: { name: 'Jordan Kim', initials: 'JK', bg: '5a8f6b', fg: 'ffffff' }, team: 'IT Ops', category: 'Vendor Management', aiTag: 'AI Classified · 97%', steps: S_ACCESS_ACTIVE,
+    initPublic: [
+      { type: 'inbound', text: "Hi — Acme Corp has been approved as a new SaaS vendor (contract signed last week). We need to get them fully onboarded by March 15. This involves: procurement sign-off, legal review of their MSA and DPA, and IT provisioning of SSO + user accounts. I'm the procurement lead on this. Who should I coordinate with?", name: 'Jordan Kim', time: 'Mar 1, 9:15am', bg: '5a8f6b', fg: 'ffffff', initials: 'JK' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Bot', time: 'Mar 1, 9:16am', text: "Hi Jordan — got it. Vendor onboarding requests like this typically require coordination across Procurement, Legal, and IT. I've logged this as TICKET-101 and flagged it for the IT Ops team to review. They'll be in touch shortly to kick off the process." },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Steve Smith', time: 'Mar 1, 9:30am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "This is a full vendor onboarding — MSA + DPA review, Okta/SAML setup, procurement PO. Multiple teams, 3+ week timeline. This is more of a project than a ticket. We should convert this to a proper project." },
+    ],
+    initTranscript: [],
+  },
   {
     id: 'TICKET-95',
     name: 'Salesforce Access Update — Department Transfer (Sarah Lee)',

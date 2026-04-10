@@ -26,6 +26,7 @@ import CollaboratingView from './components/CollaboratingView';
 import AgentHomeView from './components/AgentHomeView';
 import AgentPerformanceView from './components/AgentPerformanceView';
 import ITEscalationsProject from './components/ITEscalationsProject';
+import VendorOnboardingProject from './components/VendorOnboardingProject';
 import ArticleDetailView from './components/ArticleDetailView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
@@ -48,6 +49,7 @@ function getRouteState(pathname) {
   if (pathname === '/')                          return { mode: 'work',     serviceNav: null, workItem: 'Home'                 };
   if (pathname === '/work/inbox')                return { mode: 'work',     serviceNav: null, workItem: 'Inbox'                };
   if (pathname === '/projects/it-escalations')   return { mode: 'work',     serviceNav: null, workItem: 'IT Escalations Inbox' };
+  if (pathname === '/projects/vendor-onboarding') return { mode: 'work',    serviceNav: null, workItem: 'Acme Corp — Vendor Onboarding' };
   if (pathname === '/strategy')     return { mode: 'plan',     serviceNav: null,          workItem: null    };
   if (pathname === '/workflow')     return { mode: 'workflow', serviceNav: null,          workItem: null    };
   if (pathname === '/people')       return { mode: 'company',  serviceNav: null,          workItem: null    };
@@ -499,6 +501,7 @@ export default function AsanaService() {
           <Route path="/requests"     element={<RequestsView />} />
           {/* Work mode project routes */}
           <Route path="/projects/it-escalations" element={<ITEscalationsProject />} />
+          <Route path="/projects/vendor-onboarding" element={<VendorOnboardingProject />} />
           <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
           <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
           <Route path="/people" element={<EmptyModeView mode="People" />} />
