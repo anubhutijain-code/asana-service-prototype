@@ -72,6 +72,7 @@ export const OPTIMIZE_GAPS = {
       kbProjectId: 'it-kb',
       learningId: 'learn-it-002',
       draftId: 'draft-it-003',
+      linkedArticleId: 'it-001',
     },
     {
       id: 'c-004',
@@ -90,6 +91,7 @@ export const OPTIMIZE_GAPS = {
       summary: 'Adds a dedicated section for the London Ricoh MP C4504: correct IP address (192.168.10.52), Mac and Windows setup steps, driver selection, and the Wi-Fi subnet requirement.',
       kbProjectId: 'it-kb',
       learningId: 'learn-it-004',
+      linkedArticleId: 'it-003',
     },
     {
       id: 'c-005',
@@ -147,6 +149,7 @@ export const OPTIMIZE_GAPS = {
       summary: 'Adds a section with the $500 annual cap, list of eligible items (monitors, chairs, desks, keyboards, mice), how to submit in Expensify, and the July 1 fiscal year reset date.',
       kbProjectId: 'hr-kb',
       learningId: 'learn-hr-002',
+      linkedArticleId: 'hr-004',
     },
     {
       id: 'c-008',
@@ -165,6 +168,7 @@ export const OPTIMIZE_GAPS = {
       summary: 'Adds a callout about the Delta Dental → Cigna DPPO switch effective April 1, 2026, including a link to the Cigna provider finder and instructions for employees with appointments near the cutover date.',
       kbProjectId: 'hr-kb',
       learningId: 'learn-hr-003',
+      linkedArticleId: 'hr-001',
     },
   ],
 

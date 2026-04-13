@@ -565,7 +565,7 @@ export default function ApprovalTaskView({
 
         {/* Description */}
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', margin: '0 0 8px' }}>
             Description
           </p>
           <p style={{ fontSize: 13, lineHeight: '22px', color: 'var(--text)', margin: '0 0 16px' }}>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TICKETS, HR_TICKETS, PEOPLE, HR_PEOPLE, KNOWLEDGE_ARTICLES, WORK_TASKS } from '../data/tickets';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -425,9 +426,9 @@ function TicketResultRow({ ticket, query, onClick }) {
   );
 }
 
-function TaskResultRow({ task, query }) {
+function TaskResultRow({ task, query, onClick }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)]">
+    <button type="button" onClick={onClick} className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)] w-full text-left">
       <span style={{ color: 'var(--icon)', flexShrink: 0 }}><ClipboardIcon /></span>
       <div className="flex-1 min-w-0">
         <div className="text-sm text-[var(--text)] truncate">
@@ -436,46 +437,49 @@ function TaskResultRow({ task, query }) {
         <div className="text-xs text-[var(--text-disabled)]">{task.project} · {task.id}</div>
       </div>
       <span style={{ fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0 }}>{task.due}</span>
-    </div>
+    </button>
   );
 }
 
-function KBResultRow({ article, query }) {
+function KBResultRow({ article, query, onClick }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)]">
+    <button type="button" onClick={onClick} className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)] w-full text-left">
       <span style={{ color: 'var(--selected-text)', flexShrink: 0 }}><ClipboardIcon /></span>
       <div className="flex-1 min-w-0">
         <div className="text-sm text-[var(--text)] truncate">
           <HighlightMatch text={article.title} query={query} />
         </div>
-        <div className="text-xs text-[var(--text-disabled)]">Article · {article.id}</div>
+        <div className="text-xs text-[var(--text-disabled)]">
+          {article.category} · {article.projectId?.replace('-kb', '').toUpperCase()} KB
+        </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function PersonResultRow({ person, query }) {
+function PersonResultRow({ person, query, onClick }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)]">
+    <button type="button" onClick={onClick} className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-medium)] w-full text-left">
       <Avatar person={person} />
       <div className="flex-1 min-w-0">
         <div className="text-sm text-[var(--text)] truncate">
           <HighlightMatch text={person.name} query={query} />
         </div>
+        {person.role && <div className="text-xs text-[var(--text-disabled)]">{person.role}</div>}
       </div>
-    </div>
+    </button>
   );
 }
 
-function ResultSection({ title, items, renderItem }) {
+function ResultSection({ title, items, renderItem, onShowMore }) {
   return (
     <div>
       <div className="px-4 pt-3 pb-1 text-xs font-semibold text-[var(--text-weak)]">
         {title}
       </div>
       {items.map((item, i) => <div key={item.id ?? item.name ?? i}>{renderItem(item)}</div>)}
-      {items.length >= 3 && (
-        <button type="button" className="flex items-center gap-1 px-4 py-1.5 text-xs text-[var(--selected-text)] hover:bg-[var(--background-medium)] w-full">
+      {items.length >= 3 && onShowMore && (
+        <button type="button" onClick={onShowMore} className="flex items-center gap-1 px-4 py-1.5 text-xs text-[var(--selected-text)] hover:bg-[var(--background-medium)] w-full">
           Show more →
         </button>
       )}
@@ -520,6 +524,7 @@ function getContextualRecents(contextMode) {
 // ─── SearchModal ──────────────────────────────────────────────────────────────
 
 export default function SearchModal({ onClose, contextMode, onSelectITTicket, onSelectHRTicket, pillRect }) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [activeContext, setActiveContext] = useState(contextMode ?? null);
   const [subFilter, setSubFilter] = useState(null);
@@ -727,6 +732,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
                 <ResultSection
                   title="Tickets"
                   items={globalTicketResults}
+                  onShowMore={() => { navigate('/tickets'); onClose?.(); }}
                   renderItem={ticket => (
                     <TicketResultRow
                       ticket={ticket}
@@ -743,21 +749,29 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
                 <ResultSection
                   title="Knowledge Base"
                   items={globalKBResults}
-                  renderItem={article => <KBResultRow article={article} query={query.trim()} />}
+                  onShowMore={() => { navigate('/knowledge-base'); onClose?.(); }}
+                  renderItem={article => (
+                    <KBResultRow article={article} query={query.trim()} onClick={() => {
+                      navigate(`/knowledge-base/${article.projectId}/${article.id}`);
+                      onClose?.();
+                    }} />
+                  )}
                 />
               )}
               {isGlobal && globalTaskResults.length > 0 && (
                 <ResultSection
                   title="Tasks"
                   items={globalTaskResults}
-                  renderItem={task => <TaskResultRow task={task} query={query.trim()} />}
+                  onShowMore={() => { navigate('/'); onClose?.(); }}
+                  renderItem={task => <TaskResultRow task={task} query={query.trim()} onClick={() => onClose?.()} />}
                 />
               )}
               {isGlobal && globalPeopleResults.length > 0 && (
                 <ResultSection
                   title="People"
                   items={globalPeopleResults}
-                  renderItem={person => <PersonResultRow person={person} query={query.trim()} />}
+                  onShowMore={() => { navigate('/people'); onClose?.(); }}
+                  renderItem={person => <PersonResultRow person={person} query={query.trim()} onClick={() => onClose?.()} />}
                 />
               )}
               {/* Context-scoped results */}
@@ -765,6 +779,7 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
                 <ResultSection
                   title="Tickets"
                   items={ticketResults}
+                  onShowMore={() => { navigate('/tickets'); onClose?.(); }}
                   renderItem={ticket => (
                     <TicketResultRow
                       ticket={ticket}
@@ -781,14 +796,21 @@ export default function SearchModal({ onClose, contextMode, onSelectITTicket, on
                 <ResultSection
                   title="Knowledge Base"
                   items={kbResults}
-                  renderItem={article => <KBResultRow article={article} query={query.trim()} />}
+                  onShowMore={() => { navigate('/knowledge-base'); onClose?.(); }}
+                  renderItem={article => (
+                    <KBResultRow article={article} query={query.trim()} onClick={() => {
+                      navigate(`/knowledge-base/${article.projectId}/${article.id}`);
+                      onClose?.();
+                    }} />
+                  )}
                 />
               )}
               {showPeople && peopleResults.length > 0 && (
                 <ResultSection
                   title="People"
                   items={peopleResults}
-                  renderItem={person => <PersonResultRow person={person} query={query.trim()} />}
+                  onShowMore={() => { navigate('/people'); onClose?.(); }}
+                  renderItem={person => <PersonResultRow person={person} query={query.trim()} onClick={() => onClose?.()} />}
                 />
               )}
               {!hasResults && (

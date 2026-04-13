@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Avatar from './ui/Avatar';
-import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, KB_PROJECTS, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, KB_PROJECTS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import Banner from './ui/Banner';
 import { TICKETS } from '../data/tickets';
 
 const SFT = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -380,6 +381,25 @@ export default function ArticleDetailView({ role }) {
   const hasContent = doc?.content?.length > 0;
   const isDraft = !!draft && !published;
 
+  // Source / editability
+  const isSynced = !draft && article && article.source && article.source !== 'internal';
+  const isAddendum = article?.articleType === 'addendum';
+  const canEdit = !isSynced; // editable if internal or a draft
+
+  // Related addenda (for synced articles) and parent article (for addenda)
+  const relatedAddenda = isSynced ? KB_ARTICLES.filter(a => a.parentArticleId === articleId) : [];
+  const pendingAddendaDrafts = isSynced
+    ? KB_DRAFTS.filter(d => d.targetArticleId === articleId)
+    : [];
+  const parentArticle = isAddendum && article.parentArticleId
+    ? KB_ARTICLES.find(a => a.id === article.parentArticleId)
+    : null;
+
+  // Open learnings pointing to this synced article (for "create addendum" CTA)
+  const openGapsForArticle = isSynced
+    ? KB_LEARNINGS.filter(l => l.linkedArticleId === articleId && l.status !== 'dismissed')
+    : [];
+
   const pendingSuggestions = allSuggestions.filter(g => gapStates[g.id] === null);
   const acceptedSuggestions = allSuggestions.filter(g => gapStates[g.id] === 'accepted');
   const hasPending = pendingSuggestions.length > 0;
@@ -454,6 +474,11 @@ export default function ArticleDetailView({ role }) {
               Published
             </span>
           )}
+          {isAddendum && (
+            <span style={{ flexShrink: 0, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: 'var(--background-medium)', color: 'var(--text-weak)' }}>
+              Addendum
+            </span>
+          )}
         </div>
 
         {/* Right actions */}
@@ -468,7 +493,7 @@ export default function ArticleDetailView({ role }) {
             ))}
           </div>
 
-          {isDraft ? (
+          {isSynced ? null : isDraft ? (
             /* Draft mode — publish CTA */
             <button
               type="button"
@@ -567,11 +592,79 @@ export default function ArticleDetailView({ role }) {
         </div>
       </div>
 
-      {/* ── Toolbar (admin only) ────────────────────────────────────────── */}
-      {isAdmin && (
+      {/* Addendum breadcrumb moved into doc body — removed from header */}
+
+      {/* ── Synced banner (replaces toolbar for synced articles) ───────── */}
+      {isSynced && (() => {
+        const srcType = article.source;
+        const cfg = INTEGRATION_CONFIG[srcType] ?? {};
+        const proj = KB_PROJECTS.find(p => p.id === projectId);
+        const lastSynced = proj?.source?.syncedAt;
+        const daysSince = lastSynced
+          ? Math.floor((Date.now() - new Date(lastSynced).getTime()) / 86400000)
+          : null;
+        return (
+          <div style={{
+            flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10,
+            padding: '0 24px', height: 40, borderBottom: '1px solid var(--border)',
+            background: 'var(--background-weak)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="7" width="8" height="6" rx="1"/>
+                <path d="M5 7V5a2 2 0 0 1 4 0v2"/>
+              </svg>
+              <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)' }}>
+                Read only · synced from
+              </span>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                padding: '1px 7px', borderRadius: 4,
+                background: cfg.bg, fontSize: 11, fontWeight: 500, color: cfg.color, fontFamily: SFT,
+              }}>
+                {cfg.label ?? srcType}
+              </span>
+              {proj?.source?.space && (
+                <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>
+                  · {proj.source.space}
+                </span>
+              )}
+              {daysSince !== null && (
+                <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>
+                  · synced {daysSince === 0 ? 'today' : `${daysSince}d ago`}
+                </span>
+              )}
+            </div>
+            <div style={{ flex: 1 }} />
+            <button
+              type="button"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4, height: 26, padding: '0 10px',
+                borderRadius: 5, border: '1px solid var(--border)', background: 'transparent',
+                fontFamily: SFT, fontSize: 11, color: 'var(--text-weak)', cursor: 'pointer',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M6 1v7M3 5l3 3 3-3M1 9v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V9"/>
+              </svg>
+              Open in {cfg.label ?? srcType}
+              <svg viewBox="0 0 10 10" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ marginLeft: 1 }}>
+                <path d="M2 2h6v6M8 2L2 8"/>
+              </svg>
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* Supplement banner moved into doc body — below title */}
+
+      {/* ── Toolbar (admin only, editable articles) ─────────────────────── */}
+      {isAdmin && canEdit && (
         <div style={{
           flexShrink: 0, display: 'flex', alignItems: 'center', gap: 2,
-          padding: '0 20px', height: 40, borderBottom: '1px solid var(--border)',
+          padding: '0 24px', height: 40, borderBottom: '1px solid var(--border)',
           background: 'var(--background-weak)',
         }}>
           {/* Undo / Redo */}
@@ -716,8 +809,34 @@ export default function ArticleDetailView({ role }) {
 
       {/* ── Content area ───────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px 60px' }}>
-        {/* Wider container when comment cards need a right gutter */}
-        <div style={{ maxWidth: showGutter ? 980 : 680, margin: '0 auto', paddingTop: 48 }}>
+        {/* Fixed-left container — no centering so text always starts at same x as toolbar */}
+        <div style={{ maxWidth: showGutter ? 980 : 680, paddingTop: 48 }}>
+
+          {/* Addendum provenance — inline in doc, above meta */}
+          {isAddendum && parentArticle && (() => {
+            const cfg = INTEGRATION_CONFIG[parentArticle.source];
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, maxWidth: 640 }}>
+                <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M9 3L4 6l5 3"/>
+                </svg>
+                <span style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-disabled)' }}>Addendum to</span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/knowledge-base/${projectId}/${parentArticle.id}`)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: SFT, fontSize: 12, fontWeight: 500, color: 'var(--selected-text)', textDecoration: 'underline', textDecorationColor: 'var(--selected-text)' }}
+                >
+                  {parentArticle.title}
+                </button>
+                {cfg && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, background: cfg.bg, color: cfg.color, fontFamily: SFT }}>
+                    <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><rect x="1" y="1" width="14" height="14" rx="2.5"/></svg>
+                    {cfg.label}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Article meta */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, maxWidth: 640 }}>
@@ -730,9 +849,69 @@ export default function ArticleDetailView({ role }) {
           </div>
 
           {/* Title */}
-          <h1 style={{ fontFamily: SFD, fontSize: 30, fontWeight: 700, color: 'var(--text)', margin: '0 0 32px', lineHeight: '38px', maxWidth: 640 }}>
+          <h1 style={{ fontFamily: SFD, fontSize: 30, fontWeight: 700, color: 'var(--text)', margin: '0 0 24px', lineHeight: '38px', maxWidth: 640 }}>
             {doc.title}
           </h1>
+
+          {/* Draft addendum banners — only shown when a draft addendum is pending */}
+          {isSynced && pendingAddendaDrafts.length > 0 && (
+            <div style={{ maxWidth: 640, marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {pendingAddendaDrafts.map(d => (
+                <Banner
+                  key={d.id}
+                  variant="neutral"
+                  message={`Draft addendum: ${d.title}`}
+                  label="Review draft"
+                  onLabel={() => navigate(`/knowledge-base/${projectId}/${d.id}`)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Draft provenance banner — shown only for AI-generated drafts */}
+          {isDraft && draft?.sourceTickets?.length > 0 && (
+            <div style={{
+              maxWidth: 640, marginBottom: 32,
+              padding: '10px 14px',
+              borderRadius: 8,
+              background: 'var(--background-medium)',
+              display: 'flex', flexDirection: 'column', gap: 8,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="var(--text-weak)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true">
+                  <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
+                </svg>
+                <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text)', margin: 0, lineHeight: '18px' }}>
+                  <span style={{ fontWeight: 600 }}>AI draft · </span>
+                  {draft.triggerReason}
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', paddingLeft: 20 }}>
+                {draft.sourceTickets.map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => navigate(`/tickets/${t.id}`)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      height: 22, padding: '0 8px', borderRadius: 4,
+                      background: 'var(--background-strong)', color: 'var(--text)',
+                      border: 'none', cursor: 'pointer',
+                      fontFamily: SFT, fontSize: 11, fontWeight: 600,
+                      transition: 'opacity 0.1s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  >
+                    {t.id}
+                  </button>
+                ))}
+                <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-weak)' }}>
+                  {draft.sourceTickets.length} source ticket{draft.sourceTickets.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Content */}
           <div style={{ maxWidth: 640 }}>
@@ -748,14 +927,50 @@ export default function ArticleDetailView({ role }) {
                   <path d="M14 14h16M14 20h16M14 26h10" stroke="var(--border-strong)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
                 <p style={{ fontFamily: SFT, fontSize: 14, color: 'var(--text-disabled)', margin: 0 }}>
-                  {isAdmin ? 'Start writing to add content.' : 'No content yet.'}
+                  {isAdmin && canEdit ? 'Start writing to add content.' : 'No content yet.'}
                 </p>
               </div>
             )}
           </div>
 
+          {/* ── Published addenda section ───────────────────────────────── */}
+          {isSynced && relatedAddenda.length > 0 && (
+            <div style={{ maxWidth: 640, marginTop: 48 }}>
+              <p style={{ fontFamily: SFT, fontSize: 12, fontWeight: 600, color: 'var(--text-weak)', margin: '0 0 10px', letterSpacing: 0 }}>
+                Addenda
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {relatedAddenda.map(a => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => navigate(`/knowledge-base/${projectId}/${a.id}`)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '9px 10px', borderRadius: 6, border: 'none',
+                      background: 'transparent', cursor: 'pointer', textAlign: 'left',
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <DocIcon />
+                    <span style={{ fontFamily: SFT, fontSize: 13, fontWeight: 500, color: 'var(--text)', flex: 1 }}>
+                      {a.title}
+                    </span>
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="var(--text-disabled)" strokeWidth="1.6" strokeLinecap="round">
+                      <path d="M6 3l5 5-5 5"/>
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+
+
           {/* ── Per-suggestion blocks with anchored comment cards ─────── */}
-          {showSuggestions && allSuggestions.map(g => {
+          {canEdit && showSuggestions && allSuggestions.map(g => {
             const state = gapStates[g.id];
             if (state === 'dismissed') return null;
 

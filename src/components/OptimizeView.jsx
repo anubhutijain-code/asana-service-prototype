@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OPTIMIZE_GAPS } from '../data/optimize';
-import { KB_LEARNINGS } from '../data/knowledgeBase';
+import { KB_LEARNINGS, KB_ARTICLES } from '../data/knowledgeBase';
 
 // ─── Category config ───────────────────────────────────────────────────────────
 
@@ -236,11 +236,18 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
   const kbLearning = isContentGap && item.learningId
     ? KB_LEARNINGS.find(l => l.id === item.learningId)
     : null;
+  const linkedArticle = item.linkedArticleId
+    ? KB_ARTICLES.find(a => a.id === item.linkedArticleId)
+    : null;
+  const linkedArticleIsSynced = linkedArticle && linkedArticle.source && linkedArticle.source !== 'internal';
 
   function handlePrimaryAction() {
     if (kbLearning) {
       if (item.draftId) {
         navigate(`/knowledge-base/${item.kbProjectId}/${item.draftId}`);
+      } else if (kbLearning.type === 'update-article' && linkedArticleIsSynced) {
+        // Synced article — navigate to learnings tab for addendum creation
+        navigate(`/knowledge-base/${item.kbProjectId}?tab=learnings`);
       } else if (kbLearning.type === 'update-article') {
         navigate(`/knowledge-base/${item.kbProjectId}/${kbLearning.linkedArticleId}?gap=${item.learningId}`);
       } else {
@@ -254,9 +261,11 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
   const primaryLabel = kbLearning
     ? item.draftId
       ? 'Review draft'
-      : kbLearning.type === 'update-article'
-        ? 'Review suggested edit'
-        : tabConfig.actionLabel
+      : kbLearning.type === 'update-article' && linkedArticleIsSynced
+        ? 'Create addendum'
+        : kbLearning.type === 'update-article'
+          ? 'Review suggested edit'
+          : tabConfig.actionLabel
     : tabConfig.actionLabel;
 
   const rank = ALL_ITEMS_RANKED.findIndex(i => i.id === item.id) + 1;

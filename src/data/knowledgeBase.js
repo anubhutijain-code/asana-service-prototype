@@ -1,34 +1,32 @@
 // ─── Integration source config ────────────────────────────────────────────────
 export const INTEGRATION_CONFIG = {
-  confluence: { label: 'Confluence', color: '#0052CC', bg: '#E8F0FF' },
-  slab:       { label: 'Slab',       color: '#7C3AED', bg: '#EDE9FE' },
-  notion:     { label: 'Notion',     color: '#1E1F21', bg: '#F0F0F0' },
+  sharepoint: { label: 'SharePoint', color: '#0078D4', bg: '#EBF3FB' },
+  gdrive:     { label: 'Google Drive', color: '#1A73E8', bg: '#E8F0FE' },
 };
+
+// ─── Web search allowlist ──────────────────────────────────────────────────────
+export const WEB_ALLOWLIST = [
+  { id: 'w1', domain: 'help.okta.com',         description: 'Okta admin & user docs',             enabled: true,  addedAt: '2026-01-10' },
+  { id: 'w2', domain: 'learn.microsoft.com',   description: 'Microsoft 365 product documentation', enabled: true,  addedAt: '2026-01-15' },
+  { id: 'w3', domain: 'support.google.com',    description: 'Google Workspace help center',        enabled: true,  addedAt: '2026-02-01' },
+  { id: 'w4', domain: 'slack.com/help',        description: 'Slack help center',                   enabled: false, addedAt: '2026-02-14' },
+  { id: 'w5', domain: 'support.zoom.us',       description: 'Zoom support & troubleshooting',      enabled: true,  addedAt: '2026-03-05' },
+];
 
 export const KB_PROJECTS = [
   {
     id: 'it-kb', name: 'IT Knowledge Base', team: 'IT Team',
     source: {
-      type: 'confluence', workspace: 'Acme Corp', space: 'IT Team Space',
-      syncedAt: '2026-03-02T08:00:00Z', syncStatus: 'synced',
+      type: 'sharepoint', workspace: 'Acme Corp', space: 'IT Documentation',
+      syncedAt: '2026-04-09T08:00:00Z', syncStatus: 'synced',
       autoSync: true, syncInterval: '6 hours',
     },
   },
   {
     id: 'hr-kb', name: 'HR Knowledge Base', team: 'HR Team',
-    source: {
-      type: 'slab', workspace: 'Acme Corp', space: 'People & HR',
-      syncedAt: '2026-03-01T14:30:00Z', syncStatus: 'synced',
-      autoSync: true, syncInterval: '12 hours',
-    },
   },
   {
     id: 'eng-kb', name: 'Engineering Runbook', team: 'Engineering Team',
-    source: {
-      type: 'notion', workspace: 'Engineering', space: 'Eng Runbooks',
-      syncedAt: '2026-02-28T09:15:00Z', syncStatus: 'synced',
-      autoSync: false, syncInterval: '24 hours',
-    },
   },
   {
     id: 'onb-kb', name: 'Onboarding Guide', team: 'People Ops',
@@ -40,8 +38,9 @@ export const KB_ARTICLES = [
   // IT — 3 synced from Confluence, 1 internal
   {
     id: 'it-001', projectId: 'it-kb', title: 'VPN Setup and Troubleshooting Guide',
-    status: 'Published', category: 'Network', author: 'James Carter', team: 'IT Team',
-    updatedAt: '2025-01-15', source: 'confluence',
+    status: 'Synced', category: 'Network', author: 'James Carter', team: 'IT Team',
+    updatedAt: '2025-01-15', source: 'sharepoint',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Overview 🔐' },
       { type: 'p', text: 'This guide walks you through setting up the Acme Corp VPN client on your device and resolving the most common connectivity issues. All employees are required to connect via VPN when accessing internal systems from outside the office network.' },
@@ -69,8 +68,9 @@ export const KB_ARTICLES = [
   },
   {
     id: 'it-002', projectId: 'it-kb', title: 'How to Reset Your Password',
-    status: 'Published', category: 'Account Access', author: 'Sarah Lin', team: 'IT Team',
-    updatedAt: '2025-02-03', source: 'confluence',
+    status: 'Synced', category: 'Account Access', author: 'Sarah Lin', team: 'IT Team',
+    updatedAt: '2025-02-03', source: 'sharepoint',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Overview 🔑' },
       { type: 'p', text: 'Acme Corp uses a unified SSO identity system powered by Okta. Your single password grants access to email, Slack, the IT portal, Confluence, and all connected SaaS tools. Passwords expire every 90 days.' },
@@ -86,8 +86,9 @@ export const KB_ARTICLES = [
   },
   {
     id: 'it-003', projectId: 'it-kb', title: 'Printer Configuration for Remote Users',
-    status: 'Draft', category: 'Hardware', author: 'Marcus Webb', team: 'IT Team',
-    updatedAt: '2025-03-20', source: 'confluence',
+    status: 'Synced', category: 'Hardware', author: 'Marcus Webb', team: 'IT Team',
+    updatedAt: '2025-03-20', source: 'sharepoint',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Overview 🖨️' },
       { type: 'p', text: 'This guide covers adding network printers available in Acme Corp offices. Printers are added manually by IP address — they are not auto-discovered over the network.' },
@@ -117,13 +118,34 @@ export const KB_ARTICLES = [
       { type: 'link', text: 'Download printer drivers from the IT portal' },
     ],
   },
-  { id: 'it-004', projectId: 'it-kb', title: 'Software Installation Policy',             status: 'Archived',    category: 'Policy',          author: 'James Carter', team: 'IT Team',          content: [], updatedAt: '2024-11-01', source: 'internal'   },
+  {
+    id: 'it-004', projectId: 'it-kb', title: 'Software Installation Policy',
+    status: 'Draft', category: 'Policy', author: 'James Carter', team: 'IT Team',
+    updatedAt: '2025-02-14', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
+    content: [
+      { type: 'p', text: 'This policy defines the rules for installing software on Acme Corp-managed devices. All installations must comply with licensing requirements and security standards. Unauthorized software may be removed without notice.' },
+      { type: 'h2', text: 'Approved software' },
+      { type: 'p', text: 'The IT team maintains an approved software catalog in the IT portal. Software on the approved list can be self-installed via the Managed Software Center (macOS) or Software Center (Windows) without submitting a ticket.' },
+      { type: 'h2', text: 'Requesting new software' },
+      { type: 'li', text: 'Submit a software request ticket at help.acmecorp.com, including the business justification and cost.' },
+      { type: 'li', text: 'IT will review for security, licensing compliance, and compatibility within 3 business days.' },
+      { type: 'li', text: 'Approved software will be added to the managed catalog and deployed remotely or made self-installable.' },
+      { type: 'li', text: 'Software requiring elevated privileges (admin access) requires manager approval in addition to IT sign-off.' },
+      { type: 'h2', text: 'Prohibited software' },
+      { type: 'p', text: 'The following categories are not permitted on company devices: peer-to-peer file sharing applications, unapproved remote access tools, unlicensed or cracked software, and applications flagged by our endpoint security platform (CrowdStrike).' },
+      { type: 'h2', text: 'Personal devices (BYOD)' },
+      { type: 'p', text: 'Personal devices used to access company resources must have the Acme MDM profile installed. IT does not manage software on personal devices beyond the MDM profile and required security tools (CrowdStrike Falcon, Okta Verify).' },
+      { type: 'note', text: '⚠️ Draft — pending legal review of BYOD section before publishing.' },
+    ],
+  },
 
   // HR — 3 synced from Slab, 1 internal
   {
     id: 'hr-001', projectId: 'hr-kb', title: 'Employee Benefits Overview',
-    status: 'Published', category: 'Benefits', author: 'Priya Nair', team: 'HR Team',
-    updatedAt: '2025-01-10', source: 'slab',
+    status: 'Synced', category: 'Benefits', author: 'Priya Nair', team: 'HR Team',
+    updatedAt: '2025-01-10', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Overview 🌿' },
       { type: 'p', text: 'Acme Corp offers a comprehensive benefits package available to all full-time employees starting on their first day. Part-time employees working 20+ hours per week are eligible for medical and dental coverage.' },
@@ -158,8 +180,9 @@ export const KB_ARTICLES = [
   },
   {
     id: 'hr-002', projectId: 'hr-kb', title: 'Leave of Absence Request Process',
-    status: 'Published', category: 'Leave', author: 'Dana Osei', team: 'HR Team',
-    updatedAt: '2025-02-18', source: 'slab',
+    status: 'Synced', category: 'Leave', author: 'Dana Osei', team: 'HR Team',
+    updatedAt: '2025-02-18', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Overview 📋' },
       { type: 'p', text: 'This article covers how to request a planned or unplanned leave of absence at Acme Corp, including medical leave, family leave, personal leave, and bereavement. All leave requests are managed through Workday.' },
@@ -185,11 +208,12 @@ export const KB_ARTICLES = [
       { type: 'link', text: 'Open Workday to request leave' },
     ],
   },
-  { id: 'hr-003', projectId: 'hr-kb', title: 'Performance Review Cycle FAQ',             status: 'Draft',       category: 'Performance',     author: 'Priya Nair',   team: 'HR Team',          content: [], updatedAt: '2025-03-05', source: 'slab'       },
+  { id: 'hr-003', projectId: 'hr-kb', title: 'Performance Review Cycle FAQ',             status: 'Synced',      category: 'Performance',     author: 'Priya Nair',   team: 'HR Team',          content: [], updatedAt: '2025-03-05', source: 'internal',      articleType: 'standard', parentArticleId: null },
   {
     id: 'hr-004', projectId: 'hr-kb', title: 'Expense Reimbursement Policy',
-    status: 'Unpublished', category: 'Finance', author: 'Tom Reyes', team: 'HR Team',
+    status: 'Draft', category: 'Finance', author: 'Tom Reyes', team: 'HR Team',
     updatedAt: '2025-03-28', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Overview 💳' },
       { type: 'p', text: 'This policy covers what expenses Acme Corp reimburses, how to submit claims, and the timelines involved. All reimbursements are processed via Expensify and paid out with the next payroll cycle.' },
@@ -224,8 +248,9 @@ export const KB_ARTICLES = [
   // Engineering — all synced from Notion
   {
     id: 'eng-001', projectId: 'eng-kb', title: 'Production Deployment Checklist',
-    status: 'Published', category: 'Deployment', author: 'Alex Rivera', team: 'Engineering Team',
-    updatedAt: '2025-01-22', source: 'notion',
+    status: 'Synced', category: 'Deployment', author: 'Alex Rivera', team: 'Engineering Team',
+    updatedAt: '2025-01-22', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
     content: [
       { type: 'h2', text: 'Pre-deployment 🚀' },
       { type: 'li', text: 'All feature flags for the release are confirmed with the PM.' },
@@ -241,15 +266,193 @@ export const KB_ARTICLES = [
       { type: 'link', text: 'View deployment runbook in Notion' },
     ],
   },
-  { id: 'eng-002', projectId: 'eng-kb', title: 'Database Backup and Restore Procedures', status: 'Published',   category: 'Database',        author: 'Nina Kowalski',team: 'Engineering Team', content: [], updatedAt: '2025-02-14', source: 'notion'     },
-  { id: 'eng-003', projectId: 'eng-kb', title: 'On-Call Incident Response Runbook',      status: 'Published',   category: 'Incidents',       author: 'Alex Rivera',  team: 'Engineering Team', content: [], updatedAt: '2025-03-01', source: 'notion'     },
-  { id: 'eng-004', projectId: 'eng-kb', title: 'Service Architecture Overview',          status: 'Draft',       category: 'Architecture',    author: 'Sam Chen',     team: 'Engineering Team', content: [], updatedAt: '2025-03-30', source: 'notion'     },
+  { id: 'eng-002', projectId: 'eng-kb', title: 'Database Backup and Restore Procedures', status: 'Synced',      category: 'Database',        author: 'Nina Kowalski',team: 'Engineering Team', content: [], updatedAt: '2025-02-14', source: 'internal',    articleType: 'standard', parentArticleId: null },
+  { id: 'eng-003', projectId: 'eng-kb', title: 'On-Call Incident Response Runbook',      status: 'Synced',      category: 'Incidents',       author: 'Alex Rivera',  team: 'Engineering Team', content: [], updatedAt: '2025-03-01', source: 'internal',    articleType: 'standard', parentArticleId: null },
+  { id: 'eng-004', projectId: 'eng-kb', title: 'Service Architecture Overview',          status: 'Synced',      category: 'Architecture',    author: 'Sam Chen',     team: 'Engineering Team', content: [], updatedAt: '2025-03-30', source: 'internal',    articleType: 'standard', parentArticleId: null },
 
   // Onboarding — all internal
-  { id: 'onb-001', projectId: 'onb-kb', title: 'Day 1 Checklist for New Hires',          status: 'Published',   category: 'Getting Started', author: 'Maya Torres',  team: 'People Ops',       content: [], updatedAt: '2025-01-05', source: 'internal'   },
-  { id: 'onb-002', projectId: 'onb-kb', title: 'Setting Up Your Development Environment',status: 'Published',   category: 'Tools & Access',  author: 'Liam Okafor',  team: 'People Ops',       content: [], updatedAt: '2025-02-07', source: 'internal'   },
-  { id: 'onb-003', projectId: 'onb-kb', title: 'Company Values and Culture Guide',       status: 'Published',   category: 'Culture',         author: 'Maya Torres',  team: 'People Ops',       content: [], updatedAt: '2025-01-28', source: 'internal'   },
-  { id: 'onb-004', projectId: 'onb-kb', title: 'Benefits Enrollment Instructions',       status: 'Draft',       category: 'Benefits',        author: 'Liam Okafor',  team: 'People Ops',       content: [], updatedAt: '2025-03-15', source: 'internal'   },
+  {
+    id: 'onb-001', projectId: 'onb-kb', title: 'Day 1 Checklist for New Hires',
+    status: 'Published', category: 'Getting Started', author: 'Maya Torres', team: 'People Ops',
+    updatedAt: '2025-01-05', source: 'internal', articleType: 'standard', parentArticleId: null,
+    content: [
+      { type: 'h2', text: 'Before your first day' },
+      { type: 'li', text: 'Accept your offer letter and complete background check paperwork in Workday.' },
+      { type: 'li', text: "You'll receive a welcome email 3 days before start with your laptop shipping info and IT setup instructions." },
+      { type: 'li', text: 'Join the #new-hires Slack channel using the invite link in your welcome email.' },
+      { type: 'h2', text: 'Day 1 morning' },
+      { type: 'li', text: 'Log in to your Acme email and complete the Okta MFA enrollment (instructions in welcome email).' },
+      { type: 'li', text: 'Set up Slack, Zoom, and complete the mandatory security training in Workday.' },
+      { type: 'li', text: 'Your manager will schedule a 1:1 orientation — check your calendar.' },
+      { type: 'h2', text: 'Week 1 checklist' },
+      { type: 'table',
+        headers: ['Task', 'Where', 'Deadline'],
+        rows: [
+          ['Complete security training', 'Workday → Learning', 'End of Week 1'],
+          ['Enroll in benefits', 'benefits.acmecorp.com', 'Within 30 days of start'],
+          ['Set up direct deposit', 'Workday → Pay', 'Before first paycheck'],
+          ['Schedule 1:1 with skip-level', 'Google Calendar', 'Within 2 weeks'],
+          ['Read the Employee Handbook', 'Confluence → HR Space', 'End of Week 2'],
+        ],
+      },
+      { type: 'callout', variant: 'info', text: 'Benefits enrollment has a hard 30-day window. Missing it means waiting until the next open enrollment period in November.' },
+      { type: 'link', text: 'Open Workday to get started' },
+    ],
+  },
+  {
+    id: 'onb-002', projectId: 'onb-kb', title: 'Setting Up Your Development Environment',
+    status: 'Published', category: 'Tools & Access', author: 'Liam Okafor', team: 'People Ops',
+    updatedAt: '2025-02-07', source: 'internal', articleType: 'standard', parentArticleId: null,
+    content: [
+      { type: 'h2', text: 'Required tools' },
+      { type: 'p', text: 'All engineers use a standard toolset managed via Homebrew and the Managed Software Center. Request admin access through the IT portal before starting.' },
+      { type: 'table',
+        headers: ['Tool', 'Install via', 'Notes'],
+        rows: [
+          ['Homebrew', 'Terminal: /bin/bash -c "$(curl -fsSL brew.sh)"', 'Required first'],
+          ['Node.js (via nvm)', 'brew install nvm', 'Use .nvmrc in each repo'],
+          ['Docker Desktop', 'Managed Software Center', 'Requires IT approval'],
+          ['VS Code or JetBrains', 'Managed Software Center', 'Team preference varies'],
+          ['1Password', 'Managed Software Center', 'Required for secrets access'],
+        ],
+      },
+      { type: 'h2', text: 'Repository access' },
+      { type: 'li', text: 'Request GitHub access in #it-help — include your GitHub username and the org name.' },
+      { type: 'li', text: 'Clone the monorepo: git clone git@github.com:acmecorp/platform.git' },
+      { type: 'li', text: 'Follow the README in each service directory for local setup instructions.' },
+      { type: 'callout', variant: 'warning', text: 'Never commit secrets, API keys, or credentials to any repository. Use 1Password or environment variables managed by the platform team.' },
+      { type: 'link', text: 'Request IT access' },
+    ],
+  },
+  { id: 'onb-003', projectId: 'onb-kb', title: 'Company Values and Culture Guide',       status: 'Published',   category: 'Culture',         author: 'Maya Torres',  team: 'People Ops',       content: [], updatedAt: '2025-01-28', source: 'internal',  articleType: 'standard', parentArticleId: null },
+  {
+    id: 'onb-004', projectId: 'onb-kb', title: 'Benefits Enrollment Instructions',
+    status: 'Draft', category: 'Benefits', author: 'Liam Okafor', team: 'People Ops',
+    updatedAt: '2025-03-15', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
+    content: [
+      { type: 'p', text: 'New employees have 30 days from their start date to enroll in benefits. If you miss this window, you will need to wait until the next open enrollment period (typically November) unless you experience a qualifying life event.' },
+      { type: 'h2', text: 'How to enroll' },
+      { type: 'li', text: 'Log in to Rippling at rippling.acmecorp.com using your company email.' },
+      { type: 'li', text: 'Navigate to Benefits → Enroll in Benefits.' },
+      { type: 'li', text: 'Select your health, dental, and vision plans. Compare plan summaries before choosing — the Preferred plan has lower premiums, the Select plan has a lower deductible.' },
+      { type: 'li', text: 'Add dependents if applicable. You\'ll need their full name, date of birth, and SSN.' },
+      { type: 'li', text: 'Review and confirm your selections. You\'ll receive a confirmation email within 24 hours.' },
+      { type: 'h2', text: 'Plans available' },
+      { type: 'table',
+        headers: ['Plan', 'Monthly premium (employee)', 'Deductible', 'Out-of-pocket max'],
+        rows: [
+          ['Medical — Preferred PPO', '$0', '$1,500', '$4,000'],
+          ['Medical — Select HDHP', '$0', '$2,800', '$3,500'],
+          ['Dental — Basic', '$0', '$50', '$1,500'],
+          ['Vision — Standard', '$0', 'n/a', '$200/year'],
+        ],
+      },
+      { type: 'h2', text: 'Dependent care FSA' },
+      { type: 'p', text: 'If you have children under 13 or a qualifying dependent, you may elect a Dependent Care FSA (up to $5,000/year pre-tax). Elections must be made at enrollment — you cannot change them mid-year without a qualifying event.' },
+      { type: 'note', text: '⚠️ Draft — waiting on updated 2025 plan PDFs from the broker before publishing.' },
+    ],
+  },
+
+  // ── Addenda — local supplements to synced articles ───────────────────────
+  {
+    id: 'it-005', projectId: 'it-kb',
+    title: 'AWS Workspaces: Split-Tunnel VPN Configuration',
+    status: 'Published', category: 'Network', author: 'James Carter', team: 'IT Team',
+    updatedAt: '2026-03-20', source: 'internal',
+    articleType: 'addendum', parentArticleId: 'it-001',
+    sourceTickets: [{ id: 'TICKET-38', title: 'VPN Drops When Connecting to AWS Resources' }],
+    content: [
+      { type: 'p', text: 'This addendum supplements the main VPN Setup Guide with specific configuration required for AWS Workspaces users. The standard GlobalProtect VPN (full-tunnel mode) routes all traffic through the corporate gateway, which conflicts with AWS Workspaces and degrades performance.' },
+      { type: 'h2', text: 'When you need split-tunnel mode' },
+      { type: 'p', text: 'If you use AWS Workspaces and experience slow performance or frequent drops, your VPN may be running in full-tunnel mode. Split-tunnel allows AWS traffic to bypass the corporate gateway and route directly.' },
+      { type: 'h2', text: 'Enabling split-tunnel mode' },
+      { type: 'li', text: 'Open the GlobalProtect client and click the settings gear icon.' },
+      { type: 'li', text: "Go to Advanced settings and toggle 'Split tunnel' to On." },
+      { type: 'li', text: 'The gateway field should auto-populate with vpn.acmecorp.com.' },
+      { type: 'li', text: 'Disconnect and reconnect to the VPN. AWS Workspaces traffic will now route directly.' },
+      { type: 'callout', variant: 'info', text: 'If the split-tunnel option is greyed out, your VPN profile needs to be updated by IT. Submit a ticket referencing this article and IT will update your profile within 1 business day.' },
+      { type: 'h2', text: 'Verifying the configuration' },
+      { type: 'table',
+        headers: ['Test', 'Expected result', 'If failing'],
+        rows: [
+          ['Open AWS Workspaces app', 'Connects without VPN gateway prompt', 'Check split-tunnel toggle is On'],
+          ['Access internal Acme tools', 'Still accessible via VPN normally', 'Reconnect VPN — split-tunnel should not affect internal access'],
+          ['Run speed test on Workspaces', 'Normal performance (not throttled)', 'Contact IT — VPN profile may need update'],
+        ],
+      },
+      { type: 'link', text: 'Submit a VPN profile update request' },
+    ],
+  },
+  {
+    id: 'hr-005', projectId: 'hr-kb',
+    title: 'April 2026 Dental Network Change — Full Details',
+    status: 'Published', category: 'Benefits', author: 'Priya Nair', team: 'HR Team',
+    updatedAt: '2026-03-15', source: 'internal',
+    articleType: 'addendum', parentArticleId: 'hr-001',
+    sourceTickets: [{ id: 'TICKET-49', title: "Is My Dentist Still In-Network After Plan Change?" }],
+    content: [
+      { type: 'p', text: "This addendum supplements the Employee Benefits Overview with full details on the April 2026 dental network transition. The main benefits article has a summary callout — read this article if you have an upcoming appointment or want the complete coverage comparison." },
+      { type: 'callout', variant: 'warning', text: 'Action required: If you have a dental appointment on or after April 1, 2026, verify your provider is in-network with Cigna DPPO before attending.' },
+      { type: 'h2', text: "What's changing" },
+      { type: 'p', text: 'Effective April 1, 2026, Acme Corp is switching dental coverage from Delta Dental to Cigna DPPO. Most previously in-network providers have opted into the Cigna network, but a small number have not.' },
+      { type: 'h2', text: 'How to check if your dentist is in-network' },
+      { type: 'li', text: 'Go to cigna.com/find-a-doctor and search for your dentist by name.' },
+      { type: 'li', text: "Select 'DPPO' as the plan type when searching." },
+      { type: 'li', text: 'If your dentist is not listed, contact benefits@acmecorp.com — HR will help find an in-network equivalent.' },
+      { type: 'h2', text: 'Coverage comparison' },
+      { type: 'table',
+        headers: ['Benefit', 'Delta Dental (before April 1)', 'Cigna DPPO (April 1+)'],
+        rows: [
+          ['Preventive care (cleanings, X-rays)', '100% covered', '100% covered'],
+          ['Basic restorative (fillings)', '80% after deductible', '80% after deductible'],
+          ['Major restorative (crowns, bridges)', '50% after deductible', '50% after deductible'],
+          ['Annual deductible', '$50 individual / $150 family', '$50 individual / $150 family'],
+          ['Annual maximum benefit', '$1,500', '$1,500'],
+          ['Orthodontia (adults)', 'Not covered', 'Not covered'],
+        ],
+      },
+      { type: 'h2', text: 'Questions?' },
+      { type: 'p', text: 'Contact benefits@acmecorp.com or post in #benefits on Slack. HR will respond within 1 business day.' },
+    ],
+  },
+  {
+    id: 'eng-005', projectId: 'eng-kb',
+    title: 'Deployment Freeze Windows and Override Process',
+    status: 'Published', category: 'Deployment', author: 'Alex Rivera', team: 'Engineering Team',
+    updatedAt: '2026-01-10', source: 'internal',
+    articleType: 'addendum', parentArticleId: 'eng-001',
+    sourceTickets: [],
+    content: [
+      { type: 'p', text: 'This addendum supplements the Production Deployment Checklist with Acme-specific freeze windows and the override process. These constraints are enforced automatically by the release pipeline and are not tracked in the Notion runbook.' },
+      { type: 'callout', variant: 'danger', text: 'Deploying during an active freeze without an approved override is automatically blocked by the release pipeline. Attempting to bypass will trigger a security alert to the CISO.' },
+      { type: 'h2', text: 'Scheduled freeze windows' },
+      { type: 'table',
+        headers: ['Period', 'Dates', 'Override process'],
+        rows: [
+          ['Q4 holiday freeze', 'Nov 25 – Jan 2', 'VP Eng + on-call lead, 48h advance notice required'],
+          ['Post-Sev-1 cooldown', '48h after any Sev-1', 'No override — enforced by tooling'],
+          ['Pre-release quiet period', '72h before major release', 'Release manager approval'],
+          ['Audit window', 'Announced 2 weeks prior', 'CISO approval required'],
+        ],
+      },
+      { type: 'h2', text: 'How to request an override' },
+      { type: 'li', text: 'Post in #eng-deploys: service name, change description, business justification, and rollback plan.' },
+      { type: 'li', text: 'Tag the on-call lead and your VP Eng. Both must +1 before you proceed.' },
+      { type: 'li', text: 'Overrides are logged automatically — no manual audit entry needed.' },
+      { type: 'li', text: 'If approvers are unreachable within 30 minutes for a critical fix, escalate to the CTO on-call.' },
+      { type: 'h2', text: 'Upcoming freeze dates (2026)' },
+      { type: 'table',
+        headers: ['Date', 'Type', 'Duration'],
+        rows: [
+          ['April 15–17, 2026', 'Pre-release quiet period (v4.0)', '3 days'],
+          ['May 23, 2026', 'Company all-hands day', '1 day'],
+          ['Nov 26, 2026 – Jan 2, 2027', 'Q4 holiday freeze', '38 days'],
+        ],
+      },
+      { type: 'link', text: 'View #eng-deploys in Slack' },
+    ],
+  },
 ];
 
 // ─── KB Learnings — AI-detected knowledge gaps ─────────────────────────────────
@@ -382,7 +585,6 @@ export const KB_DRAFTS = [
     sourceTickets: [
       { id: 'TICKET-62', title: 'Report Lost Laptop for Patrick Tuckey' },
       { id: 'TICKET-67', title: 'Help Updating MacBook to Latest macOS' },
-      { id: 'TICKET-69', title: 'Wrong Microsoft 365 License After Department Transfer' },
     ],
     content: [
       { type: 'h2', text: 'Overview' },
@@ -408,6 +610,7 @@ export const KB_DRAFTS = [
       { id: 'TICKET-64', title: 'Request View Access to Figma and FigJam' },
       { id: 'TICKET-53', title: 'Need access to Jira project for Q1 planning' },
       { id: 'TICKET-66', title: 'Urgent Request for SFDC License Access' },
+      { id: 'TICKET-69', title: 'Wrong Microsoft 365 License After Department Transfer' },
     ],
     content: [
       { type: 'h2', text: 'Overview' },
@@ -428,10 +631,10 @@ export const KB_DRAFTS = [
     title: 'VPN Split-Tunnel Configuration for AWS Workspaces',
     category: 'Network', status: 'agent_verified', confidence: 'medium',
     generatedAt: '2026-03-20T14:45:00Z',
+    targetArticleId: 'it-001',
     triggerReason: 'Existing VPN article was cited in 2 tickets but did not resolve them — gap detected in AWS Workspaces coverage',
     sourceTickets: [
-      { id: 'TICKET-65', title: 'Phone Not Connecting to WiFi in Vancouver Office' },
-      { id: 'TICKET-63', title: 'Unable to Connect to WiFi After Troubleshooting' },
+      { id: 'TICKET-38', title: 'VPN Drops When Connecting to AWS Resources' },
     ],
     content: [
       { type: 'h2', text: 'Overview' },
@@ -451,8 +654,8 @@ export const KB_DRAFTS = [
     generatedAt: '2026-03-22T16:30:00Z',
     triggerReason: 'AI failed to deflect 2 tickets asking how parental leave affects performance reviews — no existing article addresses this',
     sourceTickets: [
-      { id: 'TICKET-68', title: 'Paycheck Short — Missing Overtime Pay for Feb' },
-      { id: 'TICKET-58', title: 'Request for Tool to Test Tickets' },
+      { id: 'TICKET-71', title: 'Performance Cycle During Leave of Absence' },
+      { id: 'TICKET-72', title: 'Will Parental Leave Affect My Review Rating?' },
     ],
     content: [
       { type: 'h2', text: 'Overview' },
@@ -485,18 +688,30 @@ export const TICKET_LEARNING_MAP = {
   'TICKET-74': 'learn-hr-002',
 };
 
+// Maps learning ID → draft ID (for learnings that have a generated draft)
+export const LEARNING_DRAFT_MAP = {
+  'learn-it-001': 'draft-it-001',  // MFA re-enrollment learning → MFA draft
+  'learn-it-003': 'draft-it-002',  // Admin access learning → admin access draft
+  'learn-hr-001': 'draft-hr-001',  // Parental leave learning → parental leave draft
+  // learn-it-002 (VPN/AWS update-article) handled via direct TICKET_DRAFT_MAP entry on TICKET-38
+};
+
 export const TICKET_DRAFT_MAP = {
   'TICKET-62': 'draft-it-001',
   'TICKET-67': 'draft-it-001',
-  'TICKET-69': 'draft-it-001',
   'TICKET-64': 'draft-it-002',
   'TICKET-53': 'draft-it-002',
   'TICKET-66': 'draft-it-002',
-  'TICKET-65': 'draft-it-003',
-  'TICKET-63': 'draft-it-003',
+  'TICKET-69': 'draft-it-002',  // M365 license → access request draft
+  'TICKET-38': 'draft-it-003',  // VPN drops → VPN split-tunnel draft
   'TICKET-68': 'draft-hr-001',
   'TICKET-58': 'draft-hr-001',
 };
+
+// Returns true if this article is editable in the service tool (internal source)
+export function isEditable(article) {
+  return article?.source === 'internal';
+}
 
 export function formatDate(iso) {
   const d = new Date(iso + 'T00:00:00');

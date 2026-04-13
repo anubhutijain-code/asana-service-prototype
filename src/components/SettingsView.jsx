@@ -1,651 +1,507 @@
+// ─── SettingsView — Admin queue management ────────────────────────────────────
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button   from './ui/Button';
-import Badge    from './ui/Badge';
-import Avatar   from './ui/Avatar';
-import Dropdown from './Dropdown';
+import CreateQueuePanel from './CreateQueuePanel';
+import { session } from '../data/sessionState';
+import { SFT, SFD, LIGA } from '../constants/typography';
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const SFT  = '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-const LIGA = { fontFeatureSettings: "'liga' off, 'clig' off" };
-const base = { fontFamily: SFT, ...LIGA };
-const typoCell = { fontFamily: SFT, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)', ...LIGA };
-const typoMeta = { fontFamily: SFT, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)', ...LIGA };
-
-const H5 = {
-  fontFamily: '"SF Pro Text"', fontFeatureSettings: "'liga' off, 'clig' off",
-  fontSize: 16, fontWeight: 500, lineHeight: '20px', letterSpacing: '-0.32px',
-  color: 'var(--text)',
+const B = import.meta.env.BASE_URL;
+const AVATARS = [
+  `${B}avatars/Teammate.svg`, `${B}avatars/Teammate1.svg`,
+  `${B}avatars/Teammate-1.svg`, `${B}avatars/Teammate-2.svg`,
+  `${B}avatars/Teammate-3.svg`, `${B}avatars/Teammate-4.svg`,
+  `${B}avatars/Teammate-5.svg`,
+];
+const INT = {
+  globe: `${B}integrations/globe.svg`,
+  word:  `${B}integrations/microsoft-word.svg`,
+  drive: `${B}integrations/google-drive.svg`,
 };
 
-const inputStyle = {
-  ...base, fontSize: 13, height: 32, padding: '0 10px',
-  border: '1px solid var(--border)', borderRadius: 6,
-  outline: 'none', color: 'var(--text)', background: 'var(--surface)',
-  boxSizing: 'border-box',
-};
+const BASE     = { fontFamily: SFT, ...LIGA };
+const typoCell = { ...BASE, fontSize: '14px', fontWeight: 400, lineHeight: '20px', color: 'var(--text)' };
+const typoMeta = { ...BASE, fontSize: '12px', fontWeight: 400, lineHeight: '18px', color: 'var(--text-weak)' };
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-const TABS = [
-  { id: 'general',      label: 'General'        },
-  { id: 'integrations', label: 'Integrations'   },
-  { id: 'kb',           label: 'Knowledge Base' },
-  { id: 'ai',           label: 'AI'             },
-  { id: 'automations',  label: 'Automations'    },
-];
-
-// ── Static data ───────────────────────────────────────────────────────────────
-const TIME_OPTS = ['15 min','30 min','1 hr','2 hrs','4 hrs','8 hrs','1 day','2 days','3 days','5 days'];
-const PRIORITY_VARIANT = { Critical: 'danger', High: 'warning', Medium: 'info', Low: 'neutral' };
-
-const INITIAL_SLA = [
-  { priority: 'Critical', response: '15 min', resolution: '1 hr'   },
-  { priority: 'High',     response: '30 min', resolution: '4 hrs'  },
-  { priority: 'Medium',   response: '2 hrs',  resolution: '1 day'  },
-  { priority: 'Low',      response: '4 hrs',  resolution: '3 days' },
-];
-
-const INTEGRATIONS = {
-  MDM: [
-    { id: 'intune', name: 'Intune', subtitle: '847 managed devices',   connected: true  },
-    { id: 'jamf',   name: 'Jamf',   subtitle: '213 managed devices',   connected: true  },
-  ],
-  'Knowledge Base': [
-    { id: 'confluence', name: 'Confluence', subtitle: '2,140 articles synced', connected: true  },
-    { id: 'notion',     name: 'Notion',     subtitle: '318 articles synced',   connected: false },
-  ],
-  HRIS: [
-    { id: 'workday', name: 'Workday', subtitle: '847 employees', connected: false },
-  ],
-};
-
-// One row per connected integration + scope (not per article)
-const KB_SOURCES = [
-  { id: 'confluence', tool: 'Confluence', space: 'IT Team Space',  articles: 142, syncedAt: 'Mar 2 · 8:00 AM', status: 'synced'  },
-  { id: 'notion',     tool: 'Notion',     space: 'IT Runbooks',    articles:  38, syncedAt: 'Mar 1 · 2:15 PM', status: 'synced'  },
-];
+// ── Data ──────────────────────────────────────────────────────────────────────
 
 const QUEUE_CONFIGS = {
   it: {
-    id: 'it', name: 'IT Tickets', desc: 'IT support for hardware, software, and network issues',
-    color: '#0078D4', initials: 'IT',
+    id: 'it', name: 'IT Tickets', initials: 'IT', color: '#0078D4',
+    isDefault: true,
+    desc: 'Handles all IT service requests and incidents including endpoint devices, access management, and change advisory.',
+    createdBy: 'Alex Morgan', createdAt: 'Jan 15, 2025',
     email: 'it-help@acme.com', slack: '#it-help',
     dayRange: 'Mon–Fri', startTime: '9:00 AM', endTime: '6:00 PM',
-    aiGuidance: 'Always escalate hardware issues to on-site team if unresolved after 2 hrs. Route Salesforce tickets to Sales Eng.',
+    members: [
+      { name: 'Jordan Ellis',  bg: '#F1BD6C' },
+      { name: 'Marcus Rivera', bg: '#4ECBC4' },
+      { name: 'Ajeet Cyrus',   bg: '#4573D2' },
+      { name: 'Zoe Wong',      bg: '#5DA283' },
+      { name: 'Riya Desai',    bg: '#B3DF97' },
+    ],
+    sla: { firstResponse: '4h', update: '8h', resolution: '24h', autoEscalate: true, usingDefaults: false },
+    kb:  { name: 'IT Knowledge Base', articles: 142, aiDeflection: true,  lastUpdated: '2 days ago' },
     aiEnabled: true, integrationsConnected: 3, automationsActive: 5,
   },
   hr: {
-    id: 'hr', name: 'HR Tickets', desc: 'Employee requests for HR policies, payroll, and benefits',
-    color: '#E56020', initials: 'HR',
+    id: 'hr', name: 'HR Tickets', initials: 'HR', color: '#E56020',
+    isDefault: false,
+    desc: 'Employee requests for HR policies, payroll, benefits, and workplace questions.',
+    createdBy: 'Sarah Chen', createdAt: 'Feb 3, 2025',
     email: 'hr-help@acme.com', slack: '#hr-help',
     dayRange: 'Mon–Fri', startTime: '8:00 AM', endTime: '5:00 PM',
-    aiGuidance: 'Route all payroll issues to Finance team. Escalate PIP-related requests to HR Director.',
+    members: [
+      { name: 'Priya Kapoor',  bg: '#F1BD6C' },
+      { name: 'Lisa Nakamura', bg: '#4ECBC4' },
+      { name: 'Rachel Kim',    bg: '#F06A6A' },
+    ],
+    sla: { firstResponse: '8h', update: '12h', resolution: '48h', autoEscalate: true, usingDefaults: true },
+    kb:  { name: 'HR Knowledge Base',  articles: 87, aiDeflection: true, lastUpdated: '5 days ago' },
     aiEnabled: true, integrationsConnected: 2, automationsActive: 3,
   },
 };
+
 const QUEUES_LIST = [QUEUE_CONFIGS.it, QUEUE_CONFIGS.hr];
 
-const PANEL_TITLES = {
-  'queue-name':        'Queue name',
-  'queue-description': 'Description',
-  'inbound-email':     'Email channel',
-  'inbound-slack':     'Slack channel',
-  'business-hours':    'Business hours',
-  'ai-guidance':       'AI guidance',
+// Playbooks per queue
+const ALL_PLAYBOOKS = {
+  it: [
+    { id: 'w1',  section: 'Queue',      avatar: 0, domain: 'IT',         title: 'Auto-assign by Category',             subtitle: 'Auto-routing',     enabled: true,  integrations: ['globe','word'],         desc: 'Routes incoming tickets to the right agent based on category tags and workload.' },
+    { id: 'w3',  section: 'Queue',      avatar: 1, domain: 'IT',         title: 'SLA Breach Auto-escalation',           subtitle: 'SLA management',   enabled: true,  integrations: ['globe','word'],         desc: 'Automatically escalates tickets approaching or past their SLA deadline.' },
+    { id: 'w5',  section: 'Queue',      avatar: 2, domain: 'IT',         title: 'Password Reset Self-Service',          subtitle: 'Access control',   enabled: true,  integrations: ['globe'],               desc: 'Lets employees reset passwords without agent involvement via the AI portal.' },
+    { id: 'w4',  section: 'Queue',      avatar: 3, domain: 'IT',         title: 'Software License Request & Approval',  subtitle: 'Access control',   enabled: false, integrations: ['globe','word','drive'], desc: 'Routes software requests to the right approver and tracks fulfillment.' },
+    { id: 'w6',  section: 'Queue',      avatar: 4, domain: 'IT',         title: 'Hardware Request Fulfillment',         subtitle: 'Hardware',         enabled: false, integrations: ['globe','drive'],        desc: 'Manages hardware orders, shipping, and asset tagging end-to-end.' },
+    { id: 'w7',  section: 'Queue',      avatar: 5, domain: 'IT',         title: 'Duplicate Ticket Detection & Merge',   subtitle: 'Queue management', enabled: false, integrations: ['globe','word'],         desc: 'Detects similar open tickets and merges them to prevent duplicate work.' },
+    { id: 'w2',  section: 'Cross-team', avatar: 6, domain: 'Cross-team', title: 'New Hire Cross-team Onboarding',       subtitle: 'Onboarding',       enabled: true,  integrations: ['globe','word','drive'], desc: 'Coordinates with HR and Facilities when a new hire IT ticket is opened.' },
+    { id: 'w8',  section: 'Cross-team', avatar: 0, domain: 'Cross-team', title: 'Payroll Issue Auto-route to HR',       subtitle: 'Payroll',          enabled: true,  integrations: ['globe','word'],         desc: 'Detects payroll-related tickets and reroutes them to the HR queue.' },
+    { id: 'w11', section: 'Cross-team', avatar: 1, domain: 'Cross-team', title: 'CSAT Survey on Ticket Close',          subtitle: 'Feedback',         enabled: false, integrations: ['globe','drive'],        desc: 'Sends a satisfaction survey to the requester when their ticket is closed.' },
+  ],
+  hr: [
+    { id: 'h1',  section: 'Queue',      avatar: 0, domain: 'HR',         title: 'Benefits Inquiry Auto-response',       subtitle: 'Benefits',         enabled: true,  integrations: ['globe','word'],         desc: 'Answers common benefits questions automatically using the HR knowledge base.' },
+    { id: 'h2',  section: 'Queue',      avatar: 1, domain: 'HR',         title: 'Payroll Issue Escalation',             subtitle: 'Payroll',          enabled: true,  integrations: ['globe','word'],         desc: 'Flags and escalates payroll discrepancies to the payroll team immediately.' },
+    { id: 'h3',  section: 'Queue',      avatar: 2, domain: 'HR',         title: 'PTO Request Routing',                  subtitle: 'Leave management', enabled: true,  integrations: ['globe'],               desc: 'Routes PTO requests to the correct manager and tracks approval status.' },
+    { id: 'h4',  section: 'Queue',      avatar: 3, domain: 'HR',         title: 'New Hire Onboarding Checklist',        subtitle: 'Onboarding',       enabled: false, integrations: ['globe','word','drive'], desc: 'Generates and tracks a checklist of onboarding tasks for each new hire.' },
+    { id: 'w2',  section: 'Cross-team', avatar: 4, domain: 'Cross-team', title: 'New Hire Cross-team Onboarding',       subtitle: 'Onboarding',       enabled: true,  integrations: ['globe','word','drive'], desc: 'Coordinates with IT and Facilities when a new hire HR ticket is opened.' },
+    { id: 'w11', section: 'Cross-team', avatar: 5, domain: 'Cross-team', title: 'CSAT Survey on Ticket Close',          subtitle: 'Feedback',         enabled: false, integrations: ['globe','drive'],        desc: 'Sends a satisfaction survey to the requester when their ticket is closed.' },
+  ],
 };
 
-function trunc(str, n) {
-  return str && str.length > n ? str.slice(0, n) + '…' : str;
-}
+// ── Primitives ────────────────────────────────────────────────────────────────
 
-// ── Integration logos ─────────────────────────────────────────────────────────
-function IntegrationLogo({ id, size = 28 }) {
-  if (id === 'intune') return (
-    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 5, flexShrink: 0 }}>
-      <rect width="24" height="24" rx="5" fill="#0078D4" />
-      <path d="M7 17V8l3.5 5 3.5-5v9M14 8h3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    </svg>
-  );
-  if (id === 'jamf') return (
-    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 5, flexShrink: 0 }}>
-      <rect width="24" height="24" rx="5" fill="#53A7D6" />
-      <path d="M12 5a7 7 0 1 0 0 14A7 7 0 0 0 12 5zm0 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" fill="white" />
-      <circle cx="12" cy="12" r="2" fill="white" />
-    </svg>
-  );
-  if (id === 'confluence') return (
-    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 5, flexShrink: 0 }}>
-      <rect width="24" height="24" rx="5" fill="#1868DB" />
-      <path d="M5 16.5c-.2.3-.5.9-.7 1.2-.2.45 0 .9.45 1.1l2.9 1.7c.45.2 1 .1 1.2-.35.2-.35.45-.8.8-1.25 2-3 4.3-2.7 6.4-.35l2.8 1.7c.45.2 1 .1 1.2-.35l1.6-2.8c.2-.45.1-1-.35-1.2l-2.9-1.7C15 12.9 10.3 12 5 16.5z" fill="white" opacity=".9" />
-      <path d="M19 7.5c.2-.3.5-.9.7-1.2.2-.45 0-.9-.45-1.1L16.35 3.5c-.45-.2-1-.1-1.2.35-.2.35-.45.8-.8 1.25-2 3-4.3 2.7-6.4.35L5.15 3.5c-.45-.2-1-.1-1.2.35L2.35 6.65c-.2.45-.1 1 .35 1.2l2.9 1.7C9 11.1 13.7 12 19 7.5z" fill="white" />
-    </svg>
-  );
-  if (id === 'notion') return (
-    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 5, flexShrink: 0 }}>
-      <rect width="24" height="24" rx="5" fill="#1E1F21" />
-      <path d="M7 6h7.5L19 9.75V18H7V6z" fill="white" />
-      <path d="M14.5 6v3.75H19" stroke="#1E1F21" strokeWidth="1.2" fill="none" />
-      <path d="M9.5 11.25h5M9.5 14.25h5" stroke="#9ea0a2" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
-  );
-  if (id === 'workday') return (
-    <svg viewBox="0 0 24 24" width={size} height={size} style={{ borderRadius: 5, flexShrink: 0 }}>
-      <rect width="24" height="24" rx="5" fill="#F7941D" />
-      <path d="M5 15L8 8l3 5 3-5 3 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    </svg>
-  );
-  return null;
-}
-
-// ── Toggle ────────────────────────────────────────────────────────────────────
 function Toggle({ value, onChange }) {
   return (
     <button type="button" role="switch" aria-checked={value} onClick={() => onChange(!value)}
-      style={{
-        position: 'relative', width: 36, height: 20, borderRadius: 10,
-        border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0,
-        background: value ? 'var(--selected-background-strong)' : 'var(--background-strong)',
-        transition: 'background 0.15s',
-      }}>
-      <span style={{ position: 'absolute', top: 2, width: 16, height: 16, borderRadius: 8, background: 'var(--surface)', transition: 'left 0.15s', left: value ? 18 : 2 }} />
+      style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, background: value ? 'var(--selected-background-strong)' : 'var(--border)', transition: 'background 0.15s' }}>
+      <span style={{ position: 'absolute', top: 2, width: 16, height: 16, borderRadius: 8, background: 'var(--surface)', transition: 'left 0.15s', left: value ? 18 : 2, boxShadow: 'var(--shadow-sm)' }} />
     </button>
   );
 }
 
-// ── Section ───────────────────────────────────────────────────────────────────
-function Section({ title, description, children, action, noDivider }) {
+function Avi({ name, bg, size = 26, border = false }) {
+  const ini = name.split(' ').map(n => n[0]).join('').slice(0, 2);
   return (
-    <div style={{ marginBottom: 40 }}>
-      {/* Header with rule beneath */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: 8, borderBottom: noDivider ? 'none' : '1px solid var(--border)' }}>
-        <div>
-          <p style={{ ...H5, margin: 0 }}>{title}</p>
-          {description && (
-            <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '2px 0 0', lineHeight: 1.4 }}>
-              {description}
-            </p>
-          )}
-        </div>
-        {action}
-      </div>
-      {/* Indented content */}
-      <div style={{ paddingLeft: 16 }}>
-        {children}
-      </div>
+    <div title={name} style={{ width: size, height: size, borderRadius: '50%', background: bg, border: border ? '2px solid var(--surface)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(size * 0.37), fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: SFT, boxSizing: 'border-box' }}>
+      {ini}
     </div>
   );
 }
 
-// ── SettingRow — clickable, opens detail panel ─────────────────────────────────
-function SettingRow({ id, label, description, value, selected, onSelect, last }) {
+function EditBtn({ onClick }) {
   return (
-    <button type="button" onClick={() => onSelect(id)}
-      style={{
-        display: 'flex', alignItems: 'center', width: '100%',
-        padding: '14px 0', paddingLeft: selected ? 10 : 0,
-        gap: 16, textAlign: 'left', cursor: 'pointer',
-        background: 'transparent', border: 'none',
-        borderBottom: last ? 'none' : '1px solid var(--border)',
-        borderLeft: `2px solid ${selected ? 'var(--selected-background-strong)' : 'transparent'}`,
-        transition: 'border-color 0.15s, padding 0.15s',
-      }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ ...base, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0 }}>{label}</p>
-        {description && (
-          <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '2px 0 0', lineHeight: 1.4 }}>
-            {description}
-          </p>
-        )}
-      </div>
-      {value && (
-        <span style={{ ...base, fontSize: 13, color: 'var(--text-weak)', flexShrink: 0, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {value}
-        </span>
-      )}
-      <svg viewBox="0 0 12 12" width="11" height="11" fill="none" style={{ flexShrink: 0, color: 'var(--text-weak)' }}>
-        <path d="M4.5 2.5L7.5 6l-3 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <button type="button" onClick={onClick}
+      style={{ display: 'flex', alignItems: 'center', gap: 5, height: 28, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 6, background: 'transparent', ...BASE, fontSize: 12, color: 'var(--text-weak)', cursor: 'pointer', flexShrink: 0 }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-weak)'; }}>
+      <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z"/>
       </svg>
+      Edit
     </button>
   );
 }
 
-// ── InlineRow — non-clickable with embedded controls ─────────────────────────
-function InlineRow({ label, description, children, last, alignTop, indent, disabled }) {
+// Section divider — replaces SectionCard
+function Section({ title, onEdit, children, style }) {
   return (
-    <div style={{
-      display: 'flex', alignItems: alignTop ? 'flex-start' : 'center',
-      padding: alignTop ? '13px 0' : '12px 0',
-      paddingLeft: indent ? 20 : 0,
-      gap: 16,
-      borderBottom: last ? 'none' : '1px solid var(--border)',
-      opacity: disabled ? 0.38 : 1,
-      pointerEvents: disabled ? 'none' : 'auto',
-      transition: 'opacity 0.2s',
-    }}>
-      <div style={{ flex: 1 }}>
-        <p style={{ ...base, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0 }}>{label}</p>
-        {description && (
-          <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '2px 0 0', lineHeight: 1.45 }}>
-            {description}
-          </p>
-        )}
+    <div style={{ marginBottom: 48, ...style }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
+        <span style={{ ...BASE, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{title}</span>
+        {onEdit && <EditBtn onClick={onEdit} />}
       </div>
-      {children && (
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: alignTop ? 'flex-start' : 'center', gap: 6 }}>
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── PanelField — label + control in detail panel ──────────────────────────────
-function PanelField({ label, description, children }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '0 0 4px' }}>{label}</p>
-      {description && (
-        <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '0 0 8px', lineHeight: 1.45, opacity: 0.75 }}>
-          {description}
-        </p>
-      )}
       {children}
     </div>
   );
 }
 
-// ── Detail Panel ──────────────────────────────────────────────────────────────
-function DetailPanel({ settingId, values, draft, setDraft, onSave, onCancel }) {
-  if (!settingId) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8 }}>
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" style={{ color: 'var(--text-weak)', opacity: 0.3 }}>
-          <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M7 8h10M7 12h7M7 16h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        <p style={{ ...base, fontSize: 13, color: 'var(--text-weak)', margin: 0, opacity: 0.5 }}>
-          Select a setting to edit
-        </p>
+// ── Queue detail sections ─────────────────────────────────────────────────────
+
+// ── Queue detail sections ─────────────────────────────────────────────────────
+
+function MembersSection({ q }) {
+  return (
+    <Section title="Members" onEdit={() => {}}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+        {q.members.map(m => (
+          <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 12px 5px 7px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--background-weak)' }}>
+            <Avi name={m.name} bg={m.bg} size={22} />
+            <span style={{ ...BASE, fontSize: 13, color: 'var(--text)' }}>{m.name}</span>
+          </div>
+        ))}
       </div>
-    );
+      <p style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px' }}>
+        Only listed members can see and work tickets in this queue. All others can still transfer tickets in.
+      </p>
+    </Section>
+  );
+}
+
+function ChannelsSection({ q }) {
+  const rows = [
+    { icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="none" style={{ color: '#4573D2' }}><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>, label: 'AI Portal', value: 'Auto-routes from shared portal', badge: 'Connected' },
+    { icon: <span style={{ ...BASE, fontSize: 14, color: 'var(--text-weak)', lineHeight: 1 }}>#</span>, label: 'Slack', value: q.slack },
+    { icon: <svg viewBox="0 0 16 16" width="15" height="15" fill="none" style={{ color: 'var(--text-weak)' }}><rect x="2" y="4" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M2 5l6 4 6-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>, label: 'Email', value: q.email },
+  ];
+  return (
+    <Section title="Intake channels" onEdit={() => {}}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {rows.map((r, i) => (
+          <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < rows.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            <div style={{ width: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{r.icon}</div>
+            <span style={{ ...BASE, fontSize: 13, fontWeight: 500, color: 'var(--text)', width: 80, flexShrink: 0 }}>{r.label}</span>
+            <span style={{ ...BASE, fontSize: 13, color: 'var(--text-weak)', flex: 1 }}>{r.value}</span>
+            {r.badge && <span style={{ ...BASE, fontSize: 11, fontWeight: 500, color: 'var(--success-text)', background: 'var(--success-background)', padding: '2px 8px', borderRadius: 4 }}>{r.badge}</span>}
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function SlaSection({ q }) {
+  const { sla } = q;
+  return (
+    <Section title="SLA targets" onEdit={() => {}}>
+      {sla.usingDefaults && (
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border)', ...BASE, fontSize: 12, color: 'var(--text-weak)', marginBottom: 16 }}>
+          Using workspace defaults
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 48, marginBottom: 14 }}>
+        {[
+          { label: 'First response', value: sla.firstResponse },
+          { label: 'Update',         value: sla.update        },
+          { label: 'Resolution',     value: sla.resolution    },
+        ].map(({ label, value }) => (
+          <div key={label}>
+            <div style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)', marginBottom: 4 }}>{label}</div>
+            <div style={{ fontFamily: SFD, fontSize: 32, fontWeight: 400, color: 'var(--text)', lineHeight: '38px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        <svg viewBox="0 0 12 12" width="11" height="11" fill="none" style={{ color: '#F1BD6C', flexShrink: 0 }}>
+          <path d="M6 1l1 3h3l-2.5 2 1 3L6 7.5 3.5 9l1-3L2 4h3z" fill="currentColor"/>
+        </svg>
+        <span style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)' }}>
+          Auto-escalate on breach:{' '}
+          <span style={{ color: sla.autoEscalate ? 'var(--success-text)' : 'var(--text-disabled)', fontWeight: 500 }}>
+            {sla.autoEscalate ? 'Enabled' : 'Disabled'}
+          </span>
+        </span>
+      </div>
+    </Section>
+  );
+}
+
+function KbSection({ q }) {
+  const { kb } = q;
+  return (
+    <Section title="Knowledge Base" onEdit={() => {}}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+        <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#4573D2" strokeWidth="1.4" strokeLinecap="round"><rect x="2" y="1" width="10" height="12" rx="1.5"/><path d="M4.5 4h5M4.5 6.5h5M4.5 9h3"/></svg>
+        <span style={{ ...BASE, fontSize: 13, fontWeight: 500, color: '#4573D2' }}>{kb.name}</span>
+        <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#4573D2" strokeWidth="1.4" strokeLinecap="round"><path d="M4 2H2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V6M7 1h2v2M4.5 5.5l4.5-4.5" strokeLinejoin="round"/></svg>
+      </div>
+      <div style={{ display: 'flex', gap: 40 }}>
+        {[
+          { label: 'Articles', value: `${kb.articles}` },
+          { label: 'AI deflection', value: kb.aiDeflection ? 'Enabled' : 'Disabled', color: kb.aiDeflection ? 'var(--success-text)' : 'var(--text-disabled)' },
+          { label: 'Last updated', value: kb.lastUpdated },
+        ].map(({ label, value, color }) => (
+          <div key={label}>
+            <div style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)', marginBottom: 4 }}>{label}</div>
+            <div style={{ ...BASE, fontSize: 14, fontWeight: 500, color: color ?? 'var(--text)' }}>{value}</div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function PlaybookCard({ p, on, onToggle }) {
+  const src = AVATARS[p.avatar % AVATARS.length];
+  return (
+    <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <img src={src} width="48" height="48" alt="" style={{ borderRadius: '50%', flexShrink: 0 }} />
+        <span style={{ flex: 1, ...BASE, fontSize: 15, fontWeight: 600, color: 'var(--text)', lineHeight: '22px', letterSpacing: '-0.2px' }}>{p.title}</span>
+        <Toggle value={on} onChange={onToggle} />
+      </div>
+      <p style={{ ...BASE, fontSize: 14, color: 'var(--text-weak)', lineHeight: '22px', margin: 0, letterSpacing: '-0.15px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.desc}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ height: 28, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 14, ...BASE, fontSize: 12, color: 'var(--text-weak)', display: 'inline-flex', alignItems: 'center' }}>{p.domain}</span>
+        <span style={{ height: 28, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 14, ...BASE, fontSize: 12, color: 'var(--text-weak)', display: 'inline-flex', alignItems: 'center' }}>{p.subtitle}</span>
+        <div style={{ flex: 1 }} />
+        <div style={{ display: 'flex', gap: 4 }}>
+          {p.integrations.map(i => <img key={i} src={INT[i]} width="16" height="16" alt={i} style={{ display: 'block' }} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlaybooksSection({ queueId }) {
+  const playbooks = ALL_PLAYBOOKS[queueId] ?? [];
+  const [enabled, setEnabled] = useState(
+    Object.fromEntries(playbooks.map(p => [p.id, p.enabled]))
+  );
+  const [exploring, setExploring] = useState(false);
+
+  const activePlaybooks = playbooks.filter(p => enabled[p.id]);
+
+  function toggle(id) {
+    setEnabled(e => ({ ...e, [id]: !e[id] }));
   }
 
   return (
-    <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexShrink: 0 }}>
-        <span style={{ ...H5 }}>{PANEL_TITLES[settingId]}</span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button variant="outline" size="sm" onClick={onCancel}>Cancel</Button>
-          <Button variant="primary" size="sm" onClick={onSave}>Save</Button>
-        </div>
-      </div>
-
-      {/* Form */}
-      <div style={{ flex: 1 }}>
-        {settingId === 'queue-name' && (
-          <PanelField label="Name" description="Shown in the portal and all outbound emails">
-            <input value={draft.queueName ?? ''} onChange={e => setDraft(d => ({ ...d, queueName: e.target.value }))}
-              style={{ ...inputStyle, width: '100%' }} autoFocus />
-          </PanelField>
-        )}
-
-        {settingId === 'queue-description' && (
-          <PanelField label="Description" description="Shown to employees on the request portal">
-            <input value={draft.queueDesc ?? ''} onChange={e => setDraft(d => ({ ...d, queueDesc: e.target.value }))}
-              style={{ ...inputStyle, width: '100%' }} autoFocus />
-          </PanelField>
-        )}
-
-        {settingId === 'inbound-email' && (
-          <PanelField label="Email address" description="Emails to this address automatically open a ticket">
-            <input value={draft.email ?? ''} onChange={e => setDraft(d => ({ ...d, email: e.target.value }))}
-              style={{ ...inputStyle, width: '100%' }} autoFocus />
-          </PanelField>
-        )}
-
-        {settingId === 'inbound-slack' && (
-          <PanelField label="Slack channel" description="Messages in this channel automatically open a ticket">
-            <input value={draft.slack ?? ''} onChange={e => setDraft(d => ({ ...d, slack: e.target.value }))}
-              style={{ ...inputStyle, width: '100%' }} autoFocus />
-          </PanelField>
-        )}
-
-        {settingId === 'business-hours' && (
-          <>
-            <PanelField label="Days">
-              <Dropdown value={draft.dayRange} onChange={v => setDraft(d => ({ ...d, dayRange: v }))}
-                options={['Mon–Fri', 'Mon–Sat', 'Every day']} />
-            </PanelField>
-            <PanelField label="Hours">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <Dropdown value={draft.startTime} onChange={v => setDraft(d => ({ ...d, startTime: v }))}
-                    options={['7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM']} />
-                </div>
-                <span style={{ ...base, fontSize: 13, color: 'var(--text-weak)' }}>–</span>
-                <div style={{ flex: 1 }}>
-                  <Dropdown value={draft.endTime} onChange={v => setDraft(d => ({ ...d, endTime: v }))}
-                    options={['4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM']} />
-                </div>
-              </div>
-            </PanelField>
-          </>
-        )}
-
-        {settingId === 'ai-guidance' && (
-          <PanelField label="Instructions" description="Guides how AI triages, classifies, and responds to tickets in this queue">
-            <textarea rows={8} value={draft.aiGuidance ?? ''}
-              onChange={e => setDraft(d => ({ ...d, aiGuidance: e.target.value }))}
-              style={{ ...inputStyle, width: '100%', height: 'auto', padding: '8px 10px', resize: 'vertical', lineHeight: 1.55 }}
-              autoFocus />
-          </PanelField>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── General Tab ───────────────────────────────────────────────────────────────
-function GeneralTab({ values, selectedSetting, onOpen }) {
-  const [categories,    setCategories]    = useState(['Access Management', 'Hardware', 'Software', 'Network']);
-  const [autoClose,     setAutoClose]     = useState(7);
-  const [surveyOnClose, setSurveyOnClose] = useState(true);
-
-  return (
-    <div>
-      <Section title="Queue" description="How this queue is identified in the portal and emails">
-        <SettingRow id="queue-name" label="Name" description="Shown in portal and outbound emails"
-          value={values.queueName} selected={selectedSetting === 'queue-name'} onSelect={onOpen} />
-        <SettingRow id="queue-description" label="Description" description="Shown to employees on the request portal"
-          value={trunc(values.queueDesc, 40)} selected={selectedSetting === 'queue-description'} onSelect={onOpen} last />
-      </Section>
-
-      <Section title="Inbound" description="Channels where employees submit new requests">
-        <SettingRow id="inbound-email" label="Email" description="Emails automatically open a ticket"
-          value={values.email} selected={selectedSetting === 'inbound-email'} onSelect={onOpen} />
-        <SettingRow id="inbound-slack" label="Slack" description="Messages automatically open a ticket"
-          value={values.slack} selected={selectedSetting === 'inbound-slack'} onSelect={onOpen} last />
-      </Section>
-
-      <Section title="Schedule" description="When the queue is active and SLAs are tracked">
-        <SettingRow id="business-hours" label="Business hours" description="Tickets outside these hours are queued until the next business day"
-          value={`${values.dayRange} · ${values.startTime} – ${values.endTime}`}
-          selected={selectedSetting === 'business-hours'} onSelect={onOpen} last />
-      </Section>
-
-      <Section title="Categories" description="Tags used to route tickets and filter reports">
-        <InlineRow label="Queue tags" description="Used to route tickets, apply automations, and filter reports" last>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {categories.map(cat => (
-              <div key={cat} className="group"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: 'var(--background-medium)', color: 'var(--text)', fontSize: 12, fontWeight: 500, padding: '3px 9px', borderRadius: 999, fontFamily: SFT, ...LIGA }}>
-                {cat}
-                <button type="button" onClick={() => setCategories(p => p.filter(c => c !== cat))}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-weak)', fontSize: 13, padding: '0 0 0 2px', lineHeight: 1 }}>×</button>
-              </div>
-            ))}
-            <button type="button" style={{ fontSize: 12, fontWeight: 500, padding: '3px 9px', borderRadius: 999, fontFamily: SFT, ...LIGA, border: '1px dashed var(--border-strong)', color: 'var(--text-weak)', background: 'transparent', cursor: 'pointer' }}>
-              + Add
-            </button>
-          </div>
-        </InlineRow>
-      </Section>
-
-      <Section title="SLA" description="Response and resolution time targets by priority level">
-        {/* Column headers */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--background-weak)' }}>
-          <div style={{ width: 240, flexShrink: 0, ...base, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', padding: '8px 12px', borderRight: '1px solid var(--border)' }}>Priority</div>
-          <div style={{ width: 240, flexShrink: 0, ...base, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', padding: '8px 12px', borderRight: '1px solid var(--border)' }}>First response</div>
-          <div style={{ width: 240, flexShrink: 0, ...base, fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', padding: '8px 12px' }}>Resolution time</div>
-        </div>
-        {/* Rows */}
-        {INITIAL_SLA.map((row, i) => (
-          <div key={row.priority} style={{ display: 'flex', alignItems: 'center', borderBottom: i < INITIAL_SLA.length - 1 ? '1px solid var(--border)' : 'none' }}>
-            <div style={{ width: 240, flexShrink: 0, padding: '10px 12px', borderRight: '1px solid var(--border)' }}>
-              <Badge variant={PRIORITY_VARIANT[row.priority]} size="sm">{row.priority}</Badge>
-            </div>
-            <div style={{ width: 240, flexShrink: 0, padding: '10px 12px', borderRight: '1px solid var(--border)' }}>
-              <select defaultValue={row.response} style={{ ...inputStyle, height: 28, width: 'auto' }}>
-                {TIME_OPTS.map(o => <option key={o}>{o}</option>)}
-              </select>
-            </div>
-            <div style={{ width: 240, flexShrink: 0, padding: '10px 12px' }}>
-              <select defaultValue={row.resolution} style={{ ...inputStyle, height: 28, width: 'auto' }}>
-                {TIME_OPTS.map(o => <option key={o}>{o}</option>)}
-              </select>
-            </div>
-          </div>
-        ))}
-      </Section>
-
-      <Section title="Lifecycle" description="Automated ticket state transitions">
-        <InlineRow label="Auto-close resolved tickets after" description="Tickets in Resolved status for this many days are closed automatically">
-          <input type="number" value={autoClose} onChange={e => setAutoClose(e.target.value)}
-            style={{ ...inputStyle, width: 52, textAlign: 'right' }} />
-          <span style={{ ...base, fontSize: 13, color: 'var(--text-weak)' }}>days</span>
-        </InlineRow>
-        <InlineRow label="Satisfaction survey on close" description="Send a one-question CSAT survey when a ticket is marked resolved" last>
-          <Toggle value={surveyOnClose} onChange={setSurveyOnClose} />
-        </InlineRow>
-      </Section>
-    </div>
-  );
-}
-
-// ── Integrations Tab ──────────────────────────────────────────────────────────
-function IntegrationsTab() {
-  return (
-    <div>
-      {Object.entries(INTEGRATIONS).map(([category, items]) => (
-        <Section key={category} title={category}>
-          {items.map((int, i) => (
-            <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < items.length - 1 ? '1px solid var(--border)' : 'none' }}>
-              <IntegrationLogo id={int.id} size={28} />
-              <div style={{ flex: 1 }}>
-                <p style={{ ...base, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0 }}>{int.name}</p>
-                <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '2px 0 0' }}>{int.subtitle}</p>
-              </div>
-              <span style={{ ...base, fontSize: 12, color: int.connected ? 'var(--success-text)' : 'var(--text-weak)', marginRight: 8 }}>
-                {int.connected ? '● Connected' : '○ Not connected'}
-              </span>
-              <Button variant={int.connected ? 'outline' : 'primary'} size="sm">
-                {int.connected ? 'Disconnect' : 'Connect'}
-              </Button>
+    <Section title="Playbooks">
+      {/* Compact enabled list */}
+      {activePlaybooks.length > 0 ? (
+        <div style={{ marginBottom: 16 }}>
+          {activePlaybooks.map((p, i) => (
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < activePlaybooks.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <img src={AVATARS[p.avatar % AVATARS.length]} width="26" height="26" alt="" style={{ borderRadius: '50%', flexShrink: 0 }} />
+              <span style={{ flex: 1, ...BASE, fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{p.title}</span>
+              <span style={{ ...BASE, fontSize: 11, color: 'var(--text-disabled)', marginRight: 6 }}>{p.subtitle}</span>
+              <Toggle value={true} onChange={() => toggle(p.id)} />
             </div>
           ))}
-        </Section>
-      ))}
-      <Button variant="ghost" size="sm">+ Connect integration</Button>
+        </div>
+      ) : (
+        <p style={{ ...BASE, fontSize: 13, color: 'var(--text-disabled)', marginBottom: 16 }}>No playbooks enabled.</p>
+      )}
+
+      {/* Explore & add trigger */}
+      <button
+        type="button"
+        onClick={() => setExploring(v => !v)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 30, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 6, background: exploring ? 'var(--background-medium)' : 'transparent', ...BASE, fontSize: 13, color: 'var(--text-weak)', cursor: 'pointer', transition: 'background 0.12s' }}
+        onMouseEnter={e => { if (!exploring) e.currentTarget.style.background = 'var(--background-weak)'; }}
+        onMouseLeave={e => { if (!exploring) e.currentTarget.style.background = 'transparent'; }}
+      >
+        {exploring ? (
+          <>
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 6h8"/></svg>
+            Collapse
+          </>
+        ) : (
+          <>
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 2v8M2 6h8"/></svg>
+            Explore & add playbooks
+          </>
+        )}
+      </button>
+
+      {/* Full card grid — all playbooks */}
+      {exploring && (
+        <div style={{ marginTop: 24 }}>
+          {[...new Set(playbooks.map(p => p.section))].map((sec, si, arr) => (
+            <div key={sec} style={{ marginBottom: si < arr.length - 1 ? 32 : 0 }}>
+              <div style={{ ...BASE, fontSize: 12, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.04em', marginBottom: 12 }}>{sec.toUpperCase()}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                {playbooks.filter(p => p.section === sec).map(p => (
+                  <PlaybookCard key={p.id} p={p} on={!!enabled[p.id]} onToggle={() => toggle(p.id)} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  );
+}
+
+function DangerZone({ q }) {
+  return (
+    <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+      <span style={{ ...BASE, fontSize: 14, fontWeight: 600, color: 'var(--danger-text)' }}>Danger zone</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 }}>
+        <div>
+          <div style={{ ...BASE, fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Archive queue</div>
+          {q.isDefault && <div style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)', marginTop: 2 }}>Cannot archive the default queue. Change the default first.</div>}
+        </div>
+        <button type="button" disabled={q.isDefault}
+          style={{ height: 32, padding: '0 14px', border: '1px solid var(--border)', borderRadius: 6, ...BASE, fontSize: 13, color: q.isDefault ? 'var(--text-disabled)' : 'var(--danger-text)', background: 'transparent', cursor: q.isDefault ? 'default' : 'pointer', opacity: q.isDefault ? 0.5 : 1 }}>
+          Archive
+        </button>
+      </div>
     </div>
   );
 }
 
-// ── Knowledge Base Tab ────────────────────────────────────────────────────────
-function KnowledgeBaseTab() {
-  const [learnings, setLearnings] = useState(true);
-  const [sources, setSources] = useState(KB_SOURCES);
+// ── Queue detail view ─────────────────────────────────────────────────────────
+
+function QueueDetail({ q }) {
+  const navigate = useNavigate();
+  const shown    = q.members.slice(0, 4);
+  const rest     = q.members.length - shown.length;
 
   return (
-    <div>
-      <Section
-        title="Sources"
-        description="Which content from connected integrations feeds this queue's knowledge base"
-      >
-        {sources.map((src, i) => (
-          <div key={src.id} className="group" style={{
-            display: 'flex', alignItems: 'center', gap: 16,
-            padding: '12px 0',
-            borderBottom: i < sources.length - 1 ? '1px solid var(--border)' : 'none',
-          }}>
-            {/* Logo + name + space */}
-            <IntegrationLogo id={src.id} size={28} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ ...base, fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0 }}>{src.tool}</p>
-              <p style={{ ...base, fontSize: 12, color: 'var(--text-weak)', margin: '1px 0 0' }}>{src.space}</p>
-            </div>
-            {/* Sync status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success-text)', flexShrink: 0 }} />
-              <span style={{ ...base, fontSize: 12, color: 'var(--text-weak)' }}>Synced {src.syncedAt}</span>
-            </div>
-            {/* Article count */}
-            <span style={{ ...base, fontSize: 12, color: 'var(--text-weak)', flexShrink: 0 }}>
-              {src.articles} articles
-            </span>
-            {/* Actions */}
-            <Button variant="outline" size="sm">Manage</Button>
-            <Button
-              variant="ghost" size="icon"
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => setSources(s => s.filter(x => x.id !== src.id))}
-            >
-              <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
-                <path d="M3 4h10M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M13 4l-.8 8.5a1 1 0 0 1-1 .5H4.8a1 1 0 0 1-1-.5L3 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
-            </Button>
-          </div>
-        ))}
+    <div style={{ height: '100%', overflow: 'auto', background: 'var(--background-weak)' }}>
+      {/* Page header */}
+      <div style={{ padding: '24px 64px 20px', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+        {/* Breadcrumb */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 }}>
+          <button type="button" onClick={() => navigate('/settings')}
+            style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-weak)'}>
+            ← Settings
+          </button>
+          <span style={{ ...BASE, fontSize: 12, color: 'var(--text-disabled)' }}>/</span>
+          <span style={{ ...BASE, fontSize: 12, color: 'var(--text-disabled)' }}>Queue Management</span>
+          <span style={{ ...BASE, fontSize: 12, color: 'var(--text-disabled)' }}>/</span>
+          <span style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)' }}>{q.name}</span>
+        </div>
 
-        <div style={{ paddingTop: sources.length > 0 ? 8 : 0 }}>
-          <span style={{ ...base, fontSize: 12, color: 'var(--text-disabled)' }}>
-            Connections managed in
-            <button type="button" style={{ ...base, fontSize: 12, color: 'var(--selected-text)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 3px' }}>
-              Integrations
-            </button>
+        {/* Title row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: q.color, flexShrink: 0 }} />
+              <h1 style={{ fontFamily: SFD, fontSize: 22, fontWeight: 600, color: 'var(--text)', margin: 0, lineHeight: '28px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{q.name}</h1>
+              <span style={{ ...BASE, fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)', color: 'var(--text-weak)', background: 'var(--background-weak)' }}>
+                {q.isDefault ? 'Default' : 'Private'}
+              </span>
+            </div>
+            <p style={{ ...BASE, fontSize: 13, color: 'var(--text-weak)', margin: '0 0 6px', lineHeight: '18px' }}>{q.desc}</p>
+            <p style={{ ...BASE, fontSize: 11, color: 'var(--text-disabled)', margin: 0 }}>
+              Created by {q.createdBy} on {q.createdAt}
+            </p>
+          </div>
+          {/* Member avatars */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {shown.map((m, i) => (
+                <Avi key={m.name} name={m.name} bg={m.bg} size={26} border style={{ marginLeft: i === 0 ? 0 : -8, zIndex: shown.length - i, position: 'relative' }} />
+              ))}
+              {rest > 0 && (
+                <div style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid var(--surface)', background: 'var(--background-medium)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -8, fontSize: 9, fontWeight: 700, color: 'var(--text-weak)', fontFamily: SFT, boxSizing: 'border-box', zIndex: 0, position: 'relative' }}>
+                  +{rest}
+                </div>
+              )}
+            </div>
+            <span style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)' }}>{q.members.length} members</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Default queue banner */}
+      {q.isDefault && (
+        <div style={{ padding: '10px 64px', background: '#EEF4FF', borderBottom: '1px solid #C7D9FF', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" style={{ color: '#4573D2', flexShrink: 0, marginTop: 2 }}>
+            <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M7 6v4M7 4v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span style={{ ...BASE, fontSize: 13, color: '#4573D2', lineHeight: '18px' }}>
+            This is the default queue. Unrouted tickets are automatically sent here. To change the default queue, go to Settings.
           </span>
         </div>
-      </Section>
+      )}
 
-      <Section title="Learnings" description="AI monitors resolved tickets and flags knowledge gaps">
-        <InlineRow label="Enable learnings" description="AI detects missing or outdated documentation and surfaces gaps in the Knowledge Base">
-          <Toggle value={learnings} onChange={setLearnings} />
-        </InlineRow>
-        <InlineRow label="Notification frequency" description="How often to surface new learnings in the Knowledge Base" indent disabled={!learnings} last>
-          <select defaultValue="Daily" style={{ ...inputStyle, height: 28, width: 'auto' }}>
-            {['Real-time', 'Daily', 'Weekly'].map(o => <option key={o}>{o}</option>)}
-          </select>
-        </InlineRow>
-      </Section>
+      {/* Content */}
+      <div style={{ padding: '40px 64px 80px' }}>
+        <MembersSection q={q} />
+        <ChannelsSection q={q} />
+        <SlaSection q={q} />
+        <KbSection q={q} />
+        <PlaybooksSection queueId={q.id} />
+        <DangerZone q={q} />
+      </div>
     </div>
   );
 }
 
-// ── Automations Tab ───────────────────────────────────────────────────────────
+// ── Admin landing page ─────────────────────────────────────────────────────────
+export function SettingsLandingPage() {
+  const navigate    = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [queues, setQueues] = useState(() => [...QUEUES_LIST, ...session.createdQueues]);
 
-const SETTINGS_AUTOMATIONS = [
-  { id: 'w1',  section: 'it',    title: 'Auto-assign IT Tickets by Category', subtitle: 'Auto-routing',     enabled: true  },
-  { id: 'w3',  section: 'it',    title: 'SLA Breach Auto-escalation',         subtitle: 'SLA management',   enabled: true  },
-  { id: 'w5',  section: 'it',    title: 'Password Reset Self-Service',        subtitle: 'Access control',   enabled: true  },
-  { id: 'w4',  section: 'it',    title: 'Software License Request & Approval',subtitle: 'Access control',   enabled: false },
-  { id: 'w6',  section: 'it',    title: 'Hardware Request Fulfillment',       subtitle: 'Hardware',         enabled: false },
-  { id: 'w7',  section: 'it',    title: 'Duplicate Ticket Detection & Merge', subtitle: 'Queue management', enabled: false },
-  { id: 'w12', section: 'it',    title: 'Auto-close Inactive Resolved Tickets',subtitle:'Queue management', enabled: false },
-  { id: 'w2',  section: 'cross', title: 'New Hire Cross-team Onboarding',     subtitle: 'Onboarding',       enabled: true  },
-  { id: 'w8',  section: 'cross', title: 'Payroll Issue Auto-route to HR',     subtitle: 'Payroll',          enabled: true  },
-  { id: 'w11', section: 'cross', title: 'CSAT Survey on Ticket Close',        subtitle: 'Feedback',         enabled: false },
-];
-
-function AutomationsTab() {
-  const navigate = useNavigate();
-  const [enabledState, setEnabledState] = useState(
-    Object.fromEntries(SETTINGS_AUTOMATIONS.map(a => [a.id, a.enabled]))
-  );
-
-  const itList    = SETTINGS_AUTOMATIONS.filter(a => a.section === 'it');
-  const crossList = SETTINGS_AUTOMATIONS.filter(a => a.section === 'cross');
-
-  function renderRow(auto, isLast) {
-    return (
-      <InlineRow key={auto.id} label={auto.title} last={isLast}>
-        <span style={{
-          ...base, fontSize: 11, color: 'var(--text-disabled)',
-          padding: '2px 7px', borderRadius: 4, background: 'var(--background-medium)',
-          whiteSpace: 'nowrap',
-        }}>
-          {auto.subtitle}
-        </span>
-        <Toggle value={enabledState[auto.id]} onChange={v => setEnabledState(p => ({ ...p, [auto.id]: v }))} />
-      </InlineRow>
-    );
+  function handleCreated(form) {
+    const initials = form.name.trim().split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2);
+    const newQueue = {
+      id: `q_${Date.now()}`,
+      name: form.name.trim(),
+      initials,
+      color: form.color,
+      isDefault: false,
+      desc: form.desc || '',
+      createdBy: 'You',
+      createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      email: form.email || '—',
+      slack: form.slack || '—',
+      dayRange: form.dayRange,
+      startTime: form.startTime,
+      endTime: form.endTime,
+      members: form.members ?? [],
+      sla: { firstResponse: form.slaFirst, update: form.slaUpdate, resolution: form.slaResolution, autoEscalate: true, usingDefaults: false },
+      kb: { name: '', articles: 0, aiDeflection: false, lastUpdated: '—' },
+      aiEnabled: true,
+      integrationsConnected: 0,
+      automationsActive: Object.values(form.playbooks).filter(Boolean).length,
+    };
+    session.createdQueues.push(newQueue);
+    setQueues(prev => [...prev, newQueue]);
   }
 
   return (
-    <div>
-      <Section title="IT Queue" description="Automations active for the IT Tickets queue">
-        {itList.map((auto, i) => renderRow(auto, i === itList.length - 1))}
-      </Section>
-      <Section title="Cross-team" description="Workflows that span multiple queues">
-        {crossList.map((auto, i) => renderRow(auto, i === crossList.length - 1))}
-      </Section>
-      <button
-        type="button"
-        onClick={() => navigate('/automations')}
-        style={{ ...base, fontSize: 13, color: 'var(--selected-text)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-        onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-      >
-        View all automations
-      </button>
-    </div>
-  );
-}
-
-// ── AI Tab ────────────────────────────────────────────────────────────────────
-function AITab({ values, selectedSetting, onOpen }) {
-  const [autoClassify, setAutoClassify] = useState(true);
-  const [threshold,    setThreshold]    = useState(85);
-
-  return (
-    <div>
-      <Section title="Classification" description="How AI handles incoming ticket triage">
-        <InlineRow label="Auto-classify incoming tickets" description="AI assigns category and priority when a ticket arrives">
-          <Toggle value={autoClassify} onChange={setAutoClassify} />
-        </InlineRow>
-        <InlineRow label="Confidence threshold" description="Only auto-assign when AI confidence meets or exceeds this level"
-          indent disabled={!autoClassify} last>
-          <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)}
-            style={{ ...inputStyle, width: 52, textAlign: 'right' }} />
-          <span style={{ ...base, fontSize: 13, color: 'var(--text-weak)' }}>%</span>
-        </InlineRow>
-      </Section>
-
-      <Section title="Instructions" description="Custom guidance for how AI triages and responds in this queue">
-        <SettingRow id="ai-guidance" label="AI guidance" description="Routing rules, escalation logic, and tone instructions"
-          value={trunc(values.aiGuidance, 48)} selected={selectedSetting === 'ai-guidance'} onSelect={onOpen} last />
-      </Section>
-    </div>
-  );
-}
-
-// ── SettingsLandingPage ────────────────────────────────────────────────────────
-export function SettingsLandingPage() {
-  const navigate = useNavigate();
-  return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background-weak)' }}>
-
       {/* Header */}
-      <div style={{ flexShrink: 0, padding: '28px 32px 20px' }}>
-        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
-          Settings
-        </h1>
+      <div style={{ flexShrink: 0, padding: '28px 32px 20px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div>
+          <h1 style={{ fontFamily: SFD, fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
+            Admin
+          </h1>
+          <p style={{ ...BASE, fontSize: 13, color: 'var(--text-weak)', margin: '2px 0 0' }}>Manage queues, channels, and team settings</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', border: 'none', borderRadius: 7, background: 'var(--selected-background-strong)', ...BASE, fontSize: 13, fontWeight: 500, color: 'var(--selected-text-strong)', cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        >
+          <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
+          Create queue
+        </button>
       </div>
 
       {/* Table header */}
       <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 32px', height: 36, background: 'var(--surface)' }}>
-        <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)' }} />
         <span style={{ ...typoMeta, flex: 1, minWidth: 220, fontWeight: 500 }}>Queue</span>
-        <span style={{ ...typoMeta, width: 160, flexShrink: 0, fontWeight: 500 }}>Email</span>
+        <span style={{ ...typoMeta, width: 140, flexShrink: 0, fontWeight: 500 }}>Email</span>
         <span style={{ ...typoMeta, width: 180, flexShrink: 0, fontWeight: 500 }}>Business hours</span>
-        <span style={{ ...typoMeta, width: 80, flexShrink: 0, fontWeight: 500 }}>AI</span>
+        <span style={{ ...typoMeta, width: 80,  flexShrink: 0, fontWeight: 500 }}>AI</span>
         <span style={{ ...typoMeta, width: 120, flexShrink: 0, fontWeight: 500 }}>Integrations</span>
-        <span style={{ ...typoMeta, width: 100, flexShrink: 0, fontWeight: 500 }}>Automations</span>
+        <span style={{ ...typoMeta, width: 110, flexShrink: 0, fontWeight: 500 }}>Playbooks</span>
       </div>
 
       {/* Rows */}
       <div style={{ flex: 1, overflowY: 'auto', background: 'var(--surface)' }}>
-        {QUEUES_LIST.map(q => (
+        {queues.map(q => (
           <div
             key={q.id}
             role="button"
@@ -657,163 +513,53 @@ export function SettingsLandingPage() {
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; }}
           >
             <div style={{ position: 'absolute', bottom: 0, left: 24, right: 24, height: 1, background: 'var(--border)', pointerEvents: 'none' }} />
-
             {/* Queue */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 220 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: q.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'white', letterSpacing: '0.2px' }}>{q.initials}</span>
+                <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 700, color: 'white', letterSpacing: '0.2px' }}>{q.initials}</span>
               </div>
               <div>
                 <div style={{ ...typoCell }}>{q.name}</div>
-                <div style={{ ...typoMeta, marginTop: 1 }}>{q.desc}</div>
+                <div style={{ ...typoMeta, marginTop: 1 }}>
+                  {q.members.length} members
+                  {q.isDefault && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 500, padding: '1px 5px', borderRadius: 3, background: 'var(--background-medium)', color: 'var(--text-weak)' }}>Default</span>}
+                </div>
               </div>
             </div>
-
             {/* Email */}
-            <div style={{ width: 160, flexShrink: 0 }}>
+            <div style={{ width: 140, flexShrink: 0 }}>
               <span style={{ ...typoCell }}>{q.email}</span>
             </div>
-
             {/* Business hours */}
             <div style={{ width: 180, flexShrink: 0 }}>
               <span style={{ ...typoCell }}>{q.dayRange}, {q.startTime}–{q.endTime}</span>
             </div>
-
             {/* AI */}
             <div style={{ width: 80, flexShrink: 0 }}>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: 4,
-                background: q.aiEnabled ? 'var(--success-background)' : 'var(--background-medium)',
-                fontSize: 11, fontWeight: 500,
-                color: q.aiEnabled ? 'var(--success-text)' : 'var(--text-weak)',
-                fontFamily: SFT,
-              }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: 4, background: q.aiEnabled ? 'var(--success-background)' : 'var(--background-medium)', fontSize: 11, fontWeight: 500, color: q.aiEnabled ? 'var(--success-text)' : 'var(--text-weak)', fontFamily: SFT }}>
                 {q.aiEnabled ? 'On' : 'Off'}
               </span>
             </div>
-
             {/* Integrations */}
             <div style={{ width: 120, flexShrink: 0 }}>
               <span style={{ ...typoCell }}>{q.integrationsConnected} connected</span>
             </div>
-
-            {/* Automations */}
-            <div style={{ width: 100, flexShrink: 0 }}>
+            {/* Playbooks */}
+            <div style={{ width: 110, flexShrink: 0 }}>
               <span style={{ ...typoCell }}>{q.automationsActive} active</span>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Create queue panel */}
+      {createOpen && <CreateQueuePanel onClose={() => setCreateOpen(false)} onCreated={handleCreated} />}
     </div>
   );
 }
 
-// ── SettingsView ──────────────────────────────────────────────────────────────
+// ── SettingsView (default export) ─────────────────────────────────────────────
 export default function SettingsView({ queueId = 'it' }) {
-  const navigate = useNavigate();
-  const queueConfig = QUEUE_CONFIGS[queueId] ?? QUEUE_CONFIGS.it;
-  const [tab, setTab] = useState('general');
-
-  // Committed values shown in the list
-  const [values, setValues] = useState({
-    queueName:  queueConfig.name,
-    queueDesc:  queueConfig.desc,
-    email:      queueConfig.email,
-    slack:      queueConfig.slack,
-    dayRange:   queueConfig.dayRange,
-    startTime:  queueConfig.startTime,
-    endTime:    queueConfig.endTime,
-    aiGuidance: queueConfig.aiGuidance,
-  });
-
-  // In-flight edits while panel is open
-  const [draft,           setDraft]           = useState(null);
-  const [selectedSetting, setSelectedSetting] = useState(null);
-
-  function openSetting(id) {
-    setDraft({ ...values });
-    setSelectedSetting(id);
-  }
-
-  function save() {
-    setValues({ ...draft });
-    setSelectedSetting(null);
-    setDraft(null);
-  }
-
-  function cancel() {
-    setSelectedSetting(null);
-    setDraft(null);
-  }
-
-  function switchTab(id) {
-    setTab(id);
-    setSelectedSetting(null);
-    setDraft(null);
-  }
-
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* ── Header ── */}
-      <div style={{ padding: '32px 40px 0', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <button type="button" onClick={() => navigate('/settings')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4, ...base, fontSize: 13, color: 'var(--text-weak)' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-weak)'; }}
-          >
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7.5 2L4 6l3.5 4"/>
-            </svg>
-            Settings
-          </button>
-        </div>
-        <p style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: '0 0 24px' }}>{queueConfig.name}</p>
-
-        {/* Tab bar */}
-        <div className="flex border-b border-border">
-          {TABS.map(t => (
-            <button key={t.id} type="button" onClick={() => switchTab(t.id)}
-              className={[
-                'px-4 py-2.5 text-sm font-medium transition-colors',
-                tab === t.id ? 'text-text shadow-[inset_0_-2px_0_var(--text)]' : 'text-text-weak hover:text-text',
-              ].join(' ')}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left: scrollable setting list — full width when panel closed, 55% when open */}
-        <div style={{
-          flex: selectedSetting ? '0 0 55%' : '1 1 100%',
-          overflowY: 'auto', padding: '28px 40px 48px',
-          borderRight: selectedSetting ? '1px solid var(--border)' : 'none',
-          transition: 'flex 0.2s ease',
-        }}>
-          {tab === 'general'      && <GeneralTab      values={values} selectedSetting={selectedSetting} onOpen={openSetting} />}
-          {tab === 'integrations' && <IntegrationsTab />}
-          {tab === 'kb'           && <KnowledgeBaseTab />}
-          {tab === 'ai'           && <AITab            values={values} selectedSetting={selectedSetting} onOpen={openSetting} />}
-          {tab === 'automations'  && <AutomationsTab />}
-        </div>
-
-        {/* Right: detail panel — hidden until a row is selected */}
-        {selectedSetting && (
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <DetailPanel
-              settingId={selectedSetting}
-              values={values}
-              draft={draft}
-              setDraft={setDraft}
-              onSave={save}
-              onCancel={cancel}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const q = QUEUE_CONFIGS[queueId] ?? QUEUE_CONFIGS.it;
+  return <QueueDetail q={q} />;
 }

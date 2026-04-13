@@ -300,10 +300,8 @@ function Agent2NavContent({ activeItem, onSelect }) {
       <hr className="my-1 border-border" />
       <NavItem label="Knowledge" Icon={LightBulbIcon}
         active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
-      {[{ label: 'Automations', Icon: AutomationIcon }, { label: 'Settings', Icon: SettingsIcon }].map(({ label, Icon }) => (
-        <NavItem key={label} label={label} Icon={Icon}
-          active={activeItem === label} onClick={() => onSelect(label)} />
-      ))}
+      <NavItem label="Playbooks" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />
+      <NavItem label="Settings"  Icon={SettingsIcon}   active={activeItem === 'Settings'}    onClick={() => onSelect('Settings')} />
     </>
   );
 }
@@ -325,7 +323,7 @@ function AdminNavContent({ activeItem, onSelect }) {
       <NavItem label="Assets" Icon={AssetsIcon} badge={5} active={activeItem === 'Assets'} onClick={() => onSelect('Assets')} />
 
       <SectionLabel label="Configure" />
-      <NavItem label="Automations" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />
+      <NavItem label="Playbooks" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />
       <NavItem label="Settings" Icon={SettingsIcon} active={activeItem === 'Settings'} onClick={() => onSelect('Settings')} />
     </>
   );
@@ -392,7 +390,7 @@ function Admin2NavContent({ activeItem, onSelect }) {
       <NavItem label="Playbooks"     Icon={AutomationIcon} active={activeItem === 'Automations'}  onClick={() => onSelect('Automations')} />
       <NavItem label="Knowledge Base" Icon={LightBulbIcon}  active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       <NavItem label="Assets"        Icon={AssetsIcon}     active={activeItem === 'Assets'}       onClick={() => onSelect('Assets')} />
-      <NavItem label="Queue settings" Icon={SettingsIcon}  active={activeItem === 'Settings'}     onClick={() => onSelect('Settings')} />
+      <NavItem label="Admin"           Icon={SettingsIcon}  active={activeItem === 'Settings'}     onClick={() => onSelect('Settings')} />
     </>
   );
 }

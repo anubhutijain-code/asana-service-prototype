@@ -6,6 +6,28 @@ import { ASSETS } from '../data/assets';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
 import { SFT, LIGA } from '../constants/typography';
 
+// Per-asset linked ticket history
+const ASSET_TICKET_HISTORY = {
+  'ASSET-001': [
+    { id: 'TICKET-65', title: 'WiFi connectivity failure — office device', status: 'Open',     category: 'Network',   date: 'Apr 8' },
+    { id: 'TICKET-63', title: 'Persistent WiFi failure after troubleshooting', status: 'Open', category: 'Network',   date: 'Mar 22' },
+  ],
+  'ASSET-002': [
+    { id: 'TICKET-62', title: 'Lost device — data risk + replacement needed', status: 'Open',  category: 'Hardware',  date: 'Apr 9' },
+  ],
+  'ASSET-003': [
+    { id: 'TICKET-95', title: 'Role access update after department transfer', status: 'Open',   category: 'Access Management', date: 'Apr 9' },
+    { id: 'TICKET-91', title: 'M365 licence not activating after OS reinstall', status: 'Resolved', category: 'Software Access', date: 'Feb 14' },
+  ],
+  'ASSET-004': [
+    { id: 'TICKET-66', title: 'Software license request — time-sensitive', status: 'Resolved', category: 'Software Access', date: 'Apr 9' },
+    { id: 'TICKET-58', title: 'MacBook Air running hot — fan noise', status: 'Resolved',       category: 'Hardware',  date: 'Jan 5' },
+  ],
+  'ASSET-005': [
+    { id: 'TICKET-68', title: 'Payroll discrepancy — missing overtime pay', status: 'Open',    category: 'Payroll',   date: 'Apr 9' },
+  ],
+};
+
 // ─── Filter config ────────────────────────────────────────────────────────────
 const ASSET_FIELDS = [
   { id: 'os',         label: 'OS',         type: 'select', options: ['macOS', 'Windows', 'iOS'] },
@@ -427,6 +449,38 @@ function AssetDetail({ asset, onClose }) {
             </div>
           ))}
         </div>
+
+        {/* ── Linked tickets ── */}
+        {(() => {
+          const tickets = ASSET_TICKET_HISTORY[asset.id] ?? [];
+          if (tickets.length === 0) return null;
+          return (
+            <>
+              <SubSection title="Linked tickets" />
+              <div style={{ borderTop: '1px solid var(--border)' }}>
+                {tickets.map((t, i) => {
+                  const isOpen = t.status === 'Open';
+                  return (
+                    <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBlock: 10, borderBottom: i < tickets.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      {/* ticket icon */}
+                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" style={{ flexShrink: 0 }}>
+                        <rect x="1.5" y="1.5" width="11" height="11" rx="2" stroke={isOpen ? 'var(--selected-background-strong)' : 'var(--text-disabled)'} strokeWidth="1.2"/>
+                        <path d="M4 7h6M4 4.5h6M4 9.5h4" stroke={isOpen ? 'var(--selected-background-strong)' : 'var(--text-disabled)'} strokeWidth="1" strokeLinecap="round"/>
+                      </svg>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, marginTop: 1 }}>{t.id} · {t.category} · {t.date}</div>
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, flexShrink: 0, background: isOpen ? 'var(--selected-background)' : 'var(--background-medium)', color: isOpen ? 'var(--selected-text)' : 'var(--text-disabled)' }}>
+                        {t.status}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
 
       </div>
     </div>

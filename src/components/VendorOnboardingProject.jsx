@@ -1,7 +1,7 @@
 // ─── VendorOnboardingProject — Acme Corp onboarding, created from TICKET-101 ───
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Toolbar from './Toolbar';
 import RightPanelOverlay from './RightPanelOverlay';
 import { SFT, SFD, LIGA } from '../constants/typography';
@@ -368,6 +368,8 @@ const TABS = ['Overview', 'List', 'Board', 'Timeline', 'Calendar', 'Dashboard', 
 
 export default function VendorOnboardingProject() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDraft = new URLSearchParams(location.search).has('draft');
   const [activeTab, setActiveTab] = useState('List');
   const [selectedTask, setSelectedTask] = useState(null);
 
@@ -377,17 +379,19 @@ export default function VendorOnboardingProject() {
       {/* ── Project header ──────────────────────────────────────────── */}
       <div style={{ flexShrink: 0, padding: '16px 24px 0', borderBottom: '1px solid var(--border)' }}>
 
-        {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
-          {['Work', 'IT Ops', VENDOR_PROJECT_NAME].map((crumb, i, arr) => (
-            <span key={crumb} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 12, fontFamily: SFT, color: i === arr.length - 1 ? 'var(--text-weak)' : 'var(--text-disabled)', cursor: i < arr.length - 1 ? 'pointer' : 'default' }}>
-                {crumb}
+        {/* Breadcrumb — hidden in draft mode */}
+        {!isDraft && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
+            {['Work', 'IT Ops', VENDOR_PROJECT_NAME].map((crumb, i, arr) => (
+              <span key={crumb} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 12, fontFamily: SFT, color: i === arr.length - 1 ? 'var(--text-weak)' : 'var(--text-disabled)', cursor: i < arr.length - 1 ? 'pointer' : 'default' }}>
+                  {crumb}
+                </span>
+                {i < arr.length - 1 && <BreadcrumbSep />}
               </span>
-              {i < arr.length - 1 && <BreadcrumbSep />}
-            </span>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Title row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, minHeight: 28 }}>
@@ -453,10 +457,20 @@ export default function VendorOnboardingProject() {
               <LockIcon />
               Share
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 27, padding: '0 12px', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: 5.5, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--text)', cursor: 'pointer', flexShrink: 0 }}>
-              <CustomizeIcon />
-              Customize
-            </button>
+            {isDraft ? (
+              <button
+                onClick={() => navigate('/projects/vendor-onboarding')}
+                style={{ display: 'flex', alignItems: 'center', gap: 7, height: 28, padding: '0 16px', background: '#4573D2', border: 'none', borderRadius: 6, fontSize: 13, fontFamily: SFT, fontWeight: 600, color: 'white', cursor: 'pointer', flexShrink: 0 }}
+              >
+                <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+                Launch project
+              </button>
+            ) : (
+              <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 27, padding: '0 12px', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: 5.5, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--text)', cursor: 'pointer', flexShrink: 0 }}>
+                <CustomizeIcon />
+                Customize
+              </button>
+            )}
           </div>
         </div>
 

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Pill from './Pill';
 import { AI_INTENT, AI_KB_REFS, AI_SUGGESTED_REPLY, AI_CHAT_RESPONSES } from '../data/aiAssist';
-import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, TICKET_DRAFT_MAP, TICKET_LEARNING_MAP } from '../data/knowledgeBase';
+import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, TICKET_DRAFT_MAP, TICKET_LEARNING_MAP, LEARNING_DRAFT_MAP } from '../data/knowledgeBase';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -645,7 +646,59 @@ function ComposeBar({
 
 // ─── KB Article Panel (with "Did this help?" + draft callout) ────────────────
 
-function KBArticlePanel({ articles, ticketId }) {
+const SOURCE_ICON_CFG = {
+  sharepoint: { label: 'SharePoint',  bg: '#EBF3FB', color: '#0078D4' },
+  gdrive:     { label: 'Google Drive', bg: '#E8F0FE', color: '#1A73E8' },
+  internal:   null,
+};
+
+function ArticleSourceBadge({ source }) {
+  const cfg = source ? SOURCE_ICON_CFG[source] : null;
+  if (!cfg) return null;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 3,
+      padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600,
+      background: cfg.bg, color: cfg.color, flexShrink: 0, whiteSpace: 'nowrap',
+    }}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function WebRefRow({ webRef }) {
+  return (
+    <a
+      href={webRef.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '7px 10px', borderRadius: 6, background: 'var(--background-medium)',
+        textDecoration: 'none', transition: 'background 0.1s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+    >
+      {/* Globe icon */}
+      <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--icon)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+        <circle cx="7" cy="7" r="5.5"/>
+        <path d="M7 1.5C7 1.5 5.5 3.5 5.5 7s1.5 5.5 1.5 5.5M7 1.5C7 1.5 8.5 3.5 8.5 7S7 12.5 7 12.5M1.5 7h11M2 4.5h10M2 9.5h10"/>
+      </svg>
+      <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {webRef.title}
+      </span>
+      <span style={{
+        fontSize: 10, color: 'var(--text-weak)', background: 'var(--background-weak)',
+        padding: '1px 6px', borderRadius: 4, flexShrink: 0, fontWeight: 500,
+      }}>
+        {webRef.domain}
+      </span>
+    </a>
+  );
+}
+
+function KBArticlePanel({ articles, webRefs = [], ticketId }) {
   const [feedback, setFeedback] = useState({}); // articleId → 'yes' | 'no'
   const draftId = ticketId ? TICKET_DRAFT_MAP[ticketId] : null;
   const draft = draftId ? KB_DRAFTS.find(d => d.id === draftId) : null;
@@ -667,6 +720,7 @@ function KBArticlePanel({ articles, ticketId }) {
                 <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {article.title}
                 </span>
+                <ArticleSourceBadge source={article.source} />
                 <span style={{ fontSize: 11, color: 'var(--icon)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {article.category}
                 </span>
@@ -696,6 +750,9 @@ function KBArticlePanel({ articles, ticketId }) {
             </div>
           );
         })}
+        {webRefs.map(ref => (
+          <WebRefRow key={ref.id} webRef={ref} />
+        ))}
       </div>
 
       {/* KB Draft callout — this ticket contributed to a draft */}
@@ -748,8 +805,12 @@ function KBArticlePanel({ articles, ticketId }) {
 function AIAgentPanel({ ticket }) {
   const intentData = ticket?.id ? AI_INTENT[ticket.id] : null;
   const category = ticket?.category ?? 'General';
-  const kbRefIds = AI_KB_REFS[category] ?? [];
-  const kbArticles = kbRefIds.map(id => KB_ARTICLES.find(a => a.id === id)).filter(Boolean);
+  const kbRefs = AI_KB_REFS[category] ?? [];
+  const kbArticles = kbRefs
+    .filter(r => typeof r === 'string')
+    .map(id => KB_ARTICLES.find(a => a.id === id))
+    .filter(Boolean);
+  const webRefs = kbRefs.filter(r => typeof r === 'object' && r.type === 'web');
 
   const [aiMessages, setAiMessages] = useState([]);
   const [askInput, setAskInput] = useState('');
@@ -794,7 +855,7 @@ function AIAgentPanel({ ticket }) {
           <div style={{ borderRadius: 8, border: '1px solid var(--border)', background: 'var(--selected-background)', padding: '12px 14px' }}>
             <div className="flex items-center gap-1.5" style={{ marginBottom: 8 }}>
               <AiSparkleIcon color="var(--selected-background-strong)" />
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Intent</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)' }}>Intent</span>
             </div>
             <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: '0 0 6px', lineHeight: '20px' }}>
               {intentData.intent}
@@ -818,8 +879,8 @@ function AIAgentPanel({ ticket }) {
           </div>
         )}
 
-        {kbArticles.length > 0 && (
-          <KBArticlePanel articles={kbArticles} ticketId={ticket?.id} />
+        {(kbArticles.length > 0 || webRefs.length > 0) && (
+          <KBArticlePanel articles={kbArticles} webRefs={webRefs} ticketId={ticket?.id} />
         )}
 
         {aiMessages.length > 0 && (
@@ -900,6 +961,7 @@ export default function TicketChatPanel({
   transcriptEventText,
   moreMenuItems = [],
 }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState([
     ...initPublic,
@@ -1025,8 +1087,14 @@ export default function TicketChatPanel({
 
   const learningId = ticket?.id ? TICKET_LEARNING_MAP[ticket.id] : null;
   const ticketLearning = learningId ? KB_LEARNINGS.find(l => l.id === learningId) : null;
-  const draftId = ticket?.id ? TICKET_DRAFT_MAP[ticket.id] : null;
+  // Resolve draft: direct TICKET_DRAFT_MAP takes priority, then via LEARNING_DRAFT_MAP
+  const directDraftId = ticket?.id ? TICKET_DRAFT_MAP[ticket.id] : null;
+  const learningDraftId = learningId ? LEARNING_DRAFT_MAP[learningId] : null;
+  const draftId = directDraftId ?? learningDraftId;
   const ticketDraft = draftId ? KB_DRAFTS.find(d => d.id === draftId) : null;
+  // Only show learning banner if no draft covers it, and it's an update-article (links to article)
+  // or a new-article without draft (links to learnings tab)
+  const showLearningBanner = ticketLearning && !ticketDraft;
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[var(--surface)]">
@@ -1046,13 +1114,24 @@ export default function TicketChatPanel({
               </svg>
               <p style={{ margin: 0, fontSize: 12, color: 'var(--selected-text)', lineHeight: '17px' }}>
                 <span style={{ fontWeight: 600 }}>Resolution used in KB draft · </span>
-                "{ticketDraft.title}" — pending review
+                <button
+                  type="button"
+                  onClick={() => navigate(`/knowledge-base/${ticketDraft.projectId}/${ticketDraft.id}`)}
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    fontSize: 12, color: 'var(--selected-text)', textDecoration: 'underline',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {ticketDraft.title}
+                </button>
+                {' '}— pending review
               </p>
             </div>
           )}
 
           {/* KB learning provenance banner */}
-          {ticketLearning && !ticketDraft && (
+          {showLearningBanner && (
             <div style={{
               flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8,
               padding: '8px 16px', borderBottom: '1px solid var(--border)',
@@ -1062,8 +1141,24 @@ export default function TicketChatPanel({
                 <path d="M6 0.5C6 0.5 6.4 3.1 7.5 4.5C8.6 5.9 11.5 6 11.5 6C11.5 6 8.6 6.1 7.5 7.5C6.4 8.9 6 11.5 6 11.5C6 11.5 5.6 8.9 4.5 7.5C3.4 6.1 0.5 6 0.5 6C0.5 6 3.4 5.9 4.5 4.5C5.6 3.1 6 0.5 6 0.5Z"/>
               </svg>
               <p style={{ margin: 0, fontSize: 12, color: 'var(--text-weak)', lineHeight: '17px' }}>
-                <span style={{ fontWeight: 600 }}>Resolution used in KB suggestion · </span>
-                {ticketLearning.gap}
+                <span style={{ fontWeight: 600 }}>Resolution flagged for KB · </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (ticketLearning.type === 'update-article') {
+                      navigate(`/knowledge-base/${ticketLearning.projectId}/${ticketLearning.linkedArticleId}?gap=${ticketLearning.id}`);
+                    } else {
+                      navigate(`/knowledge-base/${ticketLearning.projectId}?tab=learnings`);
+                    }
+                  }}
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    fontSize: 12, color: 'var(--text-weak)', textDecoration: 'underline',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {ticketLearning.suggestion}
+                </button>
               </p>
             </div>
           )}
@@ -1077,7 +1172,7 @@ export default function TicketChatPanel({
               <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
                 <div className="flex items-center gap-1.5">
                   <AiSparkleIcon color="var(--selected-background-strong)" />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Suggested reply</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)' }}>Suggested reply</span>
                 </div>
                 <button
                   type="button"

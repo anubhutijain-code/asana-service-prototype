@@ -746,7 +746,7 @@ function AIPerformanceCard() {
 
       {/* ── Left: Deflection stats ─────────────────────────── */}
       <div style={{ width: 208, flexShrink: 0, padding: '20px 20px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.5px', color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 10, textTransform: 'uppercase', lineHeight: '14px' }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 10, lineHeight: '14px' }}>
           AI deflection
         </p>
 

@@ -44,6 +44,11 @@
   --warning-background:       #fef6ee;
   --warning-background-strong: #ecbd85;
 
+  /* Attention (amber — distinct from warning which is more muted) */
+  --attention-text:             #9a6200;
+  --attention-background:       #fff8e6;
+  --attention-background-strong: #e6a817;
+
   /* Shadows */
   --shadow-sm: 0px 1px 4px rgba(117, 118, 119, 0.08);
   --shadow-md: 0px 2px 8px rgba(117, 118, 119, 0.12);
@@ -118,6 +123,10 @@
   --warning-text:              #e8a84d;
   --warning-background:        #1e1608;
   --warning-background-strong: #7a5020;
+
+  --attention-text:             #e8a84d;
+  --attention-background:       #2a1e00;
+  --attention-background-strong: #a07010;
 
   --shadow-sm: 0px 1px 4px rgba(0,0,0,0.3);
   --shadow-md: 0px 2px 8px rgba(0,0,0,0.4);

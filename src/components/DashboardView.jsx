@@ -14,7 +14,7 @@ const TICK = { fontSize: 11, fill: 'var(--text-disabled)', fontFamily: SFT };
 const CARD = {
   background: 'var(--background-weak)',
   border: '1px solid var(--border)',
-  borderRadius: 8,
+  borderRadius: 10,
 };
 
 // ─── Icons ─────────────────────────────────────────────────────────────────────
@@ -321,6 +321,63 @@ function AutomationCoverageCard({ data }) {
   );
 }
 
+// ─── Channel Distribution + Deflection Row ────────────────────────────────────
+
+function ChannelDeflectionRow({ data }) {
+  const { channelDist, deflection, weeklyVolume } = data;
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+
+      {/* Left: intake by channel */}
+      <ChartCard title="Intake by channel" subtitle="Tickets received by source this month">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 6 }}>
+          {channelDist.map(c => (
+            <div key={c.channel} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, width: 46, flexShrink: 0 }}>{c.channel}</span>
+              <div style={{ flex: 1, height: 8, background: 'var(--background-strong)', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${c.pct}%`, background: c.color, borderRadius: 4, transition: 'width 0.3s' }} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, width: 72, textAlign: 'right', flexShrink: 0 }}>
+                {c.count} <span style={{ fontWeight: 400, color: 'var(--text-weak)' }}>({c.pct}%)</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </ChartCard>
+
+      {/* Right: deflections vs escalations + weekly bar */}
+      <ChartCard title="Deflections vs escalations" subtitle="AI handling outcomes this month">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 4, marginBottom: 14 }}>
+          {[
+            { label: 'AI deflected', count: deflection.deflected, color: 'var(--success-text)', bg: 'var(--success-background)' },
+            { label: 'Escalated',    count: deflection.escalated,  color: 'var(--danger-text)',  bg: 'var(--danger-background)'  },
+            { label: 'Self-served',  count: deflection.selfServed, color: 'var(--text-weak)',    bg: 'var(--background-medium)'  },
+          ].map(item => (
+            <div key={item.label} style={{ background: item.bg, borderRadius: 8, padding: '10px 12px' }}>
+              <p style={{ fontSize: 10, color: item.color, fontFamily: SFT, margin: '0 0 4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{item.label}</p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', fontFamily: '"SF Pro Display"', margin: 0, lineHeight: 1 }}>{item.count}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, margin: '3px 0 0' }}>
+                {Math.round(item.count / deflection.total * 100)}% of total
+              </p>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 6px' }}>Deflected vs escalated by day</p>
+        <ResponsiveContainer width="100%" height={72}>
+          <BarChart data={weeklyVolume} margin={{ top: 2, right: 0, bottom: 0, left: -20 }} barSize={12} barGap={2}>
+            <XAxis dataKey="day" tick={TICK} axisLine={false} tickLine={false} />
+            <YAxis hide />
+            <RechartsTooltip content={<CustomTooltip />} />
+            <Bar dataKey="Deflected" fill="var(--success-background-strong)" radius={[2,2,0,0]} />
+            <Bar dataKey="Escalated" fill="var(--danger-background-strong)" radius={[2,2,0,0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+    </div>
+  );
+}
+
 // ─── Integrations Card (dashboard) ────────────────────────────────────────────
 
 const CONNECTED_INTEGRATIONS = [
@@ -516,11 +573,29 @@ const KB_INSIGHTS = [
     ticketCount: 12,
     suggestion: 'Update VPN Setup screenshots for latest client version',
   },
+  {
+    id: 'kb-004',
+    category: 'Retrieval issue',
+    impact: 'medium',
+    gap: 'VPN article surfaced for unrelated password queries — poor search relevance',
+    ticketCount: 9,
+    suggestion: 'Tighten semantic tags on VPN Setup article; add explicit topic scoping',
+  },
+  {
+    id: 'kb-005',
+    category: 'Model issue',
+    impact: 'medium',
+    gap: 'AI citing Okta SSO v2 steps for tenants on v3 — KB article version mismatch',
+    ticketCount: 7,
+    suggestion: 'Update Okta SSO Configuration article to v3; consider adding version selector',
+  },
 ];
 
 const KB_CAT_STYLES = {
-  'Content gap': { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
-  'Action gap':  { bg: 'var(--danger-background)',  color: 'var(--danger-text)'  },
+  'Content gap':     { bg: 'var(--warning-background)',          color: 'var(--warning-text)'                    },
+  'Action gap':      { bg: 'var(--danger-background)',           color: 'var(--danger-text)'                     },
+  'Retrieval issue': { bg: 'rgba(66, 115, 209, 0.12)',           color: 'var(--selected-background-strong)'      },
+  'Model issue':     { bg: 'rgba(124, 94, 168, 0.12)',           color: '#7C5EA8'                                },
 };
 
 function KBImpactPill({ impact }) {
@@ -555,42 +630,74 @@ function KBInsightRow({ insight, divider }) {
   );
 }
 
+const KB_SIGNAL_STYLES = {
+  content:   { bg: 'rgba(235, 182, 84, 0.14)', color: 'var(--warning-text)',               label: 'Content'   },
+  retrieval: { bg: 'rgba(66, 115, 209, 0.12)', color: 'var(--selected-background-strong)', label: 'Retrieval' },
+  model:     { bg: 'rgba(124, 94, 168, 0.12)', color: '#7C5EA8',                           label: 'Model'     },
+};
+
+function HelpSignalBar({ helpSignal }) {
+  const { helping, notHelping, noSignal } = helpSignal;
+  const segs = [
+    { pct: helping,    color: 'var(--success-background-strong)' },
+    { pct: notHelping, color: 'var(--danger-background-strong)'  },
+    { pct: noSignal,   color: 'var(--background-strong)'         },
+  ];
+  return (
+    <div title={`${helping}% helping · ${notHelping}% not helping · ${noSignal}% no signal`}
+      style={{ display: 'flex', height: 4, borderRadius: 3, overflow: 'hidden', width: 72, gap: 1 }}>
+      {segs.map((s, i) => (
+        <div key={i} style={{ flex: s.pct, background: s.color, minWidth: 0 }} />
+      ))}
+    </div>
+  );
+}
+
 function KBPerformanceCard() {
   const kb = KB_PERFORMANCE;
   return (
     <div style={{ ...CARD, overflow: 'hidden' }}>
       <div style={{ padding: '20px 24px 16px' }}>
         <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 3px' }}>Knowledge Base Performance</p>
-        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Article views, ticket deflections, and content gaps</p>
+        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Article views, deflections, and signal category</p>
       </div>
       <div style={{ padding: '0 24px' }}>
         <div className="flex items-center w-full" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className={COL} style={{ ...divStyle, flex: 1 }}>Article</div>
-          <div className={`${COL} w-[110px] text-right`} style={divStyle}>Views</div>
-          <div className={`${COL} w-[110px] text-right`} style={divStyle}>Deflections</div>
-          <div className={`${COL} w-[110px] text-right`}>Deflect %</div>
+          <div className={`${COL} w-[90px] text-right`} style={divStyle}>Views</div>
+          <div className={`${COL} w-[100px] text-right`} style={divStyle}>Deflect %</div>
+          <div className={`${COL} w-[160px]`}>Signal</div>
         </div>
-        {kb.topArticles.map((a, i) => (
-          <div key={i}
-            className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
-            style={{ borderBottom: '1px solid var(--border)' }}>
-            <div className="px-4 flex items-center" style={{ flex: 1, ...divStyle, minHeight: 52 }}>
-              <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.title}</span>
-            </div>
-            <div className="flex items-center justify-end px-4 w-[110px]" style={divStyle}>
-              <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.views.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-end px-4 w-[110px]" style={divStyle}>
-              <span style={{ fontSize: 14, color: 'var(--text)', fontFamily: SFT }}>{a.deflections.toLocaleString()}</span>
-            </div>
-            <div className="flex flex-col justify-center items-end px-4 w-[110px]">
-              <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, marginBottom: 3 }}>{a.pct}%</span>
-              <div style={{ height: 3, borderRadius: 2, background: 'var(--background-strong)', overflow: 'hidden', width: 48 }}>
-                <div style={{ height: '100%', width: `${a.pct}%`, background: 'var(--success-background-strong)', borderRadius: 2 }} />
+        {kb.topArticles.map((a, i) => {
+          const sig = a.signalCategory ? KB_SIGNAL_STYLES[a.signalCategory] : null;
+          return (
+            <div key={i}
+              className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
+              style={{ borderBottom: '1px solid var(--border)' }}>
+              <div className="px-2 flex flex-col justify-center" style={{ flex: 1, ...divStyle, minHeight: 52, paddingTop: 8, paddingBottom: 8 }}>
+                <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px' }}>{a.title}</span>
+              </div>
+              <div className="flex items-center justify-end px-3 w-[90px]" style={divStyle}>
+                <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT }}>{a.views.toLocaleString()}</span>
+              </div>
+              <div className="flex flex-col justify-center items-end px-3 w-[100px]" style={divStyle}>
+                <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT, marginBottom: 4 }}>{a.pct}%</span>
+                <HelpSignalBar helpSignal={a.helpSignal} />
+              </div>
+              <div className="flex items-center px-3 w-[160px]">
+                {sig ? (
+                  <span style={{
+                    fontSize: 11, fontWeight: 500, fontFamily: SFT,
+                    padding: '2px 7px', borderRadius: 4,
+                    background: sig.bg, color: sig.color, flexShrink: 0,
+                  }}>{sig.label} issue</span>
+                ) : (
+                  <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>—</span>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -754,9 +861,143 @@ function AgentDropdown({ agents, selectedAgent, onChange }) {
   );
 }
 
+// ─── Agent Trend Panel (Q-34) ──────────────────────────────────────────────────
+
+const TREND_PERIOD_LABELS = {
+  week:    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  month:   ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
+  quarter: ['Mo 1', 'Mo 2', 'Mo 3', 'Mo 4'],
+};
+
+function AgentTrendPanel({ agent, period }) {
+  const periodKey = period.toLowerCase();
+  const metrics = [
+    { key: 'csat',      label: 'CSAT',       format: v => v.toFixed(1), color: '#5DA182' },
+    { key: 'slaHealth', label: 'SLA health',  format: v => `${v}%`,     color: '#4273D1' },
+    { key: 'resolved',  label: 'Resolved',    format: v => v,           color: '#7C5EA8' },
+  ];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      {metrics.map(m => {
+        const values = (agent.trends?.[m.key]?.[periodKey]) ?? [];
+        const labels = TREND_PERIOD_LABELS[periodKey] ?? values.map((_, i) => `${i + 1}`);
+        const chartData = values.map((v, i) => ({ i, v, label: labels[i] ?? `${i + 1}` }));
+        const latest = values[values.length - 1] ?? 0;
+        return (
+          <div key={m.key} style={{ ...CARD, padding: '16px 20px' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 2px' }}>{m.label}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', fontFamily: '"SF Pro Display"', margin: '0 0 8px', lineHeight: 1 }}>
+              {m.format(latest)}
+            </p>
+            <ResponsiveContainer width="100%" height={60}>
+              <AreaChart data={chartData} margin={{ top: 2, right: 2, bottom: 0, left: -28 }}>
+                <defs>
+                  <linearGradient id={`trendGrad-${m.key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={m.color} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={m.color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" tick={TICK} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="v" name={m.label}
+                  stroke={m.color} fill={`url(#trendGrad-${m.key})`}
+                  strokeWidth={2} dot={false} isAnimationActive={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Dashboard customization (Q-37) ───────────────────────────────────────────
+
+const CHART_LABELS = {
+  topicVolume:      'Ticket topics',
+  channelBreakdown: 'Channel & deflection',
+  backlogTrend:     'Backlog trend & integrations',
+  ticketResolution: 'Ticket resolution by type',
+  kbPerformance:    'KB performance',
+  kbOptimizations:  'KB optimizations',
+};
+
+function ToggleSwitch({ checked, onChange }) {
+  return (
+    <div
+      role="checkbox" aria-checked={checked}
+      onClick={e => { e.preventDefault(); onChange(); }}
+      style={{
+        width: 28, height: 16, borderRadius: 8, flexShrink: 0,
+        background: checked ? 'var(--selected-background-strong)' : 'var(--background-strong)',
+        position: 'relative', cursor: 'pointer', transition: 'background 0.15s',
+      }}
+    >
+      <div style={{
+        position: 'absolute', top: 2, left: checked ? 14 : 2,
+        width: 12, height: 12, borderRadius: '50%', background: 'white',
+        transition: 'left 0.15s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+      }} />
+    </div>
+  );
+}
+
+function FilterPanel({ open, onClose, timeRange, onTimeRange, visibility, onToggle }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e) { if (ref.current && !ref.current.contains(e.target)) onClose(); }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open, onClose]);
+  if (!open) return null;
+  return (
+    <div ref={ref} style={{
+      position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+      background: 'var(--background-weak)', border: '1px solid var(--border)',
+      borderRadius: 10, boxShadow: 'var(--shadow-md)', zIndex: 50,
+      width: 270, padding: '16px 16px 12px',
+    }}>
+      <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px' }}>Time range</p>
+      <div style={{ display: 'flex', background: 'var(--background-medium)', borderRadius: 7, padding: 3, gap: 2, marginBottom: 16 }}>
+        {['7 days', '30 days', '90 days'].map(opt => (
+          <button key={opt} type="button" onClick={() => onTimeRange(opt)} style={{
+            flex: 1, padding: '4px 0', borderRadius: 5, border: 'none', cursor: 'pointer',
+            fontSize: 11, fontWeight: timeRange === opt ? 500 : 400, fontFamily: SFT,
+            background: timeRange === opt ? 'var(--surface)' : 'transparent',
+            color: timeRange === opt ? 'var(--text)' : 'var(--text-weak)',
+            boxShadow: timeRange === opt ? 'var(--shadow-sm)' : 'none',
+            transition: 'all 0.12s',
+          }}>{opt}</button>
+        ))}
+      </div>
+      <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 4px' }}>Show charts</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {Object.entries(CHART_LABELS).map(([key, label]) => (
+          <label key={key}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderRadius: 6, cursor: 'pointer', background: 'transparent', transition: 'background 0.1s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+          >
+            <span style={{ fontSize: 12, color: 'var(--text)', fontFamily: SFT }}>{label}</span>
+            <ToggleSwitch checked={visibility[key]} onChange={() => onToggle(key)} />
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Team Tab ──────────────────────────────────────────────────────────────────
+
+const TEAM_PERIODS = ['Week', 'Month', 'Quarter'];
+
 function TeamTab() {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [tooltip, setTooltip] = useState(null);
+  const [trendPeriod, setTrendPeriod] = useState('Week');
   const { dates, agents, summary, todayIndex } = TEAM_DATA;
   const todayX = todayIndex * PX_PER_DAY;
   const scrollRef = useRef(null);
@@ -788,14 +1029,33 @@ function TeamTab() {
     <WorkloadPortalTooltip tooltip={tooltip} />
     <div>
       {/* Toolbar */}
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <AgentDropdown agents={agents} selectedAgent={selectedAgent} onChange={setSelectedAgent} />
+        {selectedAgentData && (
+          <div style={{ display: 'flex', background: 'var(--background-medium)', borderRadius: 8, padding: 3, gap: 2 }}>
+            {TEAM_PERIODS.map(p => (
+              <button key={p} type="button" onClick={() => setTrendPeriod(p)} style={{
+                padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontSize: 12, fontWeight: trendPeriod === p ? 500 : 400, fontFamily: SFT,
+                background: trendPeriod === p ? 'var(--surface)' : 'transparent',
+                color: trendPeriod === p ? 'var(--text)' : 'var(--text-weak)',
+                boxShadow: trendPeriod === p ? 'var(--shadow-sm)' : 'none',
+                transition: 'all 0.12s',
+              }}>{p}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* KPI strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 24 }}>
         {kpiCards.map((card, i) => <TeamKpiCard key={i} {...card} />)}
       </div>
+
+      {/* Agent trend charts — shown when a specific agent is selected */}
+      {selectedAgentData && (
+        <AgentTrendPanel agent={selectedAgentData} period={trendPeriod} />
+      )}
 
       {/* Timeline block */}
       <div style={{ ...CARD, border: 'none', display: 'flex', overflow: 'hidden' }}>
@@ -1110,9 +1370,26 @@ const DASH_TABS = ['Overview', 'Team', 'Leaderboard'];
 export default function DashboardView({ initialTab = 'Overview', hideTabs = false }) {
   const [queueId, setQueueId] = useState('all');
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [timeRange, setTimeRange] = useState('30 days');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [chartVisibility, setChartVisibility] = useState({
+    topicVolume:      true,
+    channelBreakdown: true,
+    backlogTrend:     true,
+    ticketResolution: true,
+    kbPerformance:    true,
+    kbOptimizations:  true,
+  });
+  const filterBtnRef = useRef(null);
 
   const data = DASHBOARD_DATA[queueId];
   const total = data.ticketsByCategory.reduce((s, d) => s + d.value, 0);
+
+  function toggleChart(key) {
+    setChartVisibility(prev => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  const hiddenCount = Object.values(chartVisibility).filter(v => !v).length;
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: 'var(--background-weak)' }}>
@@ -1125,7 +1402,9 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
               {hideTabs ? 'Team workload' : 'Dashboard'}
             </h1>
             <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>
-              {hideTabs ? 'Live capacity and workload across your team' : 'Real-time visibility into IT operations and business impact'}
+              {hideTabs
+                ? 'Live capacity and workload across your team'
+                : `Real-time visibility into IT operations · Last ${timeRange}`}
             </p>
           </div>
           {!hideTabs && (
@@ -1142,17 +1421,38 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
               >
                 <AiGradientIcon />Ask
               </button>
-              <button type="button" style={{
-                height: 30, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 5,
-                fontSize: 12, fontWeight: 400, fontFamily: SFT,
-                background: 'var(--background-weak)', color: 'var(--text-weak)',
-                border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'var(--background-weak)'; e.currentTarget.style.color = 'var(--text-weak)'; }}
-              >
-                <FilterIcon />Filter Graphs
-              </button>
+              {/* Filter Graphs button — now functional */}
+              <div ref={filterBtnRef} style={{ position: 'relative' }}>
+                <button type="button"
+                  onClick={() => setFilterOpen(o => !o)}
+                  style={{
+                    height: 30, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 5,
+                    fontSize: 12, fontWeight: 400, fontFamily: SFT, position: 'relative',
+                    background: filterOpen ? 'var(--background-medium)' : 'var(--background-weak)',
+                    color: filterOpen ? 'var(--text)' : 'var(--text-weak)',
+                    border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+                  onMouseLeave={e => { if (!filterOpen) { e.currentTarget.style.background = 'var(--background-weak)'; e.currentTarget.style.color = 'var(--text-weak)'; } }}
+                >
+                  <FilterIcon />Customize
+                  {hiddenCount > 0 && (
+                    <span style={{
+                      position: 'absolute', top: 4, right: 4,
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: 'var(--danger-background-strong)',
+                    }} />
+                  )}
+                </button>
+                <FilterPanel
+                  open={filterOpen}
+                  onClose={() => setFilterOpen(false)}
+                  timeRange={timeRange}
+                  onTimeRange={v => { setTimeRange(v); setFilterOpen(false); }}
+                  visibility={chartVisibility}
+                  onToggle={toggleChart}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -1185,36 +1485,51 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
               {data.kpis.map((kpi, i) => <KpiCard key={i} {...kpi} />)}
             </div>
 
-            {/* Row 1 — Topic volume (full-width) */}
-            <div style={{ marginBottom: 24 }}>
-              <TopicVolumeCard />
-            </div>
+            {/* Row 1 — Topic volume */}
+            {chartVisibility.topicVolume && (
+              <div style={{ marginBottom: 24 }}>
+                <TopicVolumeCard />
+              </div>
+            )}
 
-            {/* Row 2 — Backlog trend + Integrations */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24, marginBottom: 24 }}>
-              <ChartCard title="Ticket Backlog Trend" subtitle="6-month trend">
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={data.backlogTrend} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="month" tick={TICK} axisLine={false} tickLine={false} />
-                    <YAxis tick={TICK} axisLine={false} tickLine={false} width={38} />
-                    <RechartsTooltip content={<CustomTooltip />} />
-                    <Line type="monotone" dataKey="count" name="Backlog" stroke="var(--selected-background-strong)"
-                      strokeWidth={2} dot={{ r: 3, fill: 'var(--selected-background-strong)', strokeWidth: 0 }} activeDot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <DashIntegrationsCard />
-            </div>
+            {/* Row 2 — Channel distribution + Deflection */}
+            {chartVisibility.channelBreakdown && (
+              <div style={{ marginBottom: 24 }}>
+                <ChannelDeflectionRow data={data} />
+              </div>
+            )}
 
-            {/* Row 3 — Ticket Resolution by Type */}
-            <div style={{ marginBottom: 24 }}><TicketResolutionTable /></div>
+            {/* Row 3 — Backlog trend + Integrations */}
+            {chartVisibility.backlogTrend && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24, marginBottom: 24 }}>
+                <ChartCard title="Ticket backlog trend" subtitle="6-month rolling backlog">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={data.backlogTrend} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="month" tick={TICK} axisLine={false} tickLine={false} />
+                      <YAxis tick={TICK} axisLine={false} tickLine={false} width={38} />
+                      <RechartsTooltip content={<CustomTooltip />} />
+                      <Line type="monotone" dataKey="count" name="Backlog" stroke="var(--selected-background-strong)"
+                        strokeWidth={2} dot={{ r: 3, fill: 'var(--selected-background-strong)', strokeWidth: 0 }} activeDot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+                <DashIntegrationsCard />
+              </div>
+            )}
 
-            {/* Row 4 — KB Performance + KB Optimizations */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-              <KBPerformanceCard />
-              <KBOptimizationsCard />
-            </div>
+            {/* Row 4 — Ticket Resolution by Type */}
+            {chartVisibility.ticketResolution && (
+              <div style={{ marginBottom: 24 }}><TicketResolutionTable /></div>
+            )}
+
+            {/* Row 5 — KB Performance + KB Optimizations */}
+            {(chartVisibility.kbPerformance || chartVisibility.kbOptimizations) && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                {chartVisibility.kbPerformance && <KBPerformanceCard />}
+                {chartVisibility.kbOptimizations && <KBOptimizationsCard />}
+              </div>
+            )}
           </>
         )}
 

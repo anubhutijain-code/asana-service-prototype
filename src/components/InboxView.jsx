@@ -398,6 +398,27 @@ const ACTIVITY_NOTIFICATIONS = {
   ],
 };
 
+const BOOKMARK_ITEMS = [
+  { id: 'b1', avatarProps: { initials: 'IT', bg: '#4573D2' }, actor: 'IT Team', verb: 'assigned to you', itemIcon: <CheckCircleIcon />, title: 'VPN Access Denied - New Engineering Cohort', preview: 'Saved 2 days ago', time: '2d', unread: false },
+  { id: 'b2', avatarProps: { initials: 'LK', bg: '#79ABFF' }, actor: 'Luna Kim', verb: 'commented on', itemIcon: <ChatBubbleIcon />, title: 'Knowledge Base: Okta SSO Troubleshooting Guide', preview: 'Saved 3 days ago', time: '3d', unread: false },
+  { id: 'b3', avatarProps: { initials: 'PS', bg: '#E8817D' }, actor: 'Priya Singh', verb: 'requested your approval', itemIcon: <ApprovalIcon />, title: 'SEO Content Revamp', preview: 'Saved 5 days ago', time: '5d', unread: false },
+  { id: 'b4', avatarProps: { initials: 'DB', bg: '#8B7355' }, actor: 'Dave Baloney', verb: 'assigned to you', itemIcon: <CheckCircleIcon />, title: 'Quarterly Social Media Content Calendar', preview: 'Saved 1 week ago', time: '7d', unread: false },
+  { id: 'b5', avatarProps: { initials: 'SC', bg: '#4FBFA8' }, actor: 'Sophia Chen', verb: 'shared this project with you', itemIcon: <ColorSquareIcon color="#E8AC44" />, title: '[FYI] CommsX Inbox UXR Insights', preview: 'Saved 1 week ago', time: '7d', unread: false },
+];
+
+const ARCHIVE_NOTIFICATIONS = {
+  'Last week': [
+    { id: 'ar1', avatarProps: { initials: 'AD', bg: '#D4956A' }, actor: 'Amrit Dhillon', verb: 'changed the due date to Nov 24', itemIcon: <CheckCircleIcon />, title: 'Engage AI strategy', preview: '', time: '8d', unread: false },
+    { id: 'ar2', avatarProps: { initials: 'LT', bg: '#9B8EC4' }, actor: 'Leo Torres', count: '+3', verb: 'liked your comment', itemIcon: <CheckCircleIcon />, title: 'Quarterly Social Media Content Calendar', preview: 'Thank you for the insightful analysis here!', time: '9d', unread: false },
+    { id: 'ar3', avatarProps: { initials: 'PS', bg: '#E8817D' }, actor: '4 new tickets', verb: 'resolved in IT Queue', itemIcon: <ColorSquareIcon color="#E8817D" />, title: 'IT Support', preview: '', time: '10d', unread: false, grouped: true },
+  ],
+  'Two weeks ago': [
+    { id: 'ar4', avatarProps: { initials: 'SC', bg: '#4FBFA8' }, actor: 'Sophia Chen', verb: 'sent a status update', itemIcon: <EmptyCircleIcon />, title: 'Supply chain puts launch date at risk', preview: 'We closed out the backlog issues and moved forward...', time: '12d', unread: false },
+    { id: 'ar5', avatarProps: { initials: 'LK', bg: '#79ABFF' }, actor: 'Luna Kim', verb: 'shared this project with you', itemIcon: <ColorSquareIcon color="#79ABFF" />, title: 'Employee Offboarding Checklist Q1', preview: '', time: '13d', unread: false },
+    { id: 'ar6', avatarProps: { initials: 'CD', bg: '#4FBFA8' }, actor: 'Connie Darunia', verb: 'completed', itemIcon: <CheckCircleIcon />, title: 'Capture 5,000 pre-orders by launch', preview: '', time: '14d', unread: false },
+  ],
+};
+
 // ── NotifRow ───────────────────────────────────────────────────────────────────
 
 function NotifRow({ avatarProps, actor, count, verb, itemIcon, title, preview, time, unread, grouped, active, onClick }) {
@@ -593,12 +614,20 @@ export default function InboxView({ defaultTab = 'Activity' }) {
               <Section key={label} label={label} items={items} activeId={activeNotifId} />
             ))
           )}
-          {(activeTab === 'Bookmarks' || activeTab === 'Archive') && (
-            <div className="flex items-center justify-center h-full">
-              <p style={{ fontSize: '14px', color: 'var(--text-disabled)' }}>
-                {activeTab} — coming soon
-              </p>
+          {activeTab === 'Bookmarks' && (
+            <div>
+              <div className="px-8 pt-4 pb-2">
+                <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-disabled)' }}>Saved items</span>
+              </div>
+              {BOOKMARK_ITEMS.map(n => (
+                <NotifRow key={n.id} {...n} active={false} />
+              ))}
             </div>
+          )}
+          {activeTab === 'Archive' && (
+            Object.entries(ARCHIVE_NOTIFICATIONS).map(([label, items]) => (
+              <Section key={label} label={label} items={items} activeId={null} />
+            ))
           )}
         </div>
       </div>

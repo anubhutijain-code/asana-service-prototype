@@ -9,7 +9,8 @@ import InboxView from './components/InboxView';
 import WorkSecondaryNav from './components/WorkSecondaryNav';
 import SearchModal from './components/SearchModal';
 import AutomationsView from './components/AutomationsView';
-import CreateQueueWizard from './components/CreateQueueWizard';
+import CreateQueuePanel from './components/CreateQueuePanel';
+import { session } from './data/sessionState';
 import AssetsView from './components/AssetsView';
 import KnowledgeBaseView from './components/KnowledgeBaseView';
 import DashboardView from './components/DashboardView';
@@ -241,7 +242,8 @@ export default function AsanaService() {
   function handleSelectWorkNav(label) {
     if (label === 'Home')                 navigate('/');
     if (label === 'Inbox')                navigate('/work/inbox');
-    if (label === 'IT Escalations Inbox') navigate('/projects/it-escalations');
+    if (label === 'IT Escalations Inbox')           navigate('/projects/it-escalations');
+    if (label === 'Acme Corp — Vendor Onboarding') navigate('/projects/vendor-onboarding');
   }
 
   function handleOpenSearch() {
@@ -407,7 +409,26 @@ export default function AsanaService() {
           <Route path="/knowledge-base/:projectId" element={<KnowledgeBaseView role={role} />} />
           <Route path="/knowledge-base" element={<KnowledgeBaseView role={role} />} />
           <Route path="/create-queue" element={
-            <CreateQueueWizard onDone={() => navigate('/tickets')} />
+            <CreateQueuePanel
+              onClose={() => navigate('/settings')}
+              onCreated={form => {
+                const initials = form.name.trim().split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2);
+                session.createdQueues.push({
+                  id: `q_${Date.now()}`,
+                  name: form.name.trim(), initials, color: form.color, isDefault: false,
+                  desc: form.desc || '', createdBy: 'You',
+                  createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                  email: form.email || '—', slack: form.slack || '—',
+                  dayRange: form.dayRange, startTime: form.startTime, endTime: form.endTime,
+                  members: form.members ?? [],
+                  sla: { firstResponse: form.slaFirst, update: form.slaUpdate, resolution: form.slaResolution, autoEscalate: true, usingDefaults: false },
+                  kb: { name: '', articles: 0, aiDeflection: false, lastUpdated: '—' },
+                  aiEnabled: true, integrationsConnected: 0,
+                  automationsActive: Object.values(form.playbooks).filter(Boolean).length,
+                });
+                navigate('/settings');
+              }}
+            />
           } />
           <Route path="/dashboard" element={<DashboardView />} />
           <Route path="/optimize" element={<OptimizeView onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />

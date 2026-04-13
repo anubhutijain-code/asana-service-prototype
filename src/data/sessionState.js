@@ -3,4 +3,5 @@
 
 export const session = {
   launchedProjects: new Set(), // ticket ids that have had a project launched
+  createdQueues: [],           // queues created this session (not persisted to disk)
 };

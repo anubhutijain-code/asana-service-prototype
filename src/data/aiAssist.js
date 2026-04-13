@@ -111,14 +111,24 @@ export const AI_SUGGESTED_REPLY = {
   'TICKET-66': "Hi Martin, just checking in — your Salesforce Professional access should be active now. Let us know if you hit any issues pulling the Q1 pipeline data for the presentation.",
 };
 
-// Per-category KB article refs — uses KB_ARTICLES ids from knowledgeBase.js
+// Per-category KB article refs — mix of article IDs (strings) and web sources (objects)
 export const AI_KB_REFS = {
-  'Access Management': ['it-002', 'it-001'],
-  'Software Access':   ['it-004'],
-  'Network':           ['it-001'],
-  'Hardware':          ['it-003'],
-  'Payroll':           [],
-  'General':           [],
+  'Access Management': [
+    'it-002',
+    'it-001',
+    { type: 'web', id: 'web-okta-mfa',   title: 'Okta MFA enrollment guide',          domain: 'help.okta.com',       url: 'https://help.okta.com/en-us/content/topics/security/mfa-enrollment.htm' },
+  ],
+  'Software Access': [
+    'it-004',
+    { type: 'web', id: 'web-ms-m365',    title: 'Assign Microsoft 365 licences',       domain: 'learn.microsoft.com', url: 'https://learn.microsoft.com/en-us/microsoft-365/admin/manage/assign-licenses-to-users' },
+  ],
+  'Network': [
+    'it-001',
+    { type: 'web', id: 'web-gw-vpn',     title: 'GlobalProtect VPN client setup',      domain: 'support.google.com',  url: 'https://support.google.com/a/answer/9176866' },
+  ],
+  'Hardware':  ['it-003'],
+  'Payroll':   [],
+  'General':   [],
 };
 
 // Ask AI simulated responses — matched on input keywords, fallback last

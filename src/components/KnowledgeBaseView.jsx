@@ -2,29 +2,32 @@ import { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Avatar from './ui/Avatar';
 import RightPanelOverlay from './RightPanelOverlay';
-import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, KB_DRAFTS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, KB_DRAFTS, INTEGRATION_CONFIG, WEB_ALLOWLIST, formatDate, formatRelativeTime } from '../data/knowledgeBase';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
 import { SFT, LIGA } from '../constants/typography';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const KB_FILTER_FIELDS = [
-  { id: 'status',   label: 'Status',   type: 'select', options: ['Published', 'Draft', 'Archived', 'Unpublished'] },
-  { id: 'source',   label: 'Source',   type: 'select', options: ['confluence', 'slab', 'notion', 'internal'] },
-  { id: 'category', label: 'Category', type: 'text' },
-  { id: 'author',   label: 'Author',   type: 'text' },
+  { id: 'status',      label: 'Status',   type: 'select', options: ['Synced', 'Published', 'Draft'] },
+  { id: 'source',      label: 'Source',   type: 'select', options: ['sharepoint', 'gdrive', 'internal'] },
+  { id: 'articleType', label: 'Type',     type: 'select', options: ['standard', 'addendum'] },
+  { id: 'category',    label: 'Category', type: 'text' },
+  { id: 'author',      label: 'Author',   type: 'text' },
 ];
 
 const KB_QUICK_FILTERS = [
+  { id: 'synced',    label: 'Synced',    rules: [{ field: 'status', op: 'is', value: 'Synced' }] },
   { id: 'published', label: 'Published', rules: [{ field: 'status', op: 'is', value: 'Published' }] },
-  { id: 'draft',     label: 'Draft',     rules: [{ field: 'status', op: 'is', value: 'Draft' }] },
   { id: 'internal',  label: 'Internal',  rules: [{ field: 'source', op: 'is', value: 'internal' }] },
+  { id: 'addenda',   label: 'Addenda',   rules: [{ field: 'articleType', op: 'is', value: 'addendum' }] },
 ];
 
 const KB_ACCESSORS = {
-  status:   a => a.status,
-  source:   a => a.source ?? 'internal',
-  category: a => a.category,
-  author:   a => a.author,
+  status:      a => a.status,
+  source:      a => a.source ?? 'internal',
+  articleType: a => a.articleType ?? 'standard',
+  category:    a => a.category,
+  author:      a => a.author,
 };
 
 // ─── Shared typography ─────────────────────────────────────────────────────────
@@ -36,10 +39,9 @@ const divStyle = { borderRight: '1px solid var(--border)' };
 
 // ─── Status badge config ───────────────────────────────────────────────────────
 const STATUS_BADGE = {
-  'Published':   { bg: 'var(--success-background)', color: 'var(--success-text)' },
-  'Draft':       { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
-  'Archived':    { bg: 'var(--background-medium)',  color: 'var(--text-weak)' },
-  'Unpublished': { bg: 'var(--danger-background)',  color: 'var(--danger-text)' },
+  'Synced':    { bg: 'var(--background-strong)',  color: 'var(--text-weak)' },
+  'Published': { bg: 'var(--success-background)', color: 'var(--success-text)' },
+  'Draft':     { bg: 'var(--warning-background)', color: 'var(--warning-text)' },
 };
 
 // ─── Icons ─────────────────────────────────────────────────────────────────────
@@ -73,33 +75,40 @@ function SpinnerIcon() {
     </svg>
   );
 }
+function GlobeIcon({ size = 14, color = 'currentColor' }) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5" />
+      <path d="M8 1.5C8 1.5 5.5 4 5.5 8s2.5 6.5 2.5 6.5M8 1.5C8 1.5 10.5 4 10.5 8S8 14.5 8 14.5M1.5 8h13" />
+    </svg>
+  );
+}
+function CheckIcon({ size = 14 }) {
+  return (
+    <svg viewBox="0 0 14 14" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 7l4 4 6-6" />
+    </svg>
+  );
+}
 
 // ─── Integration source icon ───────────────────────────────────────────────────
 
 function SourceIcon({ type, size = 16 }) {
-  if (type === 'confluence') {
+  if (type === 'sharepoint') {
     return (
-      <svg viewBox="0 0 16 16" width={size} height={size} aria-label="Confluence">
-        <path d="M1.3 11.6c-.2.3-.5.8-.7 1.1-.2.4 0 .8.4 1l2.6 1.5c.4.2.9.1 1.1-.3.2-.3.4-.7.7-1.1 1.8-2.7 3.8-2.4 5.7-.3l2.5 1.5c.4.2.9.1 1.1-.3l1.4-2.5c.2-.4.1-.9-.3-1.1l-2.6-1.5C9.6 8.1 5.2 7.3 1.3 11.6z" fill="#0065FF" opacity=".85"/>
-        <path d="M14.7 4.4c.2-.3.5-.8.7-1.1.2-.4 0-.8-.4-1L12.4.8c-.4-.2-.9-.1-1.1.3-.2.3-.4.7-.7 1.1C8.8 4.9 6.8 4.6 4.9 2.5L2.4 1C2 .8 1.5.9 1.3 1.3L-.1 3.8c-.2.4-.1.9.3 1.1l2.6 1.5C6.4 7.9 10.8 8.7 14.7 4.4z" fill="#2684FF" opacity=".85"/>
+      <svg viewBox="0 0 16 16" width={size} height={size} aria-label="SharePoint">
+        <rect width="16" height="16" rx="3" fill="#0078D4"/>
+        <rect x="4" y="4" width="8" height="8" rx="1.5" fill="white" opacity="0.9"/>
+        <rect x="4" y="4" width="5" height="5" rx="1" fill="#0078D4"/>
       </svg>
     );
   }
-  if (type === 'slab') {
+  if (type === 'gdrive') {
     return (
-      <svg viewBox="0 0 16 16" width={size} height={size} aria-label="Slab">
-        <rect x="1" y="1" width="14" height="14" rx="3" fill="#7C3AED" />
-        <path d="M5 11.5V4.5h3.5a2 2 0 0 1 0 4H5m0 3h4a2 2 0 0 0 0-4H5" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      </svg>
-    );
-  }
-  if (type === 'notion') {
-    return (
-      <svg viewBox="0 0 16 16" width={size} height={size} aria-label="Notion">
-        <rect x="1" y="1" width="14" height="14" rx="3" fill="var(--text)" />
-        <path d="M5 4h4.5L12 6.5V12H5V4z" fill="white" stroke="none"/>
-        <path d="M9.5 4v2.5H12" stroke="var(--text)" strokeWidth="0.8" fill="none"/>
-        <path d="M6.5 7.5h3M6.5 9.5h3" stroke="var(--text-disabled)" strokeWidth="0.8" strokeLinecap="round"/>
+      <svg viewBox="0 0 16 16" width={size} height={size} aria-label="Google Drive">
+        <rect width="16" height="16" rx="3" fill="#1A73E8"/>
+        <path d="M8 4L13 12H3z" fill="white" opacity="0.9"/>
+        <path d="M5.5 7.5L3 12" stroke="#FBBC04" strokeWidth="1.4" strokeLinecap="round"/>
       </svg>
     );
   }
@@ -462,19 +471,51 @@ function TableHeader() {
 
 // ─── Table row ─────────────────────────────────────────────────────────────────
 
-function TableRow({ article, index, onClick }) {
-  const badge = STATUS_BADGE[article.status] ?? STATUS_BADGE['Archived'];
+function LockIcon() {
+  return (
+    <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: 'var(--text-disabled)' }}>
+      <rect x="2" y="5.5" width="8" height="6" rx="1"/>
+      <path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/>
+    </svg>
+  );
+}
+
+function AddendumIcon() {
+  return (
+    <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: 'var(--text-disabled)' }}>
+      <path d="M9 3L4 6l5 3"/>
+    </svg>
+  );
+}
+
+function TableRow({ article, index, isSubItem, onClick }) {
+  const badge = STATUS_BADGE[article.status] ?? STATUS_BADGE['Unpublished'];
+  const isInternal = !article.source || article.source === 'internal';
   const hasContent = article.content?.length > 0;
+  const isClickable = hasContent || isInternal; // internal articles always clickable, even if empty
+  const isSynced = article.source && article.source !== 'internal';
+  const isAddendum = article.articleType === 'addendum';
+  const isDraft = article.status === 'Draft';
+  const titleColor = isAddendum ? 'var(--text-weak)' : 'var(--text)';
   return (
     <div
       role="row"
-      onClick={hasContent ? onClick : undefined}
+      onClick={isClickable ? onClick : undefined}
       className="group flex items-stretch w-full bg-background-weak hover:bg-background-medium transition-colors"
-      style={{ height: 44, borderBottom: '1px solid var(--border)', cursor: hasContent ? 'pointer' : 'default' }}
+      style={{ height: 44, borderBottom: '1px solid var(--border)', cursor: isClickable ? 'pointer' : 'default', opacity: isDraft && isInternal ? 0.7 : 1 }}
     >
       <div className={`${CELL} w-[44px] shrink-0 justify-center`} style={{ ...typoMeta, fontSize: 11 }}>{index + 1}</div>
       <div className={`${CELL} sticky left-[44px] z-[1] w-[280px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
-        <span className="truncate max-w-[250px]" style={typoCell}>{article.title}</span>
+        {isSubItem ? (
+          /* Tree connector line for sub-items */
+          <span style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, paddingLeft: 8, paddingRight: 2 }}>
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <path d="M4 0v9.5M4 9.5h8" stroke="var(--border-strong)" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+          </span>
+        ) : (isAddendum && <AddendumIcon />)}
+        <span className="truncate max-w-[220px]" style={{ ...typoCell, color: titleColor, paddingLeft: isSubItem ? 0 : (isAddendum ? 4 : 0) }}>{article.title}</span>
+        {isSynced && !isAddendum && <LockIcon />}
       </div>
       <div className={`${CELL} sticky left-[324px] z-[1] w-[120px] shrink-0 bg-background-weak group-hover:bg-background-medium`} style={divStyle}>
         <SourceChip type={article.source ?? 'internal'} />
@@ -521,6 +562,7 @@ function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
   const badge = LEARNING_STATUS_BADGE[learning.status];
   const ticketCount = learning.sourceTickets.length;
   const isUpdate = learning.type === 'update-article';
+  const linkedArticleIsSynced = linkedArticle && linkedArticle.source && linkedArticle.source !== 'internal';
 
   return (
     <div style={{
@@ -578,14 +620,32 @@ function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
           <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
             <rect x="1" y="1" width="10" height="10" rx="1.5"/><path d="M3 4h6M3 6.5h6M3 9h4"/>
           </svg>
-          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0 }}>Updates</span>
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0 }}>
+            {linkedArticleIsSynced ? 'Supplements' : 'Updates'}
+          </span>
           <span style={{
             fontFamily: SFT, fontSize: 11, fontWeight: 500, color: 'var(--text-weak)',
             background: 'var(--background-medium)', borderRadius: 4, padding: '1px 7px',
-            whiteSpace: 'nowrap', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer',
+            whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer',
           }}>
             {linkedArticle.title}
           </span>
+          {linkedArticleIsSynced && (() => {
+            const cfg = INTEGRATION_CONFIG[linkedArticle.source];
+            return cfg ? (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                padding: '1px 5px', borderRadius: 3,
+                background: cfg.bg, fontSize: 10, fontWeight: 500, color: cfg.color, fontFamily: SFT, flexShrink: 0,
+              }}>
+                <svg viewBox="0 0 10 10" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="1.5" y="4" width="7" height="5" rx="1"/>
+                  <path d="M3 4V3a2 2 0 0 1 4 0v1"/>
+                </svg>
+                {cfg.label}
+              </span>
+            ) : null;
+          })()}
         </div>
       )}
 
@@ -616,7 +676,12 @@ function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
             type="button"
             onClick={() => {
               if (isUpdate && linkedArticle) {
-                navigate(`/knowledge-base/${learning.projectId}/${learning.linkedArticleId}?gap=${learning.id}`);
+                if (linkedArticleIsSynced) {
+                  // Synced article — can't edit, navigate to learnings tab for addendum creation
+                  navigate(`/knowledge-base/${learning.projectId}?tab=learnings`);
+                } else {
+                  navigate(`/knowledge-base/${learning.projectId}/${learning.linkedArticleId}?gap=${learning.id}`);
+                }
               } else {
                 onAction(learning.id, 'create');
               }
@@ -630,11 +695,13 @@ function LearningCard({ learning, linkedArticle, onAction, onTicketClick }) {
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; }}
           >
-            {isUpdate
+            {isUpdate && linkedArticleIsSynced
+              ? <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M6 1v10M1 6h10"/></svg>
+              : isUpdate
               ? <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 6A5 5 0 1 1 3.5 10.3M1 9.5V6.5h3"/></svg>
               : <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M6 1v10M1 6h10"/></svg>
             }
-            {isUpdate ? 'Review suggestion' : 'Create article'}
+            {isUpdate && linkedArticleIsSynced ? 'Create addendum' : isUpdate ? 'Review suggestion' : 'Create article'}
           </button>
           {learning.status === 'new' && (
             <button
@@ -677,12 +744,15 @@ function SparkleIcon() {
   );
 }
 
-function DraftCard({ draft, onAction, onTicketClick }) {
+function DraftCard({ draft, onAction, onTicketClick, allArticles }) {
   const navigate = useNavigate();
   const [status, setStatus] = useState(draft.status);
   const conf = CONFIDENCE_STYLE[draft.confidence];
-  const draftBadge = DRAFT_STATUS_STYLE[status];
   const previewPara = draft.content.find(c => c.type === 'p')?.text ?? '';
+  const isAddendumDraft = !!draft.targetArticleId;
+  const parentArticle = isAddendumDraft && allArticles
+    ? allArticles.find(a => a.id === draft.targetArticleId) ?? KB_ARTICLES.find(a => a.id === draft.targetArticleId)
+    : null;
 
   function handleReviewAndPublish() {
     navigate(`/knowledge-base/${draft.projectId}/${draft.id}`);
@@ -698,6 +768,30 @@ function DraftCard({ draft, onAction, onTicketClick }) {
       borderRadius: 10,
       overflow: 'hidden',
     }}>
+      {/* Addendum context strip */}
+      {isAddendumDraft && parentArticle && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 16px', borderBottom: '1px solid var(--border)',
+          background: 'var(--background-medium)',
+        }}>
+          <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 3L4 6l5 3"/>
+          </svg>
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>Addendum to</span>
+          <span style={{ fontFamily: SFT, fontSize: 11, fontWeight: 500, color: 'var(--text-weak)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {parentArticle.title}
+          </span>
+          {(() => {
+            const cfg = INTEGRATION_CONFIG[parentArticle.source];
+            return cfg ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '1px 5px', borderRadius: 3, background: cfg.bg, fontSize: 10, fontWeight: 500, color: cfg.color, fontFamily: SFT, flexShrink: 0 }}>
+                {cfg.label}
+              </span>
+            ) : null;
+          })()}
+        </div>
+      )}
       <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {/* Title + badges */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
@@ -707,7 +801,7 @@ function DraftCard({ draft, onAction, onTicketClick }) {
           <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 600, fontFamily: SFT, background: 'var(--selected-background)', color: 'var(--selected-text)' }}>
               <SparkleIcon size={9} />
-              AI draft
+              {isAddendumDraft ? 'AI addendum' : 'AI draft'}
             </span>
             <span style={{ padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: conf.bg, color: conf.color }}>
               {conf.label}
@@ -724,24 +818,28 @@ function DraftCard({ draft, onAction, onTicketClick }) {
         </p>
 
         {/* Source tickets */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From</span>
-          {draft.sourceTickets.map(t => (
-            <span key={t.id} onClick={() => onTicketClick?.(t.id)} title={t.title} style={{
-              fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)',
-              background: 'var(--selected-background)', borderRadius: 4, padding: '1px 6px',
-              cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textDecorationColor: 'var(--selected-text)',
-            }}>
-              {t.id}
-            </span>
-          ))}
-        </div>
+        {draft.sourceTickets.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>From</span>
+            {draft.sourceTickets.map(t => (
+              <span key={t.id} onClick={() => onTicketClick?.(t.id)} title={t.title} style={{
+                fontFamily: SFT, fontSize: 11, color: 'var(--selected-text)',
+                background: 'var(--selected-background)', borderRadius: 4, padding: '1px 6px',
+                cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textDecorationColor: 'var(--selected-text)',
+              }}>
+                {t.id}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Article preview (collapsed) */}
-        <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {previewPara}
-        </p>
+        {previewPara && (
+          <p style={{ fontFamily: SFT, fontSize: 12, color: 'var(--text-weak)', margin: 0, lineHeight: '18px',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {previewPara}
+          </p>
+        )}
 
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
@@ -750,7 +848,7 @@ function DraftCard({ draft, onAction, onTicketClick }) {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            Review &amp; publish
+            {isAddendumDraft ? 'Review addendum' : 'Review & publish'}
           </button>
           <button type="button" onClick={handleDismiss}
             style={{ height: 30, padding: '0 4px', fontSize: 12, fontFamily: SFT, fontWeight: 400, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--text-disabled)', transition: 'color 0.1s', marginLeft: 2 }}
@@ -843,9 +941,43 @@ function UpdateDraftCard({ learning, linkedArticle, onDismiss, onTicketClick }) 
   );
 }
 
+function HumanDraftCard({ article, onClick }) {
+  const statusStyle = STATUS_BADGE[article.status] ?? STATUS_BADGE['Unpublished'];
+  return (
+    <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+        <p style={{ fontFamily: SFT, fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, lineHeight: '20px', flex: 1 }}>
+          {article.title}
+        </p>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, fontFamily: SFT, background: statusStyle.bg, color: statusStyle.color }}>
+            {article.status}
+          </span>
+          <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)' }}>by {article.author}</span>
+        </div>
+      </div>
+      {article.category && (
+        <span style={{ fontFamily: SFT, fontSize: 11, color: 'var(--text-disabled)', background: 'var(--background-medium)', padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start' }}>
+          {article.category}
+        </span>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2 }}>
+        <button
+          type="button"
+          onClick={onClick}
+          style={{ height: 30, padding: '0 12px', fontSize: 12, fontFamily: SFT, fontWeight: 500, borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer', background: 'var(--background-weak)', color: 'var(--text)', display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all 0.1s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--background-weak)'; }}
+        >
+          Open article
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DraftsTab({ projectId, allArticles }) {
   const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId);
-  const updateSuggestions = KB_LEARNINGS.filter(l => l.projectId === projectId && l.type === 'update-article' && l.suggestedBlocks);
   const articleMap = Object.fromEntries((allArticles ?? []).map(a => [a.id, a]));
   const navigate = useNavigate();
   const [draftActions, setDraftActions] = useState({});
@@ -855,33 +987,75 @@ function DraftsTab({ projectId, allArticles }) {
   function handleDraftAction(id, action) { setDraftActions(prev => ({ ...prev, [id]: action })); }
   function handleUpdateDismiss(id) { setDismissedUpdates(prev => ({ ...prev, [id]: true })); }
 
-  const visibleDrafts = allDrafts.filter(d => draftActions[d.id] !== 'dismiss');
+  // Split drafts: regular new-article drafts vs addendum drafts
+  const regularDrafts = allDrafts.filter(d => !d.targetArticleId && draftActions[d.id] !== 'dismiss');
+  const addendumDrafts = allDrafts.filter(d => !!d.targetArticleId && draftActions[d.id] !== 'dismiss');
+
+  // Human-authored internal articles that aren't published yet
+  const humanDrafts = (allArticles ?? []).filter(a => a.source === 'internal' && a.status === 'Draft');
+
+  // Update suggestions only for non-synced (internal) articles — synced articles use addendum flow
+  const updateSuggestions = KB_LEARNINGS.filter(l => {
+    if (l.projectId !== projectId) return false;
+    if (l.type !== 'update-article') return false;
+    if (!l.suggestedBlocks) return false;
+    const linked = l.linkedArticleId ? articleMap[l.linkedArticleId] : null;
+    return !linked || linked.source === 'internal';
+  });
   const visibleUpdates = updateSuggestions.filter(l => !dismissedUpdates[l.id]);
 
-  if (visibleDrafts.length === 0 && visibleUpdates.length === 0) {
+  const total = regularDrafts.length + addendumDrafts.length + humanDrafts.length + visibleUpdates.length;
+
+  if (total === 0) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 10, color: 'var(--text-disabled)' }}>
         <SparkleIcon />
-        <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No AI drafts yet.</p>
+        <p style={{ fontFamily: SFT, fontSize: 13, margin: 0 }}>No drafts yet.</p>
       </div>
     );
   }
 
+  const hasAiSection = regularDrafts.length + addendumDrafts.length > 0;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {visibleDrafts.length > 0 && (
+      {humanDrafts.length > 0 && (
         <>
           <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: '4px 0 0', letterSpacing: '0.2px' }}>
-            New articles · {visibleDrafts.length}
+            Drafts · {humanDrafts.length}
           </p>
-          {visibleDrafts.map(d => (
-            <DraftCard key={d.id} draft={d} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
+          {humanDrafts.map(a => (
+            <HumanDraftCard
+              key={a.id}
+              article={a}
+              onClick={() => navigate(`/knowledge-base/${projectId}/${a.id}`)}
+            />
+          ))}
+        </>
+      )}
+      {regularDrafts.length > 0 && (
+        <>
+          <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: humanDrafts.length > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
+            New articles · {regularDrafts.length}
+          </p>
+          {regularDrafts.map(d => (
+            <DraftCard key={d.id} draft={d} allArticles={allArticles} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
+          ))}
+        </>
+      )}
+      {addendumDrafts.length > 0 && (
+        <>
+          <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: (humanDrafts.length + regularDrafts.length) > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
+            Addendum drafts · {addendumDrafts.length}
+          </p>
+          {addendumDrafts.map(d => (
+            <DraftCard key={d.id} draft={d} allArticles={allArticles} onAction={handleDraftAction} onTicketClick={handleTicketClick} />
           ))}
         </>
       )}
       {visibleUpdates.length > 0 && (
         <>
-          <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: visibleDrafts.length > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
+          <p style={{ fontFamily: SFT, fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', margin: (humanDrafts.length + regularDrafts.length + addendumDrafts.length) > 0 ? '8px 0 0' : '4px 0 0', letterSpacing: '0.2px' }}>
             Article updates · {visibleUpdates.length}
           </p>
           {visibleUpdates.map(l => (
@@ -966,9 +1140,362 @@ const articleCountByProject = Object.fromEntries(
   KB_PROJECTS.map(p => [p.id, KB_ARTICLES.filter(a => a.projectId === p.id).length])
 );
 
+// ─── Connect Knowledge Panel ───────────────────────────────────────────────────
+
+const CONNECTOR_OPTIONS = [
+  { id: 'sharepoint', label: 'SharePoint',   desc: 'Sync from Microsoft SharePoint document libraries', urlPlaceholder: 'your-company.sharepoint.com', spaces: ['IT Documentation', 'Security Runbooks', 'Company Policies', 'HR Handbook'] },
+  { id: 'gdrive',     label: 'Google Drive', desc: 'Sync from Google Drive shared drives',              urlPlaceholder: 'drive.google.com/drive/folders/…',  spaces: ['Company Shared Drive', 'HR Resources', 'Engineering Docs', 'Product Wiki'] },
+];
+
+function ConnectKnowledgePanel({ onClose }) {
+  const navigate = useNavigate();
+
+  // ── Connector flow ──
+  const [expandedConnector, setExpandedConnector] = useState(null);
+  const [workspaceUrl, setWorkspaceUrl]           = useState('');
+  const [connecting, setConnecting]               = useState(false);
+  const [authorized, setAuthorized]               = useState(false);
+  const [selectedLib, setSelectedLib]             = useState('');
+  const [syncFreq, setSyncFreq]                   = useState('6 hours');
+  const [syncing, setSyncing]                     = useState(false);
+  const [justConnected, setJustConnected]         = useState(false);
+
+  // ── Web allowlist ──
+  const [allowlist, setAllowlist]     = useState(WEB_ALLOWLIST);
+  const [webEnabled, setWebEnabled]   = useState(true);
+  const [addSiteOpen, setAddSiteOpen] = useState(false);
+  const [newUrl, setNewUrl]           = useState('');
+  const [newDesc, setNewDesc]         = useState('');
+
+  const connectedProjects = KB_PROJECTS.filter(p => p.source);
+  const opt   = expandedConnector ? CONNECTOR_OPTIONS.find(o => o.id === expandedConnector) : null;
+  const oCfg  = expandedConnector ? (INTEGRATION_CONFIG[expandedConnector] ?? {}) : null;
+
+  function startConnector(id) {
+    if (expandedConnector === id) { setExpandedConnector(null); return; }
+    setExpandedConnector(id); setWorkspaceUrl(''); setConnecting(false);
+    setAuthorized(false); setSelectedLib(''); setSyncFreq('6 hours'); setJustConnected(false);
+  }
+  function handleAuthorize() {
+    setConnecting(true);
+    setTimeout(() => { setConnecting(false); setAuthorized(true); }, 1800);
+  }
+  function handleConnectLib() {
+    setSyncing(true);
+    setTimeout(() => { setSyncing(false); setJustConnected(true); }, 1400);
+  }
+  function toggleAllowlist(id) { setAllowlist(prev => prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w)); }
+  function removeAllowlist(id) { setAllowlist(prev => prev.filter(w => w.id !== id)); }
+  function addSite() {
+    if (!newUrl.trim()) return;
+    const domain = newUrl.replace(/^https?:\/\//, '').split('/')[0];
+    setAllowlist(prev => [...prev, { id: `w${Date.now()}`, domain, description: newDesc || domain, enabled: true }]);
+    setNewUrl(''); setNewDesc(''); setAddSiteOpen(false);
+  }
+
+  const closeBtnStyle = { width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 6, cursor: 'pointer', background: 'transparent', color: 'var(--text-disabled)' };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+
+      {/* ── Header ── */}
+      <div style={{ padding: '18px 20px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, marginBottom: 3 }}>Connect knowledge</div>
+          <div style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, lineHeight: '18px' }}>Manage integrations and web sources for AI</div>
+        </div>
+        <button type="button" onClick={onClose} style={closeBtnStyle}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}>
+          <CloseIcon />
+        </button>
+      </div>
+
+      {/* ── Scrollable body ── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+
+        {/* Connected section */}
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 10, letterSpacing: '0.04em' }}>
+          CONNECTED ({connectedProjects.length})
+        </div>
+        {connectedProjects.map(proj => {
+          const src  = proj.source;
+          const pCfg = INTEGRATION_CONFIG[src.type] ?? {};
+          const articleCount = KB_ARTICLES.filter(a => a.projectId === proj.id && a.source === src.type).length;
+          return (
+            <div key={proj.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', background: 'var(--surface)', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: pCfg.bg, border: `1px solid ${pCfg.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <SourceIcon type={src.type} size={18} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proj.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT }}>{pCfg.label} · {src.space}</div>
+                </div>
+                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 4, background: 'var(--success-background)', color: 'var(--success-text)', fontFamily: SFT, fontWeight: 500, flexShrink: 0 }}>Synced</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>{articleCount} articles</span>
+                <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>Last synced {formatRelativeTime(src.syncedAt)}</span>
+                <button type="button" onClick={() => { onClose(); navigate(`/knowledge-base/${proj.id}`); }}
+                  style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 500, color: 'var(--selected-background-strong)', fontFamily: SFT, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 3 }}
+                  onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                  onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>
+                  Open
+                  <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M3 2h5v5M8 2L2 8"/></svg>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        <div style={{ height: 1, background: 'var(--border)', margin: '20px 0' }} />
+
+        {/* Add connector section */}
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 10, letterSpacing: '0.04em' }}>ADD CONNECTOR</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {CONNECTOR_OPTIONS.map(option => {
+            const ocfg      = INTEGRATION_CONFIG[option.id] ?? {};
+            const isExpanded = expandedConnector === option.id;
+            return (
+              <div key={option.id}>
+                <button type="button" onClick={() => startConnector(option.id)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', borderRadius: isExpanded ? '8px 8px 0 0' : 8,
+                    border: `1px solid ${isExpanded ? ocfg.color + '66' : 'var(--border)'}`,
+                    borderBottom: isExpanded ? 'none' : undefined,
+                    background: isExpanded ? ocfg.bg : 'var(--surface)',
+                    cursor: 'pointer', textAlign: 'left', transition: 'all 0.12s',
+                  }}
+                  onMouseEnter={e => { if (!isExpanded) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--background-weak)'; } }}
+                  onMouseLeave={e => { if (!isExpanded) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface)'; } }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: ocfg.bg, border: `1px solid ${ocfg.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <SourceIcon type={option.id} size={18} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, marginBottom: 1 }}>{option.label}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>{option.desc}</div>
+                  </div>
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="var(--text-disabled)" strokeWidth="1.8" strokeLinecap="round"
+                    style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
+                    <path d="M4 2l4 4-4 4"/>
+                  </svg>
+                </button>
+
+                {isExpanded && (
+                  <div style={{ border: `1px solid ${ocfg.color}66`, borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '16px 14px', background: 'var(--background-weak)' }}>
+                    {justConnected ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0', gap: 10, textAlign: 'center' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--success-background)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <CheckIcon size={16} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, marginBottom: 3 }}>Connected</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, lineHeight: '18px' }}>
+                            {selectedLib} is syncing. Articles will appear shortly.
+                          </div>
+                        </div>
+                        <button type="button" onClick={() => setExpandedConnector(null)}
+                          style={{ height: 30, padding: '0 16px', borderRadius: 6, border: 'none', background: 'var(--selected-background-strong)', color: 'white', fontSize: 12, fontFamily: SFT, fontWeight: 500, cursor: 'pointer' }}>
+                          Done
+                        </button>
+                      </div>
+                    ) : !authorized ? (
+                      <>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT, marginBottom: 6 }}>
+                          {option.id === 'sharepoint' ? 'SharePoint site URL' : 'Google Drive folder URL'}
+                        </div>
+                        <input type="text" placeholder={option.urlPlaceholder}
+                          value={workspaceUrl} onChange={e => setWorkspaceUrl(e.target.value)}
+                          style={{ width: '100%', height: 34, padding: '0 10px', fontSize: 13, fontFamily: SFT, border: '1px solid var(--border)', borderRadius: 6, outline: 'none', color: 'var(--text)', background: 'var(--surface)', boxSizing: 'border-box', marginBottom: 10 }}
+                          onFocus={e => e.target.style.borderColor = ocfg.color}
+                          onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                        <button type="button" onClick={handleAuthorize} disabled={connecting}
+                          style={{ width: '100%', height: 34, borderRadius: 6, border: 'none', cursor: connecting ? 'default' : 'pointer', background: ocfg.color, color: 'white', fontSize: 13, fontWeight: 500, fontFamily: SFT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: connecting ? 0.7 : 1, transition: 'opacity 0.15s' }}>
+                          {connecting ? <SpinnerIcon /> : <SourceIcon type={option.id} size={14} />}
+                          {connecting ? 'Authorizing…' : `Authorize with ${option.id === 'sharepoint' ? 'Microsoft' : 'Google'}`}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', background: 'var(--success-background)', borderRadius: 6, marginBottom: 12 }}>
+                          <CheckIcon size={13} />
+                          <span style={{ fontSize: 12, color: 'var(--success-text)', fontFamily: SFT, fontWeight: 500 }}>
+                            Authorized · {workspaceUrl || ocfg.label}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT, marginBottom: 6 }}>
+                          Select {option.id === 'sharepoint' ? 'document library' : 'shared drive'}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 12 }}>
+                          {option.spaces.map(s => (
+                            <label key={s}
+                              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 6, cursor: 'pointer', border: `1px solid ${selectedLib === s ? ocfg.color + '88' : 'transparent'}`, background: selectedLib === s ? ocfg.bg : 'transparent', transition: 'all 0.1s' }}
+                              onMouseEnter={e => { if (selectedLib !== s) e.currentTarget.style.background = 'var(--background-medium)'; }}
+                              onMouseLeave={e => { if (selectedLib !== s) e.currentTarget.style.background = 'transparent'; }}>
+                              <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${selectedLib === s ? ocfg.color : 'var(--border-strong)'}`, background: selectedLib === s ? ocfg.color : 'transparent', flexShrink: 0, transition: 'all 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {selectedLib === s && <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'white' }} />}
+                              </div>
+                              <input type="radio" name={`lib-${option.id}`} value={s} checked={selectedLib === s} onChange={() => setSelectedLib(s)} style={{ display: 'none' }} />
+                              <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: SFT }}>{s}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-weak)', fontFamily: SFT, marginBottom: 6 }}>Sync frequency</div>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {['1 hour', '6 hours', '24 hours'].map(f => (
+                              <button key={f} type="button" onClick={() => setSyncFreq(f)}
+                                style={{ padding: '5px 10px', borderRadius: 6, border: `1px solid ${syncFreq === f ? ocfg.color : 'var(--border)'}`, background: syncFreq === f ? ocfg.bg : 'transparent', fontSize: 12, fontFamily: SFT, fontWeight: syncFreq === f ? 500 : 400, color: syncFreq === f ? ocfg.color : 'var(--text-weak)', cursor: 'pointer', transition: 'all 0.12s' }}>
+                                {f}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <button type="button" onClick={handleConnectLib} disabled={!selectedLib || syncing}
+                          style={{ width: '100%', height: 34, borderRadius: 6, border: 'none', cursor: (!selectedLib || syncing) ? 'default' : 'pointer', background: ocfg.color, color: 'white', fontSize: 13, fontWeight: 500, fontFamily: SFT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: (!selectedLib || syncing) ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+                          {syncing && <SpinnerIcon />}
+                          {syncing ? 'Connecting…' : 'Connect'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ height: 1, background: 'var(--border)', margin: '20px 0' }} />
+
+        {/* Web search section */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, letterSpacing: '0.04em' }}>WEB SEARCH</div>
+          <Toggle value={webEnabled} onChange={setWebEnabled} />
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 14px', lineHeight: '18px' }}>
+          AI searches approved sites when answering tickets
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {allowlist.map(site => (
+            <div key={site.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ width: 26, height: 26, borderRadius: 6, background: 'var(--background-medium)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <GlobeIcon size={12} color="var(--text-weak)" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: site.enabled ? 'var(--text)' : 'var(--text-disabled)', fontFamily: SFT, marginBottom: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{site.domain}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>{site.description}</div>
+              </div>
+              <div role="checkbox" aria-checked={site.enabled} onClick={() => toggleAllowlist(site.id)}
+                style={{ width: 28, height: 16, borderRadius: 8, background: site.enabled ? 'var(--selected-background-strong)' : 'var(--background-strong)', position: 'relative', cursor: 'pointer', transition: 'background 0.15s', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: 2, left: site.enabled ? 14 : 2, width: 12, height: 12, borderRadius: '50%', background: 'white', transition: 'left 0.15s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
+              </div>
+              <button type="button" onClick={() => removeAllowlist(site.id)}
+                style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 5, cursor: 'pointer', background: 'transparent', color: 'var(--text-disabled)', flexShrink: 0 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--danger-background)'; e.currentTarget.style.color = 'var(--danger-text)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}>
+                <CloseIcon />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {addSiteOpen && (
+          <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '12px 14px', marginTop: 10, background: 'var(--surface)' }}>
+            <input type="text" placeholder="https://help.example.com" value={newUrl} onChange={e => setNewUrl(e.target.value)}
+              style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 13, fontFamily: SFT, border: '1px solid var(--border)', borderRadius: 6, outline: 'none', color: 'var(--text)', background: 'var(--surface)', boxSizing: 'border-box', marginBottom: 8 }}
+              onFocus={e => e.target.style.borderColor = 'var(--icon)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+            <input type="text" placeholder="Short description (optional)" value={newDesc} onChange={e => setNewDesc(e.target.value)}
+              style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 13, fontFamily: SFT, border: '1px solid var(--border)', borderRadius: 6, outline: 'none', color: 'var(--text)', background: 'var(--surface)', boxSizing: 'border-box', marginBottom: 10 }}
+              onFocus={e => e.target.style.borderColor = 'var(--icon)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={addSite} disabled={!newUrl.trim()}
+                style={{ height: 30, padding: '0 14px', borderRadius: 6, border: 'none', background: 'var(--selected-background-strong)', color: 'white', fontSize: 12, fontFamily: SFT, fontWeight: 500, cursor: newUrl.trim() ? 'pointer' : 'default', opacity: newUrl.trim() ? 1 : 0.5 }}>
+                Add site
+              </button>
+              <button type="button" onClick={() => { setAddSiteOpen(false); setNewUrl(''); setNewDesc(''); }}
+                style={{ height: 30, padding: '0 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-weak)', fontSize: 12, fontFamily: SFT, cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!addSiteOpen && (
+          <button type="button" onClick={() => setAddSiteOpen(true)}
+            style={{ marginTop: 10, height: 32, padding: '0 12px', fontSize: 12, fontFamily: SFT, fontWeight: 500, borderRadius: 6, border: '1px dashed var(--border-strong)', background: 'transparent', color: 'var(--text-weak)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, width: '100%', justifyContent: 'center', transition: 'all 0.1s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-disabled)'; e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text-weak)'; }}>
+            <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 1v10M1 6h10"/></svg>
+            Add whitelisted website
+          </button>
+        )}
+
+        <div style={{ height: 32 }} />
+      </div>
+    </div>
+  );
+}
+
+
+// ─── Sources strip ─────────────────────────────────────────────────────────────
+
+function SourcesStrip({ onManage, onManageWeb }) {
+  const connectedSources = KB_PROJECTS.filter(p => p.source);
+  const webCount = WEB_ALLOWLIST.filter(w => w.enabled).length;
+
+  return (
+    <div style={{ flexShrink: 0, padding: '0 32px 14px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <span style={{ fontSize: 12, color: 'var(--text-disabled)', fontFamily: SFT, flexShrink: 0 }}>Sources</span>
+
+      {connectedSources.map(proj => {
+        const src = proj.source;
+        const cfg = INTEGRATION_CONFIG[src.type] ?? {};
+        const synced = KB_ARTICLES.filter(a => a.projectId === proj.id && a.source === src.type).length;
+        return (
+          <button key={proj.id} type="button" onClick={onManage}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 26, padding: '0 10px 0 7px', borderRadius: 6, border: `1px solid ${cfg.color}33`, background: cfg.bg, fontSize: 12, fontFamily: SFT, fontWeight: 500, color: cfg.color, cursor: 'pointer', transition: 'opacity 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            <SourceIcon type={src.type} size={12} />
+            <span>{src.space}</span>
+            <span style={{ width: 1, height: 10, background: `${cfg.color}44`, flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.8 }}>{synced} articles</span>
+          </button>
+        );
+      })}
+
+      <button type="button" onClick={onManageWeb}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 26, padding: '0 10px 0 7px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text-weak)', cursor: 'pointer', transition: 'all 0.1s' }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.color = 'var(--text)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-weak)'; }}>
+        <GlobeIcon size={12} color="var(--text-weak)" />
+        <span>Web search</span>
+        <span style={{ width: 1, height: 10, background: 'var(--border-strong)', flexShrink: 0 }} />
+        <span style={{ fontSize: 11, fontWeight: 400 }}>{webCount} sites</span>
+      </button>
+
+      <button type="button" onClick={onManage}
+        style={{ marginLeft: 'auto', fontSize: 12, fontFamily: SFT, fontWeight: 500, color: 'var(--text-weak)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+        onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+        onMouseLeave={e => e.currentTarget.style.color = 'var(--text-weak)'}>
+        Manage sources
+        <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4.5 2.5l3 3.5-3 3.5"/></svg>
+      </button>
+    </div>
+  );
+}
+
+// ─── KB landing page ───────────────────────────────────────────────────────────
+
 function KBLandingPage({ isAgent }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [connectOpen, setConnectOpen] = useState(false);
 
   const visibleProjects = isAgent
     ? KB_PROJECTS.filter(p => !AGENT_HIDDEN_PROJECTS.has(p.id))
@@ -986,25 +1513,28 @@ function KBLandingPage({ isAgent }) {
         <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 20, fontWeight: 500, lineHeight: '28px', letterSpacing: '0.38px', fontFeatureSettings: "'liga' off, 'clig' off", color: 'var(--text)', margin: 0 }}>
           Browse knowledge bases
         </h1>
-        {!isAgent && (
-          <button
-            type="button"
-            style={{
-              height: 32, padding: '0 14px', fontSize: 13, fontFamily: SFT, fontWeight: 500,
-              borderRadius: 6, border: 'none', cursor: 'pointer',
-              background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
-              display: 'flex', alignItems: 'center', gap: 6,
-              transition: 'opacity 0.1s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
-          >
-            <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M6 1v10M1 6h10"/>
-            </svg>
-            Create knowledge base
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {!isAgent && (
+            <button
+              type="button"
+              onClick={() => setConnectOpen(true)}
+              style={{
+                height: 32, padding: '0 14px', fontSize: 13, fontFamily: SFT, fontWeight: 500,
+                borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
+                display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'opacity 0.1s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+            >
+              <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M6 1v10M1 6h10"/>
+              </svg>
+              Connect knowledge
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Search ── */}
@@ -1029,6 +1559,14 @@ function KBLandingPage({ isAgent }) {
           />
         </div>
       </div>
+
+      {/* ── Sources strip ── */}
+      {!isAgent && (
+        <SourcesStrip
+          onManage={() => setConnectOpen(true)}
+          onManageWeb={() => setConnectOpen(true)}
+        />
+      )}
 
       {/* ── Table header ── */}
       <div style={{
@@ -1114,6 +1652,11 @@ function KBLandingPage({ isAgent }) {
           </div>
         )}
       </div>
+
+      {/* ── Connect knowledge overlay ── */}
+      <RightPanelOverlay open={connectOpen} width={520} onClose={() => setConnectOpen(false)}>
+        <ConnectKnowledgePanel onClose={() => setConnectOpen(false)} />
+      </RightPanelOverlay>
     </div>
   );
 }
@@ -1138,12 +1681,32 @@ export default function KnowledgeBaseView({ role }) {
   const project = KB_PROJECTS.find(p => p.id === projectId);
   const allArticles = KB_ARTICLES.filter(a => a.projectId === projectId);
   const draftsCount = KB_DRAFTS.filter(d => d.projectId === projectId && d.status !== 'dismissed').length
-    + KB_LEARNINGS.filter(l => l.projectId === projectId && l.type === 'update-article' && l.suggestedBlocks).length;
+    + KB_LEARNINGS.filter(l => {
+        if (l.projectId !== projectId || l.type !== 'update-article' || !l.suggestedBlocks) return false;
+        const linked = allArticles.find(a => a.id === l.linkedArticleId);
+        return !linked || linked.source === 'internal';
+      }).length
+    + allArticles.filter(a => a.source === 'internal' && a.status === 'Draft').length;
   const learningsCount = KB_LEARNINGS.filter(l => l.projectId === projectId && l.status === 'new').length;
   const searchFiltered = search
     ? allArticles.filter(a => a.title.toLowerCase().includes(search.toLowerCase()))
     : allArticles;
-  const articles = applyFilters(searchFiltered, filters, KB_ACCESSORS);
+  const filtered = applyFilters(searchFiltered, filters, KB_ACCESSORS);
+  // Sort: addenda appear directly after their parent article
+  const articles = (() => {
+    const standards = filtered.filter(a => a.articleType !== 'addendum');
+    const addenda = filtered.filter(a => a.articleType === 'addendum');
+    const result = [];
+    for (const a of standards) {
+      result.push({ ...a, _isParent: addenda.some(c => c.parentArticleId === a.id) });
+      const children = addenda.filter(c => c.parentArticleId === a.id);
+      for (const c of children) result.push({ ...c, _isSubItem: true });
+    }
+    // Orphaned addenda (parent filtered out) at the end
+    const orphans = addenda.filter(c => !standards.some(s => s.id === c.parentArticleId));
+    for (const c of orphans) result.push({ ...c, _isSubItem: true });
+    return result;
+  })();
 
   if (!projectId) {
     return <KBLandingPage isAgent={isAgent} />;
@@ -1291,7 +1854,7 @@ export default function KnowledgeBaseView({ role }) {
               <div style={{ minWidth: '100%', width: 'max-content' }}>
                 <TableHeader />
                 {articles.length > 0
-                  ? articles.map((article, i) => <TableRow key={article.id} article={article} index={i} onClick={() => navigate(`/knowledge-base/${projectId}/${article.id}`)} />)
+                  ? articles.map((article, i) => <TableRow key={article.id} article={article} index={i} isSubItem={article._isSubItem} onClick={() => navigate(`/knowledge-base/${projectId}/${article.id}`)} />)
                   : (
                     <div
                       className="flex items-center justify-center py-16 w-full"

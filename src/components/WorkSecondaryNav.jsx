@@ -97,7 +97,8 @@ const MAIN_NAV = [
 ];
 
 const RECENTS = [
-  { label: 'IT Escalations Inbox', icon: <SquircleIcon color="#A69FF3" className="w-4 h-4 shrink-0" /> },
+  { label: 'IT Escalations Inbox',         icon: <SquircleIcon color="#A69FF3" className="w-4 h-4 shrink-0" /> },
+  { label: 'Acme Corp — Vendor Onboarding', icon: <SquircleIcon color="#5a8f6b" className="w-4 h-4 shrink-0" /> },
   { label: 'Creative Requests',    icon: <SquircleIcon color="#E05A4E" className="w-4 h-4 shrink-0" /> },
   { label: 'Content Calendar',     icon: <SquircleIcon color="#F0A830" className="w-4 h-4 shrink-0" /> },
   { label: 'End-of-Year Camp...',  icon: <SquircleIcon color="#58C6C6" className="w-4 h-4 shrink-0" /> },

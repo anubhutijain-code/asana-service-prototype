@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import Pill from './Pill';
 import { PRIORITY_COLORS, STATUS_BORDER, PRIORITY_OPTIONS, STATUS_OPTIONS, PillStatusIcon } from './TicketDetailHeader';
 import WorkflowStepsPanel from './WorkflowStepsPanel';
+import { AI_KB_REFS } from '../data/aiAssist';
+import { KB_ARTICLES } from '../data/knowledgeBase';
 
 // ─── SLA ring icon ────────────────────────────────────────────────────────────
 
@@ -277,6 +279,54 @@ function LinkedHRTicketCard({ hrTicket, onGoToLinkedHRTicket }) {
     </div>
   );
 }
+
+const TICKET_TIMELINES = {
+  'TICKET-95': [
+    { time: 'Today, 9:14 AM',   actor: 'Steve Smith',   action: 'updated status to',   detail: 'In Progress' },
+    { time: 'Today, 8:55 AM',   actor: 'IT Bot',        action: 'assigned ticket to',   detail: 'Steve Smith' },
+    { time: 'Today, 8:53 AM',   actor: 'Sarah Chen',    action: 'submitted ticket',     detail: null },
+  ],
+  'TICKET-69': [
+    { time: 'Today, 11:02 AM',  actor: 'Steve Smith',   action: 'added internal note',  detail: null },
+    { time: 'Today, 10:45 AM',  actor: 'IT Bot',        action: 'flagged SLA risk',     detail: 'Response due in 2h' },
+    { time: 'Yesterday, 3:22 PM', actor: 'Jordan Park', action: 'submitted ticket',     detail: null },
+  ],
+  'TICKET-68': [
+    { time: 'Today, 2:10 PM',   actor: 'Steve Smith',   action: 'routed ticket to',     detail: 'HR Payroll' },
+    { time: 'Today, 1:44 PM',   actor: 'Anjelica Silva',action: 'added comment',        detail: null },
+    { time: 'Today, 9:30 AM',   actor: 'IT Bot',        action: 'triaged and assigned', detail: 'Steve Smith' },
+    { time: 'Yesterday, 5:01 PM', actor: 'Anjelica Silva', action: 'submitted ticket',  detail: null },
+  ],
+  'TICKET-66': [
+    { time: 'Today, 4:00 PM',   actor: 'Steve Smith',   action: 'updated status to',    detail: 'Resolved' },
+    { time: 'Today, 3:48 PM',   actor: 'Steve Smith',   action: 'provisioned license',  detail: 'Salesforce Professional' },
+    { time: 'Today, 10:12 AM',  actor: 'IT Bot',        action: 'verified manager approval', detail: null },
+    { time: 'Today, 9:55 AM',   actor: 'Martin Ludington', action: 'submitted ticket',  detail: null },
+  ],
+  'TICKET-65': [
+    { time: 'Today, 11:30 AM',  actor: 'Steve Smith',   action: 'escalated to',         detail: 'Network Team' },
+    { time: 'Today, 10:50 AM',  actor: 'Steve Smith',   action: 'attempted remote fix', detail: null },
+    { time: 'Today, 8:20 AM',   actor: 'IT Bot',        action: 'assigned ticket to',   detail: 'Steve Smith' },
+    { time: 'Yesterday, 4:15 PM', actor: 'Ang Lee',     action: 'submitted ticket',     detail: null },
+  ],
+  'TICKET-63': [
+    { time: 'Today, 3:15 PM',   actor: 'Steve Smith',   action: 'updated priority to',  detail: 'High' },
+    { time: 'Today, 2:44 PM',   actor: 'IT Bot',        action: 'flagged SLA breach',   detail: 'Resolution overdue by 4h' },
+    { time: 'Today, 1:22 PM',   actor: 'Patrick Tuckey',action: 'added comment',        detail: null },
+    { time: 'Today, 9:00 AM',   actor: 'IT Bot',        action: 'assigned ticket to',   detail: 'Steve Smith' },
+  ],
+  'TICKET-62': [
+    { time: 'Today, 12:00 PM',  actor: 'Steve Smith',   action: 'initiated remote wipe', detail: null },
+    { time: 'Today, 11:45 AM',  actor: 'Steve Smith',   action: 'updated status to',    detail: 'In Progress' },
+    { time: 'Today, 10:30 AM',  actor: 'IT Bot',        action: 'escalated — data risk',detail: 'Lost device protocol triggered' },
+    { time: 'Today, 10:15 AM',  actor: 'Ang Lee',       action: 'submitted ticket',     detail: null },
+  ],
+};
+
+const DEFAULT_TIMELINE = [
+  { time: 'Today',       actor: 'IT Bot',      action: 'triaged and assigned', detail: null },
+  { time: 'Today',       actor: 'Requester',   action: 'submitted ticket',     detail: null },
+];
 
 // ─── TicketInfoSidebar ────────────────────────────────────────────────────────
 
@@ -637,11 +687,90 @@ export default function TicketInfoSidebar({
           </div>
         </Section>
 
-        {/* Suggested articles */}
-        <Section title="Suggested articles" defaultOpen={false} />
+        {/* Citations */}
+        {(() => {
+          const category = ticket?.category ?? 'General';
+          const refs = AI_KB_REFS[category] ?? [];
+          const articleRefs = refs
+            .filter(r => typeof r === 'string')
+            .map(id => KB_ARTICLES.find(a => a.id === id))
+            .filter(Boolean);
+          const webRefs = refs.filter(r => typeof r === 'object' && r.type === 'web');
+          const total = articleRefs.length + webRefs.length;
+          if (total === 0) return null;
+          return (
+            <Section title={`Citations`} defaultOpen={false}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {articleRefs.map(article => {
+                  const SOURCE_COLORS = { sharepoint: { bg: '#EBF3FB', color: '#0078D4', label: 'SharePoint' }, gdrive: { bg: '#E8F0FE', color: '#1A73E8', label: 'Google Drive' } };
+                  const src = article.source && SOURCE_COLORS[article.source];
+                  return (
+                    <div key={article.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 6, background: 'var(--background-medium)' }}>
+                      {/* doc icon */}
+                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" style={{ flexShrink: 0 }}>
+                        <rect x="2" y="1" width="10" height="12" rx="1.5" stroke="var(--icon)" strokeWidth="1.2"/>
+                        <path d="M4.5 4.5h5M4.5 7h5M4.5 9.5h3" stroke="var(--icon)" strokeWidth="1" strokeLinecap="round"/>
+                      </svg>
+                      <span style={{ flex: 1, fontSize: 12, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {article.title}
+                      </span>
+                      {src && (
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: src.bg, color: src.color, flexShrink: 0 }}>
+                          {src.label}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                {webRefs.map(ref => (
+                  <a key={ref.id} href={ref.url} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 6, background: 'var(--background-medium)', textDecoration: 'none', transition: 'background 0.1s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--background-medium)'; }}
+                  >
+                    {/* globe icon */}
+                    <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="var(--icon)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="5.5"/>
+                      <path d="M7 1.5C7 1.5 5.5 3.5 5.5 7s1.5 5.5 1.5 5.5M7 1.5C7 1.5 8.5 3.5 8.5 7S7 12.5 7 12.5M1.5 7h11M2 4.5h10M2 9.5h10"/>
+                    </svg>
+                    <span style={{ flex: 1, fontSize: 12, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {ref.title}
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, background: 'var(--background-weak)', color: 'var(--text-weak)', flexShrink: 0 }}>
+                      {ref.domain}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </Section>
+          );
+        })()}
 
         {/* Timeline */}
-        <Section title="Timeline" defaultOpen={false} />
+        <Section title="Timeline" defaultOpen={false}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {(TICKET_TIMELINES[ticket?.id] ?? DEFAULT_TIMELINE).map((event, i, arr) => (
+              <div key={i} style={{ display: 'flex', gap: 10, paddingBottom: i < arr.length - 1 ? 12 : 0 }}>
+                {/* Timeline spine */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 16, flexShrink: 0 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: i === 0 ? 'var(--selected-background-strong)' : 'var(--border-strong)', marginTop: 3, flexShrink: 0 }} />
+                  {i < arr.length - 1 && (
+                    <div style={{ width: 1, flex: 1, background: 'var(--border)', marginTop: 4 }} />
+                  )}
+                </div>
+                {/* Event content */}
+                <div style={{ flex: 1, paddingTop: 1 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text)', lineHeight: '18px' }}>
+                    <span style={{ fontWeight: 500 }}>{event.actor}</span>
+                    {' '}{event.action}
+                    {event.detail && <span style={{ fontWeight: 500 }}> {event.detail}</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginTop: 1 }}>{event.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
 
       </div>
       )}
