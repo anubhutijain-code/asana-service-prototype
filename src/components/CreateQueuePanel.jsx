@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { SFT, SFD, LIGA } from '../constants/typography';
+import { DetailModal } from './PlaybookGallery';
 
 const B = import.meta.env.BASE_URL;
 const AVATARS = [
@@ -45,12 +46,54 @@ const WORKSPACE_MEMBERS = [
 ];
 
 const PLAYBOOK_TEMPLATES = [
-  { id: 'pb1', section: 'Queue',      avatar: 0, domain: 'IT',         title: 'Auto-assign by Category',             subtitle: 'Auto-routing',     defaultOn: true,  integrations: ['globe', 'word'],        desc: 'Routes incoming tickets to the right agent based on category tags and workload.' },
-  { id: 'pb2', section: 'Queue',      avatar: 1, domain: 'IT',         title: 'SLA Breach Auto-escalation',           subtitle: 'SLA management',   defaultOn: true,  integrations: ['globe', 'word'],        desc: 'Automatically escalates tickets approaching or past their SLA deadline.' },
-  { id: 'pb3', section: 'Queue',      avatar: 2, domain: 'IT',         title: 'Duplicate Ticket Detection & Merge',   subtitle: 'Queue management', defaultOn: false, integrations: ['globe'],               desc: 'Detects similar open tickets and merges them to prevent duplicate work.' },
-  { id: 'pb4', section: 'Queue',      avatar: 3, domain: 'IT',         title: 'Auto-close Inactive Resolved Tickets', subtitle: 'Queue management', defaultOn: false, integrations: ['globe'],               desc: 'Closes tickets that have been resolved but inactive for 7+ days.' },
-  { id: 'pb5', section: 'Cross-team', avatar: 4, domain: 'Cross-team', title: 'New Hire Cross-team Onboarding',       subtitle: 'Onboarding',       defaultOn: true,  integrations: ['globe', 'word', 'drive'], desc: 'Coordinates with HR and Facilities when a new hire ticket is opened.' },
-  { id: 'pb6', section: 'Cross-team', avatar: 5, domain: 'Cross-team', title: 'CSAT Survey on Ticket Close',          subtitle: 'Feedback',         defaultOn: false, integrations: ['globe', 'drive'],       desc: 'Sends a satisfaction survey to the requester when their ticket is closed.' },
+  {
+    id: 'pb1', section: 'Queue', avatar: 0, domain: 'IT', title: 'Auto-assign by Category',
+    subtitle: 'Auto-routing', defaultOn: true, integrations: ['globe', 'word'], uses: '12 teams',
+    desc: 'Routes incoming tickets to the right agent based on category tags and workload.',
+    description: 'Routes incoming tickets to the right agent based on category tags and current workload balance. Eliminates manual triage and ensures even distribution across your team.',
+    capabilities: ['Parse ticket category tags on creation', 'Match category to agent skill profile', 'Check agent current workload before assigning', 'Reassign if agent is over capacity'],
+    steps: [{ type: 'trigger', label: 'Ticket created' }, { type: 'condition', label: 'Has category tag?' }, { type: 'ai', label: 'Match to agent by skill' }, { type: 'task', label: 'Assign ticket' }, { type: 'notify', label: 'Notify agent via email' }],
+  },
+  {
+    id: 'pb2', section: 'Queue', avatar: 1, domain: 'IT', title: 'SLA Breach Auto-escalation',
+    subtitle: 'SLA management', defaultOn: true, integrations: ['globe', 'word'], uses: '8 teams',
+    desc: 'Automatically escalates tickets approaching or past their SLA deadline.',
+    description: 'Monitors ticket age against SLA targets and automatically escalates to a senior agent or manager when a breach is imminent or has occurred.',
+    capabilities: ['Monitor ticket age continuously', 'Warn agent at 75% SLA threshold', 'Escalate at 100% breach', 'Notify queue admin on repeated breaches'],
+    steps: [{ type: 'trigger', label: 'SLA threshold reached' }, { type: 'condition', label: 'Priority level?' }, { type: 'notify', label: 'Warn assigned agent' }, { type: 'task', label: 'Escalate to senior agent' }, { type: 'notify', label: 'Notify queue admin' }],
+  },
+  {
+    id: 'pb3', section: 'Queue', avatar: 2, domain: 'IT', title: 'Duplicate Ticket Detection & Merge',
+    subtitle: 'Queue management', defaultOn: false, integrations: ['globe'], uses: '5 teams',
+    desc: 'Detects similar open tickets and merges them to prevent duplicate work.',
+    description: 'Uses AI to compare new tickets against open tickets and detect semantic duplicates. Merges duplicates automatically and notifies the requester.',
+    capabilities: ['Embed ticket text for semantic comparison', 'Detect duplicates above similarity threshold', 'Merge duplicate into parent ticket', 'Notify requester of merge'],
+    steps: [{ type: 'trigger', label: 'Ticket created' }, { type: 'ai', label: 'Scan for duplicates' }, { type: 'condition', label: 'Duplicate found?' }, { type: 'task', label: 'Merge tickets' }, { type: 'notify', label: 'Notify requester' }],
+  },
+  {
+    id: 'pb4', section: 'Queue', avatar: 3, domain: 'IT', title: 'Auto-close Inactive Resolved Tickets',
+    subtitle: 'Queue management', defaultOn: false, integrations: ['globe'], uses: '9 teams',
+    desc: 'Closes tickets that have been resolved but inactive for 7+ days.',
+    description: 'Keeps your queue clean by automatically closing tickets that were resolved but never officially closed by the requester after a configurable inactivity window.',
+    capabilities: ['Detect resolved tickets with no recent activity', 'Send closure warning to requester', 'Auto-close after inactivity window', 'Log closure reason in ticket history'],
+    steps: [{ type: 'trigger', label: 'Daily schedule' }, { type: 'condition', label: 'Resolved & inactive 7+ days?' }, { type: 'notify', label: 'Send 48h warning to requester' }, { type: 'task', label: 'Auto-close ticket' }],
+  },
+  {
+    id: 'pb5', section: 'Cross-team', avatar: 4, domain: 'Cross-team', title: 'New Hire Cross-team Onboarding',
+    subtitle: 'Onboarding', defaultOn: true, integrations: ['globe', 'word', 'drive'], uses: '6 teams',
+    desc: 'Coordinates with HR and Facilities when a new hire ticket is opened.',
+    description: 'When an IT onboarding ticket is created, this playbook automatically coordinates equipment provisioning, software access, and workspace setup across HR, IT, and Facilities.',
+    capabilities: ['Detect new hire ticket from subject/tag', 'Create subtasks for IT, HR, and Facilities', 'Provision software access list', 'Track completion across teams'],
+    steps: [{ type: 'trigger', label: 'New hire ticket created' }, { type: 'ai', label: 'Extract start date and role' }, { type: 'task', label: 'Create IT provisioning task' }, { type: 'task', label: 'Create Facilities workspace task' }, { type: 'notify', label: 'Notify HR coordinator' }],
+  },
+  {
+    id: 'pb6', section: 'Cross-team', avatar: 5, domain: 'Cross-team', title: 'CSAT Survey on Ticket Close',
+    subtitle: 'Feedback', defaultOn: false, integrations: ['globe', 'drive'], uses: '11 teams',
+    desc: 'Sends a satisfaction survey to the requester when their ticket is closed.',
+    description: 'Automatically sends a short CSAT survey to the ticket requester 30 minutes after their ticket is closed. Responses are logged and surfaced in the Optimize dashboard.',
+    capabilities: ['Trigger survey 30 min after ticket close', 'Send personalized survey link via email', 'Log CSAT score to ticket record', 'Surface low scores for agent review'],
+    steps: [{ type: 'trigger', label: 'Ticket closed' }, { type: 'wait', label: 'Wait 30 minutes' }, { type: 'notify', label: 'Send CSAT survey email' }, { type: 'condition', label: 'Response received?' }, { type: 'task', label: 'Log score to ticket' }],
+  },
 ];
 
 const INT = {
@@ -309,17 +352,24 @@ function Step3({ form, setForm }) {
 }
 
 // ── Playbook card — exact AutomationsView WorkflowCard design ────────────────
-function PlaybookCard({ p, on, onToggle }) {
+function PlaybookCard({ p, on, onToggle, onPreview }) {
   const avatarSrc = AVATARS[p.avatar % AVATARS.length];
   return (
-    <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div
+      onClick={onPreview}
+      style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 14, cursor: 'pointer' }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
+      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+    >
       {/* Header: avatar + title + toggle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <img src={avatarSrc} width="48" height="48" alt="" style={{ borderRadius: '50%', flexShrink: 0 }} />
         <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: 'var(--text)', lineHeight: '22px', letterSpacing: '-0.2px', fontFamily: SFT }}>
           {p.title}
         </span>
-        <Toggle value={on} onChange={onToggle} />
+        <div onClick={e => { e.stopPropagation(); onToggle(); }}>
+          <Toggle value={on} onChange={() => {}} />
+        </div>
       </div>
       {/* Description */}
       <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-weak)', lineHeight: '22px', margin: 0, letterSpacing: '-0.15px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontFamily: SFT }}>
@@ -343,6 +393,7 @@ function PlaybookCard({ p, on, onToggle }) {
 // ── Step 4: Playbooks ─────────────────────────────────────────────────────────
 function Step4({ form, setForm }) {
   const sections = [...new Set(PLAYBOOK_TEMPLATES.map(p => p.section))];
+  const [preview, setPreview] = useState(null);
 
   function toggle(id) {
     setForm(f => ({ ...f, playbooks: { ...f.playbooks, [id]: !f.playbooks[id] } }));
@@ -359,11 +410,12 @@ function Step4({ form, setForm }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {PLAYBOOK_TEMPLATES.filter(p => p.section === sec).map(p => (
-              <PlaybookCard key={p.id} p={p} on={!!form.playbooks[p.id]} onToggle={() => toggle(p.id)} />
+              <PlaybookCard key={p.id} p={p} on={!!form.playbooks[p.id]} onToggle={() => toggle(p.id)} onPreview={() => setPreview(p)} />
             ))}
           </div>
         </div>
       ))}
+      {preview && <DetailModal template={preview} onClose={() => setPreview(null)} />}
     </>
   );
 }

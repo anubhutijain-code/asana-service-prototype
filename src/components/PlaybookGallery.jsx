@@ -18,6 +18,40 @@ const INT = {
   drive: `${B}integrations/google-drive.svg`,
 };
 
+// ─── Third-party agent vendor registry ───────────────────────────────────────
+const AGENT_VENDORS = {
+  crowdstrike: {
+    name: 'CrowdStrike Charlotte AI',
+    shortName: 'CrowdStrike',
+    bg: '#E01B22',
+    desc: 'Security orchestration & SOAR',
+    playbookCount: 3,
+    actions: ['Run exposure scan', 'Triage security alert', 'Get device risk score'],
+    mockResponse: {
+      device: 'Acme-MBP-2024-019',
+      riskScore: 72,
+      severity: 'Medium',
+      findings: ['Outdated Jamf profile (last sync: 42 days)', 'No EDR agent active'],
+      recommendation: 'Manual security review required before provisioning access',
+    },
+  },
+  hpe: {
+    name: 'HPE GreenLake Intelligence',
+    shortName: 'HPE GreenLake',
+    bg: '#01A982',
+    desc: 'IT ops & device management (MCP)',
+    playbookCount: 1,
+    actions: ['Check device health', 'Remediate IT issue', 'Get inventory status'],
+    mockResponse: {
+      deviceId: 'HPE-SRV-042',
+      healthScore: 88,
+      status: 'Online',
+      alerts: ['Disk utilization at 84%'],
+      recommendation: 'Schedule maintenance window within 7 days',
+    },
+  },
+};
+
 const FILTERS = ['All', 'Routing', 'SLA', 'Onboarding', 'Notifications', 'Custom'];
 
 const TEMPLATES = [
@@ -98,6 +132,29 @@ const TEMPLATES = [
       { type: 'ai',      label: 'Verify identity via MFA',          desc: 'Challenge-response' },
       { type: 'notify',  label: 'Send reset link',                  desc: 'To verified email' },
       { type: 'task',    label: 'Log reset to security audit',      desc: 'Compliance record' },
+    ],
+  },
+  {
+    id: 't7', filter: 'Routing', avatar: 6,
+    title: 'Security-aware access request triage', subtitle: 'Security handoff', domain: 'IT',
+    description: 'Classifies access requests with AI, hands off to CrowdStrike Charlotte AI for device risk scoring, then routes to the Security team or auto-approves based on the risk result.',
+    uses: '8 teams', integrations: ['globe', 'word'],
+    agents: [{ vendor: 'CrowdStrike', bg: '#E01B22' }],
+    capabilities: [
+      'AI classification (routine vs. security-sensitive)',
+      'CrowdStrike Charlotte AI device risk scan',
+      'Conditional routing by risk score',
+      'Auto-approval for low-risk requests',
+      'Security team escalation with risk payload',
+    ],
+    steps: [
+      { type: 'trigger',     label: 'Access request submitted', desc: 'IT Queue · Vendor access' },
+      { type: 'ai',          label: 'AI classifies request type', desc: 'Routine vs. security-sensitive' },
+      { type: 'condition',   label: 'Security-sensitive?', branches: ['If security risk', 'If routine'] },
+      { type: 'crowdstrike', label: 'Run exposure scan on requesting device', desc: 'Charlotte AI · SOAR', hasResponse: true },
+      { type: 'assign',      label: 'Route to Security team if risk > Medium', desc: 'Security queue' },
+      { type: 'task',        label: 'Auto-approve standard access', desc: 'Routine branch' },
+      { type: 'notify',      label: 'Notify requester of outcome', desc: 'Email notification' },
     ],
   },
 ];
@@ -196,22 +253,47 @@ const STEP_ICON_DATA = {
       </svg>
     ),
   },
+  crowdstrike: {
+    bg: '#E01B22',
+    isAgent: true,
+    vendor: 'crowdstrike',
+    icon: (
+      <svg viewBox="0 0 12 12" width="12" height="12" fill="none">
+        <path d="M6 1.5L10 4.5V7L7.8 5.6 6 9 4.2 5.6 2 7V4.5L6 1.5Z" fill="#fff"/>
+      </svg>
+    ),
+  },
+  hpe: {
+    bg: '#01A982',
+    isAgent: true,
+    vendor: 'hpe',
+    icon: (
+      <svg viewBox="0 0 12 12" width="11" height="10" fill="#fff">
+        <rect x="1" y="1" width="10" height="2.2" rx="0.5"/>
+        <rect x="1" y="4.4" width="10" height="2.2" rx="0.5"/>
+        <rect x="1" y="7.8" width="6.5" height="2" rx="0.5"/>
+      </svg>
+    ),
+  },
 };
 
 // Step colors for DetailModal step list (subtle tint)
 const STEP_COLORS = {
-  trigger:   { bg: '#FFFBEB', border: '#FDE68A' },
-  ai:        { bg: '#F5F3FF', border: '#DDD6FE' },
-  task:      { bg: '#ECFDF5', border: '#A7F3D0' },
-  assign:    { bg: '#EFF6FF', border: '#BFDBFE' },
-  condition: { bg: '#FFFBEB', border: '#FDE68A' },
-  notify:    { bg: '#FDF2F8', border: '#FBCFE8' },
+  trigger:     { bg: '#FFFBEB', border: '#FDE68A' },
+  ai:          { bg: '#F5F3FF', border: '#DDD6FE' },
+  task:        { bg: '#ECFDF5', border: '#A7F3D0' },
+  assign:      { bg: '#EFF6FF', border: '#BFDBFE' },
+  condition:   { bg: '#FFFBEB', border: '#FDE68A' },
+  notify:      { bg: '#FDF2F8', border: '#FBCFE8' },
+  crowdstrike: { bg: '#FFF5F5', border: '#FECACA' },
+  hpe:         { bg: '#F0FDF9', border: '#A7F3D0' },
 };
 
 // ─── Canvas primitives (Image #6 style) ──────────────────────────────────────
 
 function StepRow({ step, stepNumber }) {
   const iconData = STEP_ICON_DATA[step.type] || STEP_ICON_DATA.task;
+  const vendor = iconData.isAgent ? AGENT_VENDORS[iconData.vendor] : null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', minHeight: 46 }}>
       <span style={{ fontSize: 12, color: '#9CA3AF', width: 16, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
@@ -224,12 +306,26 @@ function StepRow({ step, stepNumber }) {
       }}>
         {iconData.icon}
       </div>
-      <span style={{ flex: 1, fontSize: 14, color: 'var(--text)', fontWeight: 400, lineHeight: '20px' }}>
-        {step.label}
-      </span>
-      {step.desc && (
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, color: 'var(--text)', fontWeight: 400, lineHeight: '20px' }}>
+          {step.label}
+        </div>
+        {vendor && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+            <span style={{ fontSize: 11, color: iconData.bg, fontWeight: 600 }}>{vendor.shortName}</span>
+            <span style={{ fontSize: 11, color: '#9CA3AF' }}>· External agent</span>
+            <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#9CA3AF" strokeWidth="1.2" strokeLinecap="round"><path d="M6.5 1h2.5v2.5"/><path d="M9 1L5 5"/><path d="M4 2H2a1 1 0 00-1 1v5a1 1 0 001 1h5a1 1 0 001-1V6"/></svg>
+          </div>
+        )}
+      </div>
+      {!vendor && step.desc && (
         <span style={{ fontSize: 12, color: '#9CA3AF', flexShrink: 0, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {step.desc}
+        </span>
+      )}
+      {vendor && (
+        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 100, background: iconData.bg + '18', color: iconData.bg, border: `1px solid ${iconData.bg}35`, flexShrink: 0, fontWeight: 500 }}>
+          ↗ Active
         </span>
       )}
     </div>
@@ -244,6 +340,32 @@ function CanvasConnector({ dashed }) {
         background: dashed ? 'transparent' : '#E5E7EB',
         borderLeft: dashed ? '2px dashed #E5E7EB' : 'none',
       }} />
+    </div>
+  );
+}
+
+function AgentResponseBlock({ vendor }) {
+  const [expanded, setExpanded] = useState(false);
+  const v = AGENT_VENDORS[vendor];
+  if (!v) return null;
+  return (
+    <div style={{ borderTop: '1px solid #F3F4F6' }}>
+      <button
+        type="button"
+        onClick={() => setExpanded(o => !o)}
+        style={{ width: '100%', padding: '6px 16px 6px 58px', background: '#FAFAFA', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left' }}
+      >
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+        <span style={{ fontSize: 11, color: '#6B7280', flex: 1 }}>Response received from {v.shortName}</span>
+        <span style={{ fontSize: 10, color: '#9CA3AF' }}>{expanded ? '▲' : '▼ view payload'}</span>
+      </button>
+      {expanded && (
+        <div style={{ padding: '0 16px 10px 58px', background: '#FAFAFA' }}>
+          <pre style={{ margin: 0, fontSize: 11, color: '#374151', fontFamily: 'ui-monospace, monospace', background: '#F3F4F6', padding: '10px 12px', borderRadius: 6, overflow: 'auto', lineHeight: '16px' }}>
+            {JSON.stringify(v.mockResponse, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
@@ -302,9 +424,16 @@ function CanvasStepList({ steps }) {
         elements.push(<CanvasConnector key={`conn-${i}`} />);
       }
       stepNum++;
+      const sid = STEP_ICON_DATA[step.type];
+      const isAgent = sid?.isAgent;
       elements.push(
-        <div key={`card-${i}`} style={{ border: '1px solid #E5E7EB', borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
+        <div key={`card-${i}`} style={{
+          border: `1px solid ${isAgent ? sid.bg + '50' : '#E5E7EB'}`,
+          borderLeft: isAgent ? `3px solid ${sid.bg}` : '1px solid #E5E7EB',
+          borderRadius: 8, background: '#fff', overflow: 'hidden',
+        }}>
           <StepRow step={step} stepNumber={stepNum} />
+          {isAgent && step.hasResponse && <AgentResponseBlock vendor={sid.vendor} />}
         </div>
       );
       i++;
@@ -378,13 +507,19 @@ function TemplateCard({ template, onClick }) {
       <p style={{ fontSize: 14, color: 'var(--text-weak)', lineHeight: '22px', margin: 0, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
         {template.description}
       </p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         <span style={{ height: 28, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 14, fontSize: 12, color: 'var(--text-weak)', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
           {template.domain}
         </span>
         <span style={{ height: 28, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 14, fontSize: 12, color: 'var(--text-weak)', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
           {template.subtitle}
         </span>
+        {template.agents?.map(a => (
+          <span key={a.vendor} style={{ height: 24, padding: '0 8px', borderRadius: 100, fontSize: 11, fontWeight: 600, color: a.bg, background: a.bg + '12', border: `1px solid ${a.bg}30`, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            <svg viewBox="0 0 10 10" width="8" height="8" fill="none" stroke={a.bg} strokeWidth="1.5" strokeLinecap="round"><path d="M9 1L1 4l3.5 1.5L6 9l3-8z"/></svg>
+            {a.vendor}
+          </span>
+        ))}
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {template.integrations.map(i => <IntegrationIcon key={i} type={i} />)}
@@ -479,11 +614,13 @@ export function DetailModal({ template, onClose, onCustomize }) {
 
         <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
           <button onClick={onClose} style={{ height: 34, padding: '0 16px', border: '1px solid var(--border)', borderRadius: 6, background: 'none', color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
-            Cancel
+            Close
           </button>
-          <button onClick={onCustomize} style={{ height: 34, padding: '0 16px', border: 'none', borderRadius: 6, background: 'var(--selected-background-strong)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
-            Customize
-          </button>
+          {onCustomize && (
+            <button onClick={onCustomize} style={{ height: 34, padding: '0 16px', border: 'none', borderRadius: 6, background: 'var(--selected-background-strong)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+              Customize
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -542,6 +679,104 @@ function ProgressCard({ completedSteps }) {
   );
 }
 
+// ─── Agent library panel ──────────────────────────────────────────────────────
+
+const NATIVE_STEP_ACTIONS = [
+  { label: 'Assign task',        type: 'assign' },
+  { label: 'Send notification',  type: 'notify' },
+  { label: 'Create subtask',     type: 'task'   },
+  { label: 'Move to section',    type: 'task'   },
+  { label: 'Update field',       type: 'task'   },
+  { label: 'AI classification',  type: 'ai'     },
+  { label: 'Wait / delay',       type: 'ai'     },
+  { label: 'Add condition',      type: 'condition', branches: ['If yes', 'If no'] },
+];
+
+function AgentLibraryPanel({ onAddStep, onClose }) {
+  return (
+    <div style={{ position: 'absolute', right: 0, top: 0, width: 288, height: '100%', background: 'var(--surface)', borderLeft: '1px solid var(--border)', display: 'flex', flexDirection: 'column', zIndex: 10, boxShadow: '-4px 0 16px rgba(0,0,0,0.06)' }}>
+      {/* Header */}
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="var(--text-weak)" strokeWidth="1.3" strokeLinecap="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5"/></svg>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Agent library</span>
+        </div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-weak)', padding: 4, display: 'flex' }}>
+          <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 2l8 8M10 2L2 10"/></svg>
+        </button>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+
+        {/* Third-party agents */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Third-party agents</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {Object.entries(AGENT_VENDORS).map(([key, v]) => (
+              <div key={key} style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--background-medium)', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 6, background: v.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {STEP_ICON_DATA[key]?.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.shortName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginTop: 1 }}>{v.desc}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#10B981' }} />
+                    <span style={{ fontSize: 10, color: '#10B981', fontWeight: 500 }}>Connected</span>
+                  </div>
+                </div>
+                <div style={{ padding: '6px 0' }}>
+                  {v.actions.map((action, ai) => (
+                    <button key={ai}
+                      onClick={() => onAddStep({ type: key, label: action, desc: `${v.shortName}`, hasResponse: ai === 0 })}
+                      style={{ width: '100%', padding: '6px 12px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: 'var(--text-weak)', display: 'flex', alignItems: 'center', gap: 6 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+                    >
+                      <span style={{ color: v.bg, fontWeight: 700, fontSize: 13 }}>+</span>
+                      {action}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Asana native */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Asana native</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {NATIVE_STEP_ACTIONS.map(a => (
+              <button key={a.label} onClick={() => onAddStep({ ...a, desc: 'Native action' })}
+                style={{ padding: '5px 10px', border: '1px solid var(--border)', borderRadius: 20, fontSize: 12, color: 'var(--text-weak)', background: 'var(--surface)', cursor: 'pointer' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+              >
+                + {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Custom agents */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Custom agents</div>
+          <div style={{ padding: '16px', border: '1px dashed var(--border)', borderRadius: 8, textAlign: 'center' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-disabled)', marginBottom: 8 }}>No custom agents yet</div>
+            <button style={{ height: 28, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 6, background: 'none', fontSize: 12, color: 'var(--text-weak)', cursor: 'pointer' }}>
+              + Build your own
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
 export function Builder({ template, initialMessage, onBack, onSave }) {
@@ -573,6 +808,7 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
   );
   const [input, setInput] = useState('');
   const [saved, setSaved] = useState(false);
+  const [agentPanelOpen, setAgentPanelOpen] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -624,6 +860,13 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
           style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, fontWeight: 600, color: 'var(--text)', background: 'transparent', minWidth: 0 }}
         />
         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 100, background: 'var(--background-medium)', color: 'var(--text-weak)', fontWeight: 500, flexShrink: 0 }}>Draft</span>
+        <button
+          onClick={() => setAgentPanelOpen(o => !o)}
+          style={{ height: 32, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: agentPanelOpen ? 'var(--background-medium)' : 'var(--surface)', color: agentPanelOpen ? 'var(--text)' : 'var(--text-weak)', flexShrink: 0 }}
+        >
+          <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><circle cx="7" cy="5" r="2"/><path d="M2.5 12c0-2.5 2-4.5 4.5-4.5M9 9l4 4M9 13l4-4" strokeWidth="1.4"/></svg>
+          Agents
+        </button>
         <div style={{ display: 'flex', gap: 2, background: 'var(--background-medium)', borderRadius: 8, padding: 3, flexShrink: 0 }}>
           {['Build', 'Monitor', 'Test'].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
@@ -701,8 +944,14 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
         </div>
 
         {/* Right: visual canvas */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '32px 0', background: '#F9FAFB' }}>
-          <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 40px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px 0', background: '#F9FAFB', position: 'relative' }}>
+          {agentPanelOpen && (
+            <AgentLibraryPanel
+              onClose={() => setAgentPanelOpen(false)}
+              onAddStep={step => { setCanvasSteps(prev => [...prev, step]); }}
+            />
+          )}
+          <div style={{ maxWidth: 560, margin: '0 auto', paddingLeft: 40, paddingRight: agentPanelOpen ? 308 : 40 }}>
             {canvasSteps.length === 0 ? (
               <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--text-disabled)' }}>
                 <svg viewBox="0 0 48 48" width="48" height="48" fill="none" style={{ margin: '0 auto 16px', opacity: 0.25 }}>

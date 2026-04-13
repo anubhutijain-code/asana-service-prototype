@@ -101,6 +101,15 @@ const WORKFLOWS = [
     approval: 'Needs approval', uses: '26 teams', enabled: true,
     integrations: ['globe', 'word', 'drive'],
   },
+  // Third-party agent workflow
+  {
+    id: 'w13', section: 'featured', avatar: 6,
+    title: 'Security-aware access request triage', subtitle: 'Security handoff', domain: 'IT',
+    description: 'Routes access requests through AI classification, hands off to CrowdStrike Charlotte AI for device risk scoring, then auto-routes or escalates to the Security team based on risk level.',
+    approval: 'Needs approval', uses: '8 teams', enabled: true,
+    integrations: ['globe', 'word'],
+    agentVendors: ['crowdstrike'],
+  },
   // Cross-team
   {
     id: 'w11', section: 'cross', avatar: 3,
@@ -131,7 +140,78 @@ const WORKFLOW_DETAILS = {
   w10: { trigger: 'Employee departure submitted in Workday', steps: ['Creates IT offboarding ticket (device return, access revoke)', 'Creates HR offboarding ticket (final payroll, benefits end)', 'Requests manager approval for timeline', 'Sends checklist to employee and their manager'], lastRun: '2 weeks ago' },
   w11: { trigger: 'Ticket status changes to Resolved', steps: ['Waits 1 hour after resolution', 'Sends 3-question CSAT survey to requester', 'Captures response and logs CSAT score', 'Aggregates score into weekly dashboard report'], lastRun: 'Never' },
   w12: { trigger: 'Ticket in Resolved state with no activity', steps: ['Checks last-activity timestamp on all Resolved tickets', 'Flags tickets with > 7 days no activity', 'Sends requester a "still resolved?" confirmation', 'Auto-closes if no reply within 24 hours'], lastRun: '3 hours ago' },
+  w13: { trigger: 'Access request submitted to IT queue', steps: ['AI classifies request as routine or security-sensitive', 'CrowdStrike Charlotte AI scans device for risk (score: 72/100, severity: Medium)', 'Routes to Security team for manual review if risk > Medium', 'Auto-approves low-risk routine requests immediately', 'Logs scan result and routing decision to audit trail'], lastRun: '1 hour ago' },
 };
+
+// ─── Connected agents shelf ───────────────────────────────────────────────────
+
+const CONNECTED_AGENTS = [
+  { key: 'crowdstrike', name: 'CrowdStrike Charlotte AI',    desc: 'Security orchestration & SOAR',        bg: '#E01B22', abbr: 'CS', protocol: 'REST API', playbookCount: 3, lastCalled: '2m ago',  uptime: '99.9%' },
+  { key: 'hpe',         name: 'HPE GreenLake Intelligence',  desc: 'IT ops & device management',           bg: '#01A982', abbr: 'H',  protocol: 'MCP',      playbookCount: 1, lastCalled: '14m ago', uptime: '100%'  },
+];
+
+function ConnectedAgentsShelf() {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Connected agents</span>
+        <span style={{ fontSize: 11, color: '#10B981', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 100, padding: '1px 8px', fontWeight: 600 }}>2 active</span>
+        <div style={{ flex: 1 }} />
+        <button style={{ fontSize: 12, color: 'var(--selected-background-strong)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>+ Connect agent</button>
+      </div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        {CONNECTED_AGENTS.map(agent => (
+          <div key={agent.key} style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', overflow: 'hidden' }}>
+            {/* Brand accent bar */}
+            <div style={{ height: 3, background: agent.bg, opacity: 0.85 }} />
+            <div style={{ padding: '14px 16px' }}>
+              {/* Top row: logo + name + status + configure */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: agent.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fff', letterSpacing: '0.03em' }}>
+                  {agent.abbr}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-weak)', marginTop: 1 }}>{agent.desc}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} />
+                  <span style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>Connected</span>
+                </div>
+              </div>
+              {/* Stats row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Protocol</span>
+                  <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{agent.protocol}</span>
+                </div>
+                <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0, margin: '0 14px' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>In playbooks</span>
+                  <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{agent.playbookCount}</span>
+                </div>
+                <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0, margin: '0 14px' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Last called</span>
+                  <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{agent.lastCalled}</span>
+                </div>
+                <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0, margin: '0 14px' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Uptime</span>
+                  <span style={{ fontSize: 12, color: '#10B981', fontWeight: 600 }}>{agent.uptime}</span>
+                </div>
+                <button style={{ height: 28, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, color: 'var(--text-weak)', background: 'none', cursor: 'pointer', flexShrink: 0, marginLeft: 12 }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+                >Configure</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // ─── Integration icons ────────────────────────────────────────────────────────
 
@@ -210,7 +290,7 @@ function WorkflowCard({ workflow, enabled, onToggle, onClick }) {
       </p>
 
       {/* Footer: pills + integrations */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         <span style={{
           height: 28, padding: '0 10px',
           border: '1px solid var(--border)', borderRadius: 14,
@@ -229,6 +309,16 @@ function WorkflowCard({ workflow, enabled, onToggle, onClick }) {
         }}>
           {workflow.subtitle}
         </span>
+        {workflow.agentVendors?.map(v => {
+          const a = CONNECTED_AGENTS.find(a => a.key === v);
+          if (!a) return null;
+          return (
+            <span key={v} style={{ height: 22, padding: '0 8px', borderRadius: 100, fontSize: 11, fontWeight: 600, color: a.bg, background: a.bg + '12', border: `1px solid ${a.bg}30`, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <svg viewBox="0 0 10 10" width="8" height="8" fill="none" stroke={a.bg} strokeWidth="1.5" strokeLinecap="round"><path d="M9 1L1 4l3.5 1.5L6 9l3-8z"/></svg>
+              {a.name.split(' ')[0]}
+            </span>
+          );
+        })}
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {workflow.integrations.map(i => <IntegrationIcon key={i} type={i} />)}

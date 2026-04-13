@@ -52,6 +52,19 @@ function SettingsIcon({ className }) {
   );
 }
 
+function AgentsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
+      <circle cx="6" cy="2" r="1.5" fill="currentColor"/>
+      <circle cx="2" cy="9.5" r="1.5" fill="currentColor"/>
+      <circle cx="10" cy="9.5" r="1.5" fill="currentColor"/>
+      <line x1="6" y1="3.5" x2="2.6" y2="8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="6" y1="3.5" x2="9.4" y2="8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="3.5" y1="9.5" x2="8.5" y2="9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function OptimizeIcon({ className }) {
   return (
     <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
@@ -324,6 +337,7 @@ function AdminNavContent({ activeItem, onSelect }) {
 
       <SectionLabel label="Configure" />
       <NavItem label="Playbooks" Icon={AutomationIcon} active={activeItem === 'Automations'} onClick={() => onSelect('Automations')} />
+      <NavItem label="Agents"    Icon={AgentsIcon}     active={activeItem === 'Agents'}      onClick={() => onSelect('Agents')} />
       <NavItem label="Settings" Icon={SettingsIcon} active={activeItem === 'Settings'} onClick={() => onSelect('Settings')} />
     </>
   );
@@ -388,6 +402,7 @@ function Admin2NavContent({ activeItem, onSelect }) {
 
       <SectionLabel label="Toolkit" />
       <NavItem label="Playbooks"     Icon={AutomationIcon} active={activeItem === 'Automations'}  onClick={() => onSelect('Automations')} />
+      <NavItem label="Agents"        Icon={AgentsIcon}     active={activeItem === 'Agents'}       onClick={() => onSelect('Agents')} />
       <NavItem label="Knowledge Base" Icon={LightBulbIcon}  active={activeItem === 'Knowledge base'} onClick={() => onSelect('Knowledge base')} />
       <NavItem label="Assets"        Icon={AssetsIcon}     active={activeItem === 'Assets'}       onClick={() => onSelect('Assets')} />
       <NavItem label="Admin"           Icon={SettingsIcon}  active={activeItem === 'Settings'}     onClick={() => onSelect('Settings')} />

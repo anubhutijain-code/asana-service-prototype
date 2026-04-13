@@ -28,6 +28,7 @@ import AgentHomeView from './components/AgentHomeView';
 import AgentPerformanceView from './components/AgentPerformanceView';
 import ITEscalationsProject from './components/ITEscalationsProject';
 import VendorOnboardingProject from './components/VendorOnboardingProject';
+import AgentsView from './components/AgentsView';
 import ArticleDetailView from './components/ArticleDetailView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
@@ -60,6 +61,7 @@ function getRouteState(pathname) {
   if (pathname === '/hr-tickets' || pathname.startsWith('/hr-tickets/'))
                                     return { mode: 'service',  serviceNav: 'HR Tickets',   workItem: null    };
   if (pathname === '/automations')  return { mode: 'service',  serviceNav: 'Automations',  workItem: null    };
+  if (pathname === '/agents')       return { mode: 'service',  serviceNav: 'Agents',        workItem: null    };
   if (pathname === '/assets')       return { mode: 'service',  serviceNav: 'Assets',       workItem: null    };
   if (pathname === '/dashboard')    return { mode: 'service',  serviceNav: 'Dashboard',    workItem: null    };
   if (pathname === '/optimize')     return { mode: 'service',  serviceNav: 'Optimize',     workItem: null    };
@@ -150,6 +152,7 @@ const SERVICE_NAV_URL = {
   'IT Tickets':      '/tickets',
   'HR Tickets':      '/hr-tickets',
   'Automations':     '/automations',
+  'Agents':          '/agents',
   'Assets':          '/assets',
   'Create Queue':    '/create-queue',
   'Knowledge base':  '/knowledge-base',
@@ -404,6 +407,7 @@ export default function AsanaService() {
             />
           } />
           <Route path="/automations" element={<AutomationsView />} />
+          <Route path="/agents" element={<AgentsView />} />
           <Route path="/assets" element={<AssetsView />} />
           <Route path="/knowledge-base/:projectId/:articleId" element={<ArticleDetailView role={role} />} />
           <Route path="/knowledge-base/:projectId" element={<KnowledgeBaseView role={role} />} />
