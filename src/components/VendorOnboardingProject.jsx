@@ -4,8 +4,17 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Toolbar from './Toolbar';
 import RightPanelOverlay from './RightPanelOverlay';
+import BasicTaskView from './BasicTaskView';
 import { SFT, SFD, LIGA } from '../constants/typography';
 import { VENDOR_SECTIONS, VENDOR_PROJECT_NAME } from './ConvertToProjectPanel';
+
+const B = import.meta.env.BASE_URL;
+
+// Only these two PNGs have valid image data
+const PHOTO = {
+  'Jordan Kim': `${B}avatars/spurti-kanduri.png`,
+  'InfoSec':    `${B}avatars/robert-jones.png`,
+};
 
 const STATUS_STYLE = {
   'Not started': { bg: 'var(--background-strong)',   color: 'var(--text-disabled)' },
@@ -150,12 +159,25 @@ function TabIcon({ tab }) {
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
-function Avi({ name, size = 24, bg = 'var(--icon)', border = false }) {
+function PersonAvatar({ name, bg = 'var(--icon)', size = 24, border = false }) {
+  const src = PHOTO[name];
+  const [imgFailed, setImgFailed] = useState(false);
+  if (src && !imgFailed) {
+    return (
+      <img src={src} alt={name} onError={() => setImgFailed(true)} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: border ? '2px solid var(--surface)' : 'none', boxSizing: 'border-box' }} />
+    );
+  }
   const ini = name.split(' ').map(n => n[0]).join('').slice(0, 2);
   return (
     <div style={{ width: size, height: size, borderRadius: '50%', background: bg, border: border ? '2px solid var(--surface)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(size * 0.37), fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: SFT, letterSpacing: '0.02em', boxSizing: 'border-box' }}>
       {ini}
     </div>
+  );
+}
+
+function OaAvatar({ size = 20 }) {
+  return (
+    <img src={`${B}avatars/Teammate-1.svg`} alt="Onboarding AI" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   );
 }
 
@@ -228,10 +250,21 @@ function TaskRow({ task, onClick, selected }) {
 
       {/* Assignee */}
       <div style={{ width: CW.assignee, flexShrink: 0, padding: '0 8px', borderLeft: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Avi name={task.assignee.name} size={20} bg={task.assignee.bg} />
-        <span style={{ ...COL_TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {task.assignee.name.split(' ')[0]}
-        </span>
+        {task.aiAssignable ? (
+          <>
+            <OaAvatar size={20} />
+            <span style={{ ...COL_TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-weak)' }}>
+              Onboarding AI
+            </span>
+          </>
+        ) : (
+          <>
+            <PersonAvatar name={task.assignee.name} bg={task.assignee.bg} size={20} />
+            <span style={{ ...COL_TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {task.assignee.name.split(' ')[0]}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Department */}
@@ -307,57 +340,6 @@ function Section({ sec, onSelectTask, selectedTaskId }) {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-// ── Task detail panel ─────────────────────────────────────────────────────────
-
-function TaskDetailPanel({ task, onClose }) {
-  const navigate = useNavigate();
-  const ss = STATUS_STYLE[task.status] ?? STATUS_STYLE['Not started'];
-  const ps = PRIORITY_STYLE[task.priority] ?? {};
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flexShrink: 0, padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: SFT, fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: '0 0 8px', lineHeight: '20px' }}>{task.name}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, fontWeight: 500, fontFamily: SFT, padding: '2px 8px', borderRadius: 4, background: ss.bg, color: ss.color }}>{task.status}</span>
-            <span style={{ fontSize: 11, fontWeight: 500, fontFamily: SFT, padding: '2px 8px', borderRadius: 4, background: ps.bg, color: ps.color }}>{task.priority}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>Due {task.dueDate}</span>
-          </div>
-        </div>
-        <button type="button" onClick={onClose}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 6, cursor: 'pointer', background: 'transparent', color: 'var(--text-disabled)', flexShrink: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-disabled)'; }}>
-          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
-        </button>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 8, letterSpacing: '0.04em' }}>ASSIGNEE</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Avi name={task.assignee.name} bg={task.assignee.bg} size={26} />
-            <span style={{ fontSize: 13, fontFamily: SFT, color: 'var(--text)' }}>{task.assignee.name}</span>
-          </div>
-        </div>
-        <div style={{ height: 1, background: 'var(--border)', margin: '16px 0' }} />
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 8, letterSpacing: '0.04em' }}>DESCRIPTION</div>
-        <p style={{ fontSize: 13, color: 'var(--text-weak)', fontFamily: SFT, lineHeight: '20px', margin: 0 }}>
-          AI pre-filled from TICKET-101: <em>"{task.name}"</em>. Assigned to {task.assignee.name} ({task.dept}). Target due date: {task.dueDate}. Originated from vendor onboarding request for Acme Corp.
-        </p>
-        <div style={{ height: 1, background: 'var(--border)', margin: '16px 0' }} />
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', fontFamily: SFT, marginBottom: 8, letterSpacing: '0.04em' }}>ORIGIN</div>
-        <button type="button" onClick={() => navigate('/tickets')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--background-weak)', cursor: 'pointer' }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-strong)'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-          <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="var(--text-disabled)" strokeWidth="1.4" strokeLinecap="round"><rect x="1" y="1" width="10" height="10" rx="1.5"/><path d="M3 4h6M3 6.5h6M3 9h4"/></svg>
-          <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT }}>TICKET-101 — New vendor onboarding: Acme Corp</span>
-        </button>
-      </div>
     </div>
   );
 }
@@ -457,20 +439,10 @@ export default function VendorOnboardingProject() {
               <LockIcon />
               Share
             </button>
-            {isDraft ? (
-              <button
-                onClick={() => navigate('/projects/vendor-onboarding')}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, height: 28, padding: '0 16px', background: '#4573D2', border: 'none', borderRadius: 6, fontSize: 13, fontFamily: SFT, fontWeight: 600, color: 'white', cursor: 'pointer', flexShrink: 0 }}
-              >
-                <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
-                Launch project
-              </button>
-            ) : (
-              <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 27, padding: '0 12px', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: 5.5, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--text)', cursor: 'pointer', flexShrink: 0 }}>
-                <CustomizeIcon />
-                Customize
-              </button>
-            )}
+            <button style={{ display: 'flex', alignItems: 'center', gap: 6, height: 27, padding: '0 12px', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: 5.5, fontSize: 13, fontFamily: SFT, fontWeight: 500, color: 'var(--text)', cursor: 'pointer', flexShrink: 0 }}>
+              <CustomizeIcon />
+              Customize
+            </button>
           </div>
         </div>
 
@@ -551,13 +523,19 @@ export default function VendorOnboardingProject() {
 
       {/* Task detail panel */}
       <RightPanelOverlay open={!!selectedTask} onClose={() => setSelectedTask(null)} width="min(660px, 72%)" noScrim>
-        {selectedTask && (
-          <TaskDetailPanel
-            key={selectedTask.id}
-            task={selectedTask}
-            onClose={() => setSelectedTask(null)}
-          />
-        )}
+        {selectedTask && (() => {
+          const t = selectedTask.aiAssignable
+            ? { ...selectedTask, assignee: { name: 'Onboarding AI', bg: '#5a8f6b' } }
+            : selectedTask;
+          return (
+            <BasicTaskView
+              key={t.id}
+              task={t}
+              onClose={() => setSelectedTask(null)}
+              projectName={VENDOR_PROJECT_NAME}
+            />
+          );
+        })()}
       </RightPanelOverlay>
     </div>
   );

@@ -28,12 +28,23 @@ import AgentHomeView from './components/AgentHomeView';
 import AgentPerformanceView from './components/AgentPerformanceView';
 import ITEscalationsProject from './components/ITEscalationsProject';
 import VendorOnboardingProject from './components/VendorOnboardingProject';
+import ConvertToProjectPanel from './components/ConvertToProjectPanel';
 import AgentsView from './components/AgentsView';
 import ArticleDetailView from './components/ArticleDetailView';
 
 // NavBar height  = h-11 = 2.75rem = 44px
 // ModeSidebar    = w-16 = 4rem    = 64px
 // SecondaryNav   = w-[182px]
+
+function ConvertToProjectPanelPage() {
+  const navigate = useNavigate();
+  return (
+    <ConvertToProjectPanel
+      onClose={() => navigate(-1)}
+      onLaunched={() => navigate('/projects/vendor-onboarding')}
+    />
+  );
+}
 
 function EmptyModeView({ mode }) {
   return (
@@ -52,6 +63,7 @@ function getRouteState(pathname) {
   if (pathname === '/work/inbox')                return { mode: 'work',     serviceNav: null, workItem: 'Inbox'                };
   if (pathname === '/projects/it-escalations')   return { mode: 'work',     serviceNav: null, workItem: 'IT Escalations Inbox' };
   if (pathname === '/projects/vendor-onboarding') return { mode: 'work',    serviceNav: null, workItem: 'Acme Corp — Vendor Onboarding' };
+  if (pathname === '/projects/vendor-onboarding/convert') return { mode: 'work', serviceNav: null, workItem: 'Acme Corp — Vendor Onboarding' };
   if (pathname === '/strategy')     return { mode: 'plan',     serviceNav: null,          workItem: null    };
   if (pathname === '/workflow')     return { mode: 'workflow', serviceNav: null,          workItem: null    };
   if (pathname === '/people')       return { mode: 'company',  serviceNav: null,          workItem: null    };
@@ -189,6 +201,7 @@ export default function AsanaService() {
     getRouteState(location.pathname);
 
   const [role, setRole] = useState('admin2');
+  const [createdQueues, setCreatedQueues] = useState([]);
 
   // Apply saved theme on mount
   useEffect(() => {
@@ -348,6 +361,7 @@ export default function AsanaService() {
               activeItem={activeServiceNav}
               onSelect={handleSelectServiceNav}
               role={role}
+              createdQueues={createdQueues}
             />
           )}
           {activeMode === 'work' && (
@@ -417,7 +431,7 @@ export default function AsanaService() {
               onClose={() => navigate('/settings')}
               onCreated={form => {
                 const initials = form.name.trim().split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2);
-                session.createdQueues.push({
+                const newQueue = {
                   id: `q_${Date.now()}`,
                   name: form.name.trim(), initials, color: form.color, isDefault: false,
                   desc: form.desc || '', createdBy: 'You',
@@ -429,7 +443,9 @@ export default function AsanaService() {
                   kb: { name: '', articles: 0, aiDeflection: false, lastUpdated: '—' },
                   aiEnabled: true, integrationsConnected: 0,
                   automationsActive: Object.values(form.playbooks).filter(Boolean).length,
-                });
+                };
+                session.createdQueues.push(newQueue);
+                setCreatedQueues(prev => [...prev, newQueue]);
                 navigate('/settings');
               }}
             />
@@ -527,6 +543,7 @@ export default function AsanaService() {
           {/* Work mode project routes */}
           <Route path="/projects/it-escalations" element={<ITEscalationsProject />} />
           <Route path="/projects/vendor-onboarding" element={<VendorOnboardingProject />} />
+          <Route path="/projects/vendor-onboarding/convert" element={<ConvertToProjectPanelPage />} />
           <Route path="/strategy" element={<EmptyModeView mode="Strategy" />} />
           <Route path="/workflow" element={<EmptyModeView mode="Workflow" />} />
           <Route path="/people" element={<EmptyModeView mode="People" />} />

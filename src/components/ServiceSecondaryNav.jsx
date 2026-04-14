@@ -385,7 +385,7 @@ function Agent3NavContent({ activeItem, onSelect }) {
 }
 
 // ── Admin 2: command center model ─────────────────────────────────────────────
-function Admin2NavContent({ activeItem, onSelect }) {
+function Admin2NavContent({ activeItem, onSelect, createdQueues = [] }) {
   return (
     <>
       <NavItem label="Overview"   Icon={OverviewIcon}  active={activeItem === 'Home'}       onClick={() => onSelect('Home')} />
@@ -394,6 +394,19 @@ function Admin2NavContent({ activeItem, onSelect }) {
       <SectionLabel label="Queues" onAdd={() => onSelect('Create Queue')} />
       <NavItem label="IT Ops - T1" Icon={TicketsIcon} badge={12} active={activeItem === 'IT Tickets'} onClick={() => onSelect('IT Tickets')} />
       <NavItem label="HR Payroll"  Icon={TicketsIcon} badge={9}  active={activeItem === 'HR Tickets'} onClick={() => onSelect('HR Tickets')} />
+      {createdQueues.map(q => (
+        <NavItem
+          key={q.id}
+          label={q.name}
+          Icon={() => (
+            <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: q.color || 'var(--text-disabled)', display: 'block' }} />
+            </span>
+          )}
+          active={activeItem === q.name}
+          onClick={() => onSelect(q.name)}
+        />
+      ))}
 
       <SectionLabel label="Reporting" />
       <NavItem label="Performance"    Icon={DashboardIcon}  active={activeItem === 'Dashboard'}                              onClick={() => onSelect('Dashboard')} />
@@ -412,8 +425,8 @@ function Admin2NavContent({ activeItem, onSelect }) {
 
 // ── ServiceSecondaryNav ────────────────────────────────────────────────────────
 
-export default function ServiceSecondaryNav({ activeItem, onSelect, role }) {
-  const sharedProps = { activeItem, onSelect };
+export default function ServiceSecondaryNav({ activeItem, onSelect, role, createdQueues = [] }) {
+  const sharedProps = { activeItem, onSelect, createdQueues };
 
   return (
     <aside
