@@ -1499,9 +1499,9 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
               </div>
             )}
 
-            {/* Row 3 — Backlog trend + Integrations */}
+            {/* Row 3 — Backlog trend */}
             {chartVisibility.backlogTrend && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24, marginBottom: 24 }}>
+              <div style={{ marginBottom: 24 }}>
                 <ChartCard title="Ticket backlog trend" subtitle="6-month rolling backlog">
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={data.backlogTrend} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
@@ -1514,7 +1514,6 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartCard>
-                <DashIntegrationsCard />
               </div>
             )}
 

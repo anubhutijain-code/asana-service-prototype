@@ -979,8 +979,7 @@ export default function Admin2HomeView({ hideGreeting = false }) {
 
         {/* ── Bottom cards ─────────────────────────────────────────────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '0 32px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24 }}>
-            <IntegrationsCard />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <OptimizationsCard />
             <CsatCard />
           </div>
