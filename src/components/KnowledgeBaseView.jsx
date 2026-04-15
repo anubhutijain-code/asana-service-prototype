@@ -5,6 +5,7 @@ import RightPanelOverlay from './RightPanelOverlay';
 import { KB_PROJECTS, KB_ARTICLES, KB_LEARNINGS, KB_DRAFTS, INTEGRATION_CONFIG, WEB_ALLOWLIST, formatDate, formatRelativeTime } from '../data/knowledgeBase';
 import FilterPanel, { applyFilters } from './ui/FilterPanel';
 import { SFT, LIGA } from '../constants/typography';
+import { session } from '../data/sessionState';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const KB_FILTER_FIELDS = [
@@ -977,7 +978,8 @@ function HumanDraftCard({ article, onClick }) {
 }
 
 function DraftsTab({ projectId, allArticles }) {
-  const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId);
+  const publishedDraftIds = new Set(session.publishedDrafts.map(d => d.id));
+  const allDrafts = KB_DRAFTS.filter(d => d.projectId === projectId && !publishedDraftIds.has(d.id));
   const articleMap = Object.fromEntries((allArticles ?? []).map(a => [a.id, a]));
   const navigate = useNavigate();
   const [draftActions, setDraftActions] = useState({});
@@ -1679,8 +1681,12 @@ export default function KnowledgeBaseView({ role }) {
   const isAgent = role === 'agent';
 
   const project = KB_PROJECTS.find(p => p.id === projectId);
-  const allArticles = KB_ARTICLES.filter(a => a.projectId === projectId);
-  const draftsCount = KB_DRAFTS.filter(d => d.projectId === projectId && d.status !== 'dismissed').length
+  const publishedDraftIds = new Set(session.publishedDrafts.map(d => d.id));
+  const allArticles = [
+    ...KB_ARTICLES.filter(a => a.projectId === projectId),
+    ...session.publishedDrafts.filter(d => d.projectId === projectId),
+  ];
+  const draftsCount = KB_DRAFTS.filter(d => d.projectId === projectId && d.status !== 'dismissed' && !publishedDraftIds.has(d.id)).length
     + KB_LEARNINGS.filter(l => {
         if (l.projectId !== projectId || l.type !== 'update-article' || !l.suggestedBlocks) return false;
         const linked = allArticles.find(a => a.id === l.linkedArticleId);

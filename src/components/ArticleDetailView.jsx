@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Avatar from './ui/Avatar';
 import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, KB_PROJECTS, INTEGRATION_CONFIG, formatDate, formatRelativeTime } from '../data/knowledgeBase';
+import { session } from '../data/sessionState';
 import Banner from './ui/Banner';
 import { TICKETS } from '../data/tickets';
 
@@ -497,7 +498,25 @@ export default function ArticleDetailView({ role }) {
             /* Draft mode — publish CTA */
             <button
               type="button"
-              onClick={() => setPublished(true)}
+              onClick={() => {
+                setPublished(true);
+                if (draft && !session.publishedDrafts.find(d => d.id === draft.id)) {
+                  session.publishedDrafts.push({
+                    id: draft.id,
+                    projectId: draft.projectId,
+                    title: draft.title,
+                    status: 'Published',
+                    category: draft.category ?? 'General',
+                    author: 'AI Generated',
+                    team: '',
+                    updatedAt: new Date().toISOString().slice(0, 10),
+                    source: 'internal',
+                    articleType: draft.targetArticleId ? 'addendum' : 'standard',
+                    parentArticleId: draft.targetArticleId ?? null,
+                    content: draft.content ?? [],
+                  });
+                }
+              }}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 height: 28, padding: '0 12px', borderRadius: 6,

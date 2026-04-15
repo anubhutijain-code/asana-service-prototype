@@ -347,7 +347,7 @@ function StepCard({ step, stepNumber, expanded, onToggle, onDone, onCreateTask, 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {step.assignee?.type === 'ai' ? (
                 <AutoRunAnimation
-                  animSteps={step.team === 'Communications Agent' ? COMM_STEPS : PROVISION_STEPS}
+                  animSteps={step.animSteps ?? (step.team === 'Communications Agent' ? COMM_STEPS : PROVISION_STEPS)}
                   onComplete={() => onDone(step.id)}
                 />
               ) : (

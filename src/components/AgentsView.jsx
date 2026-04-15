@@ -88,8 +88,8 @@ function ConnectedRow({ agent }) {
 
       {/* Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, width: 90 }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
-        <span style={{ fontSize: 12, color: '#10B981', fontWeight: 500 }}>Connected</span>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success-text)', flexShrink: 0 }} />
+        <span style={{ fontSize: 12, color: 'var(--success-text)', fontWeight: 500 }}>Connected</span>
       </div>
 
       {/* Configure */}

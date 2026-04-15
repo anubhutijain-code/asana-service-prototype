@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 // ─── Pill constants + icons ────────────────────────────────────────────────────
 
@@ -63,9 +63,121 @@ function LinkIcon() {
   );
 }
 
+// ─── MoveTicketModal ─────────────────────────────────────────────────────────
+
+const QUEUES = [
+  { id: 'it',          name: 'IT Tickets',       color: '#4573D2', unassigned: 3  },
+  { id: 'hr',          name: 'HR',               color: '#F06A6A', unassigned: 7  },
+  { id: 'facilities',  name: 'Facilities',       color: '#5DA182', unassigned: 4  },
+  { id: 'security',    name: 'Security',         color: '#8D84E8', unassigned: 2  },
+  { id: 'procurement', name: 'Procurement',      color: '#F1BD6C', unassigned: 5  },
+  { id: 'infra',       name: 'Infrastructure',   color: '#4ECBC4', unassigned: 1  },
+];
+
+export function MoveTicketModal({ ticket, onClose, onMoved }) {
+  const [search, setSearch] = useState('');
+  const [moved, setMoved] = useState(null);
+  const currentQueueId = 'it'; // ticket is currently in IT Tickets
+  const currentQueue = QUEUES.find(q => q.id === currentQueueId);
+
+  const filtered = QUEUES.filter(q =>
+    q.id !== currentQueueId &&
+    (!search || q.name.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  function handleMove(q) {
+    setMoved(q);
+    setTimeout(() => {
+      onMoved?.(q);
+      onClose?.();
+    }, 900);
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose?.(); }}>
+      <div style={{ width: 560, background: 'var(--surface)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.18)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+          <svg viewBox="0 0 14 10" width="14" height="10" fill="none" stroke="var(--selected-background-strong)" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+            <path d="M1 5h12M8 1l5 4-5 4"/>
+          </svg>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', flex: 1 }}>Move ticket</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-disabled)', padding: 4, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}>
+            <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
+          </button>
+        </div>
+
+        {/* Currently in */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-weak)' }}>Currently in:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 100, background: 'var(--background-medium)', border: '1px solid var(--border)' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: currentQueue.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{currentQueue.name}</span>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', position: 'relative' }}>
+          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--text-disabled)" strokeWidth="1.3" strokeLinecap="round" style={{ position: 'absolute', left: 34, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+            <circle cx="6" cy="6" r="4"/><path d="M10 10l2.5 2.5"/>
+          </svg>
+          <input
+            autoFocus
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search queues..."
+            style={{ width: '100%', height: 36, paddingLeft: 32, paddingRight: 12, border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, color: 'var(--text)', background: 'var(--background-weak)', outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        {/* Queue list */}
+        <div style={{ padding: '8px 0 4px' }}>
+          <div style={{ padding: '4px 20px 8px', fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)' }}>Select destination</div>
+          <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+            {filtered.length === 0 && (
+              <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-disabled)', textAlign: 'center' }}>No queues found</div>
+            )}
+            {filtered.map(q => {
+              const isMoved = moved?.id === q.id;
+              return (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => handleMove(q)}
+                  disabled={!!moved}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '13px 20px', background: isMoved ? 'var(--success-background)' : 'none', border: 'none', cursor: moved ? 'default' : 'pointer', textAlign: 'left', borderBottom: '1px solid var(--border)' }}
+                  onMouseEnter={e => { if (!moved) e.currentTarget.style.background = 'var(--background-weak)'; }}
+                  onMouseLeave={e => { if (!moved) e.currentTarget.style.background = 'none'; }}
+                >
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: q.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 14, fontWeight: 500, color: isMoved ? 'var(--success-text)' : 'var(--text)', flex: 1 }}>{q.name}</span>
+                  {isMoved ? (
+                    <span style={{ fontSize: 12, color: 'var(--success-text)', fontWeight: 500 }}>Moved</span>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-disabled)' }}>
+                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1.5" y="3" width="11" height="9" rx="1.5"/><path d="M4.5 3V2a.5.5 0 011 0v1M8.5 3V2a.5.5 0 011 0v1M1.5 6.5h11"/>
+                      </svg>
+                      <span style={{ fontSize: 12 }}>{q.unassigned} unassigned</span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── TicketDetailHeader ───────────────────────────────────────────────────────
 
-export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, onRouteToHR, onCreateTicketHR, onCloseAndMove, onConvertToProject, readOnly = false }) {
+export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, onCloseAndMove, onConvertToProject, onMoveTicket, readOnly = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -168,24 +280,15 @@ export default function TicketDetailHeader({ ticket, onBack, onRequestApproval, 
                 <button
                   type="button"
                   className="w-full text-left cursor-pointer border-0 bg-transparent"
-                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)' }}
+                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  onClick={() => { setMenuOpen(false); onCreateTicketHR?.(); }}
+                  onClick={() => { setMenuOpen(false); onMoveTicket?.(); }}
                 >
-                  Create ticket for HR
-                </button>
-                <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
-
-                <button
-                  type="button"
-                  className="w-full text-left cursor-pointer border-0 bg-transparent"
-                  style={{ padding: '7px 12px', fontSize: 13, color: 'var(--text)' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-medium)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  onClick={() => { setMenuOpen(false); onRouteToHR?.(); }}
-                >
-                  Route to HR
+                  <svg viewBox="0 0 14 10" width="13" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                    <path d="M1 5h12M8 1l5 4-5 4"/>
+                  </svg>
+                  Move ticket
                 </button>
 
                 <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />

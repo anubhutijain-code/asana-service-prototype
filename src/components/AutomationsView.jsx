@@ -155,7 +155,7 @@ function ConnectedAgentsShelf() {
     <div style={{ marginBottom: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Connected agents</span>
-        <span style={{ fontSize: 11, color: '#10B981', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 100, padding: '1px 8px', fontWeight: 600 }}>2 active</span>
+        <span style={{ fontSize: 11, color: 'var(--success-text)', background: 'var(--success-background)', border: '1px solid var(--success-background-strong)', borderRadius: 100, padding: '1px 8px', fontWeight: 600 }}>2 active</span>
         <div style={{ flex: 1 }} />
         <button style={{ fontSize: 12, color: 'var(--selected-background-strong)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>+ Connect agent</button>
       </div>
@@ -175,30 +175,30 @@ function ConnectedAgentsShelf() {
                   <div style={{ fontSize: 11, color: 'var(--text-weak)', marginTop: 1 }}>{agent.desc}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} />
-                  <span style={{ fontSize: 11, color: '#10B981', fontWeight: 600 }}>Connected</span>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success-text)' }} />
+                  <span style={{ fontSize: 11, color: 'var(--success-text)', fontWeight: 600 }}>Connected</span>
                 </div>
               </div>
               {/* Stats row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 0, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Protocol</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500 }}>Protocol</span>
                   <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{agent.protocol}</span>
                 </div>
                 <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0, margin: '0 14px' }} />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>In playbooks</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500 }}>In playbooks</span>
                   <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{agent.playbookCount}</span>
                 </div>
                 <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0, margin: '0 14px' }} />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Last called</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500 }}>Last called</span>
                   <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{agent.lastCalled}</span>
                 </div>
                 <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0, margin: '0 14px' }} />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Uptime</span>
-                  <span style={{ fontSize: 12, color: '#10B981', fontWeight: 600 }}>{agent.uptime}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-disabled)', fontWeight: 500 }}>Uptime</span>
+                  <span style={{ fontSize: 12, color: 'var(--success-text)', fontWeight: 600 }}>{agent.uptime}</span>
                 </div>
                 <button style={{ height: 28, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, color: 'var(--text-weak)', background: 'none', cursor: 'pointer', flexShrink: 0, marginLeft: 12 }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-medium)'; e.currentTarget.style.color = 'var(--text)'; }}
@@ -340,7 +340,7 @@ function AutomationDetailPanel({ workflow, enabled, onToggle, onClose }) {
       <div style={{ flexShrink: 0, padding: '20px 24px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <img src={avatarSrc} width="40" height="40" alt="" style={{ borderRadius: '50%', flexShrink: 0, marginTop: 2 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', lineHeight: '22px', marginBottom: 4 }}>{workflow.title}</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: '22px', marginBottom: 4 }}>{workflow.title}</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, fontWeight: 500, padding: '1px 8px', borderRadius: 100, border: '1px solid var(--border)', color: 'var(--text-weak)' }}>{workflow.domain}</span>
             <span style={{ fontSize: 11, fontWeight: 500, padding: '1px 8px', borderRadius: 100, border: '1px solid var(--border)', color: 'var(--text-weak)' }}>{workflow.subtitle}</span>
@@ -366,13 +366,13 @@ function AutomationDetailPanel({ workflow, enabled, onToggle, onClose }) {
 
         {/* Description */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 8 }}>Description</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 8 }}>Description</div>
           <p style={{ fontSize: 13, color: 'var(--text-weak)', lineHeight: '20px', margin: 0 }}>{workflow.description}</p>
         </div>
 
         {/* Trigger */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 8 }}>Trigger</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 8 }}>Trigger</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, background: 'var(--background-medium)', border: '1px solid var(--border)' }}>
             <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="var(--selected-background-strong)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <path d="M7 1L8.5 5.5H13L9.5 8.5L11 13L7 10L3 13L4.5 8.5L1 5.5H5.5L7 1Z"/>
@@ -383,7 +383,7 @@ function AutomationDetailPanel({ workflow, enabled, onToggle, onClose }) {
 
         {/* Actions */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 10 }}>Actions</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 10 }}>Actions</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {details.steps.map((step, i) => (
               <div key={i} style={{ display: 'flex', gap: 10 }}>
@@ -403,7 +403,7 @@ function AutomationDetailPanel({ workflow, enabled, onToggle, onClose }) {
 
         {/* Connected systems */}
         <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 8 }}>Connected systems</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 8 }}>Connected systems</div>
           <div style={{ display: 'flex', gap: 8 }}>
             {workflow.integrations.map(i => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)' }}>

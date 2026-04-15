@@ -41,7 +41,7 @@ export const VENDOR_SECTIONS = [
         id: 'VO-003', name: 'Add Acme Corp to vendor registry',
         assignee: { name: 'Jordan Kim', bg: '#5a8f6b' },
         reporter: { name: 'Jordan Kim', bg: '#5a8f6b', dept: 'Procurement' },
-        dept: 'Procurement', dueDate: 'Mar 7', status: 'Not started', priority: 'Low', aiAssignable: true,
+        dept: 'Procurement', dueDate: 'Mar 7', status: 'In Progress', priority: 'Low', aiAssignable: true,
         description: 'Register Acme Corp in the internal vendor registry with all required metadata: contract start/end dates, primary contact, payment terms, and risk classification. This entry is required before IT can begin provisioning.',
         nextSteps: [
           'Pull vendor details from the signed MSA and Acme Corp onboarding form',
@@ -123,7 +123,7 @@ export const VENDOR_SECTIONS = [
         id: 'VO-009', name: 'Confirm access granted and close ticket',
         assignee: { name: 'Jordan Kim', bg: '#5a8f6b' },
         reporter: { name: 'Jordan Kim', bg: '#5a8f6b', dept: 'Procurement' },
-        dept: 'IT', dueDate: 'Mar 15', status: 'Not started', priority: 'Medium', aiAssignable: true,
+        dept: 'IT', dueDate: 'Mar 15', status: 'In Progress', priority: 'Medium', aiAssignable: true,
         description: 'Verify that all provisioning steps are complete across Procurement, Legal, and IT. Notify stakeholders and close the original service ticket TICKET-101 with a full resolution summary.',
         nextSteps: [
           'Confirm all target users can authenticate via SSO and have correct role assignments',
@@ -461,18 +461,29 @@ function SectionBlock({ section, visible, hasAiTeammate, onSelectTask, selectedT
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '0 24px', minHeight: 40,
               borderBottom: '1px solid var(--border)',
-              background: isSelected ? 'var(--background-medium)' : showAi ? 'rgba(90,143,107,0.04)' : 'var(--surface)',
+              background: isSelected ? 'var(--background-medium)' : showAi ? 'rgba(90,143,107,0.06)' : 'var(--surface)',
               opacity: visible ? 1 : 0,
               transition: `opacity 0.3s ease ${i * 0.08}s`,
               cursor: 'pointer',
             }}
             onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--background-weak)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = isSelected ? 'var(--background-medium)' : showAi ? 'rgba(90,143,107,0.04)' : 'var(--surface)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = isSelected ? 'var(--background-medium)' : showAi ? 'rgba(90,143,107,0.06)' : 'var(--surface)'; }}
           >
-            <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1.5px solid var(--border-strong)', flexShrink: 0 }} />
+            {/* Task status circle */}
+            {showAi ? (
+              /* In-progress ring for AI tasks */
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="7" cy="7" r="6" stroke="#c8dece" strokeWidth="1.5" fill="none" />
+                <path d="M7 1 A6 6 0 0 1 13 7" stroke="#5a8f6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                <circle cx="7" cy="7" r="2" fill="#5a8f6b" />
+              </svg>
+            ) : (
+              <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1.5px solid var(--border-strong)', flexShrink: 0 }} />
+            )}
             <span style={{ flex: 1, fontSize: 13, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{task.name}</span>
             {showAi ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 4, background: 'rgba(90,143,107,0.12)', color: '#3d7a52', fontWeight: 500, flexShrink: 0 }}>In progress</span>
                 <OaAvatar size={20} />
                 <span style={{ fontSize: 11, color: 'var(--text-weak)', fontWeight: 500 }}>Onboarding AI</span>
               </div>

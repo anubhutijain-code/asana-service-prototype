@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Pill from './Pill';
 import { AI_INTENT, AI_KB_REFS, AI_SUGGESTED_REPLY, AI_CHAT_RESPONSES } from '../data/aiAssist';
 import { KB_ARTICLES, KB_DRAFTS, KB_LEARNINGS, TICKET_DRAFT_MAP, TICKET_LEARNING_MAP, LEARNING_DRAFT_MAP } from '../data/knowledgeBase';
+import WorkflowStepsPanel from './WorkflowStepsPanel';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +19,18 @@ function AiSparkleIcon({ color = 'currentColor', size = 12 }) {
   return (
     <svg viewBox="0 0 12 12" width={size} height={size} fill={color} aria-hidden="true" style={{ flexShrink: 0 }}>
       <path d="M8.8125 0H8.1875C8.1875 0.580161 7.95703 1.13656 7.5468 1.5468C7.13656 1.95703 6.58016 2.1875 6 2.1875V2.8125C6.58016 2.8125 7.13656 3.04297 7.5468 3.4532C7.95703 3.86344 8.1875 4.41984 8.1875 5H8.8125C8.8125 4.41984 9.04297 3.86344 9.4532 3.4532C9.86344 3.04297 10.4198 2.8125 11 2.8125V2.1875C10.4198 2.1875 9.86344 1.95703 9.4532 1.5468C9.04297 1.13656 8.8125 0.580161 8.8125 0ZM6.5 5.125C4.8335 5.125 3.875 4.1665 3.875 2.5H3.125C3.125 4.1665 2.1665 5.125 0.5 5.125V5.875C2.1665 5.875 3.125 6.8335 3.125 8.5H3.875C3.875 6.8335 4.8335 5.875 6.5 5.875V5.125ZM7.8125 7H7.1875C7.1875 7.28727 7.13092 7.57172 7.02099 7.83712C6.91105 8.10252 6.74992 8.34367 6.5468 8.5468C6.34367 8.74992 6.10252 8.91105 5.83712 9.02099C5.57172 9.13092 5.28727 9.1875 5 9.1875V9.8125C5.58016 9.8125 6.13656 10.043 6.5468 10.4532C6.95703 10.8634 7.1875 11.4198 7.1875 12H7.8125C7.8125 11.4198 8.04297 10.8634 8.4532 10.4532C8.86344 10.043 9.41984 9.8125 10 9.8125V9.1875C9.41984 9.1875 8.86344 8.95703 8.4532 8.5468C8.04297 8.13656 7.8125 7.58016 7.8125 7Z" />
+    </svg>
+  );
+}
+
+function WorkflowIcon({ color = 'currentColor' }) {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <circle cx="2" cy="2.5" r="1.2" />
+      <circle cx="2" cy="9.5" r="1.2" />
+      <circle cx="10" cy="6" r="1.2" />
+      <path d="M3.2 2.5h2.5a1 1 0 011 1v1.3M3.2 9.5h2.5a1 1 0 001-1V7.2" />
+      <path d="M6.7 6H8.8" />
     </svg>
   );
 }
@@ -149,7 +162,7 @@ function MentionToken({ agent, onRemove }) {
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
-const CHAT_TABS = [
+const CHAT_TABS_BASE = [
   { id: 'chat', label: 'Chat' },
   { id: 'ai',   label: 'AI Agent' },
 ];
@@ -164,7 +177,7 @@ function ChatTabBarMoreIcon() {
   );
 }
 
-function ChatTabBar({ active, onSelect, viewOnly = false, moreMenuItems = [] }) {
+function ChatTabBar({ active, onSelect, tabs = CHAT_TABS_BASE, viewOnly = false, moreMenuItems = [] }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -182,7 +195,7 @@ function ChatTabBar({ active, onSelect, viewOnly = false, moreMenuItems = [] }) 
       className="shrink-0 flex items-end gap-5 px-6"
       style={{ height: 44, borderBottom: '1px solid var(--border)' }}
     >
-      {CHAT_TABS.map(({ id, label }) => {
+      {tabs.map(({ id, label }) => {
         const isActive = active === id;
         return (
           <button
@@ -201,7 +214,8 @@ function ChatTabBar({ active, onSelect, viewOnly = false, moreMenuItems = [] }) 
               cursor: 'pointer',
             }}
           >
-            {id === 'ai' && <AiSparkleIcon color={isActive ? 'var(--text)' : 'var(--icon)'} />}
+            {id === 'ai'       && <AiSparkleIcon color={isActive ? 'var(--text)' : 'var(--icon)'} />}
+            {id === 'workflow' && <WorkflowIcon  color={isActive ? 'var(--text)' : 'var(--icon)'} />}
             {label}
           </button>
         );
@@ -960,6 +974,7 @@ export default function TicketChatPanel({
   initTranscript = [],
   transcriptEventText,
   moreMenuItems = [],
+  workflowCallbacks = null,
 }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
@@ -1085,6 +1100,11 @@ export default function TicketChatPanel({
     );
   }
 
+  const hasWorkflow = ticket?.steps?.length > 0;
+  const chatTabs = hasWorkflow
+    ? [...CHAT_TABS_BASE, { id: 'workflow', label: 'Workflow' }]
+    : CHAT_TABS_BASE;
+
   const learningId = ticket?.id ? TICKET_LEARNING_MAP[ticket.id] : null;
   const ticketLearning = learningId ? KB_LEARNINGS.find(l => l.id === learningId) : null;
   // Resolve draft: direct TICKET_DRAFT_MAP takes priority, then via LEARNING_DRAFT_MAP
@@ -1098,7 +1118,7 @@ export default function TicketChatPanel({
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[var(--surface)]">
-      <ChatTabBar active={activeTab} onSelect={handleTabSelect} viewOnly={commentOnly} moreMenuItems={moreMenuItems} />
+      <ChatTabBar active={activeTab} onSelect={handleTabSelect} tabs={chatTabs} viewOnly={commentOnly} moreMenuItems={moreMenuItems} />
 
       {activeTab === 'chat' && (
         <>
@@ -1163,44 +1183,6 @@ export default function TicketChatPanel({
             </div>
           )}
           <MessageList messages={messages} transcript={initTranscript} transcriptEventText={transcriptEventText} />
-          {/* Suggested reply */}
-          {showSuggestedReply && (
-            <div
-              className="shrink-0"
-              style={{ borderTop: '1px solid var(--border)', background: 'var(--selected-background)', padding: '10px 16px 12px' }}
-            >
-              <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                <div className="flex items-center gap-1.5">
-                  <AiSparkleIcon color="var(--selected-background-strong)" />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--selected-text)' }}>Suggested reply</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setReplySuggDismissed(true)}
-                  aria-label="Dismiss suggestion"
-                  style={{ fontSize: 13, lineHeight: 1, color: 'var(--text-disabled)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--icon)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-disabled)'}
-                >
-                  ✕
-                </button>
-              </div>
-              <p style={{ fontSize: 12, color: 'var(--text)', lineHeight: '19px', margin: '0 0 10px' }}>
-                {suggestedReply}
-              </p>
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setInput(suggestedReply)}
-                  style={{ fontSize: 12, fontWeight: 500, color: 'var(--selected-text)', background: 'var(--selected-background)', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--selected-background-strong)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'var(--selected-background)'}
-                >
-                  Use reply
-                </button>
-              </div>
-            </div>
-          )}
           {!commentOnly && (
             <ComposeBar
               value={input}
@@ -1220,6 +1202,15 @@ export default function TicketChatPanel({
 
       {activeTab === 'ai' && (
         <AIAgentPanel ticket={ticket} />
+      )}
+
+      {activeTab === 'workflow' && hasWorkflow && (
+        <WorkflowStepsPanel
+          initialSteps={ticket.steps}
+          onLinkedTicketClick={workflowCallbacks?.onLinkedTicketClick}
+          onStepCreateTask={workflowCallbacks?.onStepCreateTask}
+          onStepComplete={workflowCallbacks?.onStepComplete}
+        />
       )}
     </div>
   );

@@ -318,7 +318,7 @@ function PlaybooksSection({ queueId }) {
         <div style={{ marginTop: 24 }}>
           {[...new Set(playbooks.map(p => p.section))].map((sec, si, arr) => (
             <div key={sec} style={{ marginBottom: si < arr.length - 1 ? 32 : 0 }}>
-              <div style={{ ...BASE, fontSize: 12, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.04em', marginBottom: 12 }}>{sec.toUpperCase()}</div>
+              <div style={{ ...BASE, fontSize: 12, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 12 }}>{sec}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                 {playbooks.filter(p => p.section === sec).map(p => (
                   <PlaybookCard key={p.id} p={p} on={!!enabled[p.id]} onToggle={() => toggle(p.id)} />
@@ -479,7 +479,7 @@ export function SettingsLandingPage() {
         <button
           type="button"
           onClick={() => setCreateOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', border: 'none', borderRadius: 7, background: 'var(--selected-background-strong)', ...BASE, fontSize: 13, fontWeight: 500, color: 'var(--selected-text-strong)', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', border: 'none', borderRadius: 6, background: 'var(--selected-background-strong)', ...BASE, fontSize: 13, fontWeight: 500, color: 'var(--selected-text-strong)', cursor: 'pointer' }}
           onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >

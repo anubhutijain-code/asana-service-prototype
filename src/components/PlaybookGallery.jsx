@@ -217,8 +217,12 @@ const STEP_ICON_DATA = {
     ),
   },
   ai: {
-    bg: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
-    icon: <span style={{ fontSize: 13, color: '#fff', lineHeight: 1, userSelect: 'none' }}>✦</span>,
+    bg: '#7C3AED',
+    icon: (
+      <svg viewBox="0 0 12 12" width="11" height="11" fill="none">
+        <path d="M6 1L7.1 4.9H11L7.9 7.3L9 11L6 8.7L3 11L4.1 7.3L1 4.9H4.9L6 1Z" fill="#fff"/>
+      </svg>
+    ),
   },
   task: {
     bg: '#10B981',
@@ -296,7 +300,7 @@ function StepRow({ step, stepNumber }) {
   const vendor = iconData.isAgent ? AGENT_VENDORS[iconData.vendor] : null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', minHeight: 46 }}>
-      <span style={{ fontSize: 12, color: '#9CA3AF', width: 16, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+      <span style={{ fontSize: 12, color: 'var(--text-disabled)', width: 16, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
         {stepNumber}
       </span>
       <div style={{
@@ -313,13 +317,13 @@ function StepRow({ step, stepNumber }) {
         {vendor && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
             <span style={{ fontSize: 11, color: iconData.bg, fontWeight: 600 }}>{vendor.shortName}</span>
-            <span style={{ fontSize: 11, color: '#9CA3AF' }}>· External agent</span>
-            <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#9CA3AF" strokeWidth="1.2" strokeLinecap="round"><path d="M6.5 1h2.5v2.5"/><path d="M9 1L5 5"/><path d="M4 2H2a1 1 0 00-1 1v5a1 1 0 001 1h5a1 1 0 001-1V6"/></svg>
+            <span style={{ fontSize: 11, color: 'var(--text-disabled)' }}>· External agent</span>
+            <svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="var(--text-disabled)" strokeWidth="1.2" strokeLinecap="round"><path d="M6.5 1h2.5v2.5"/><path d="M9 1L5 5"/><path d="M4 2H2a1 1 0 00-1 1v5a1 1 0 001 1h5a1 1 0 001-1V6"/></svg>
           </div>
         )}
       </div>
       {!vendor && step.desc && (
-        <span style={{ fontSize: 12, color: '#9CA3AF', flexShrink: 0, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 12, color: 'var(--text-disabled)', flexShrink: 0, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {step.desc}
         </span>
       )}
@@ -337,8 +341,8 @@ function CanvasConnector({ dashed }) {
     <div style={{ display: 'flex', justifyContent: 'center', height: 24 }}>
       <div style={{
         width: 1, height: '100%',
-        background: dashed ? 'transparent' : '#E5E7EB',
-        borderLeft: dashed ? '2px dashed #E5E7EB' : 'none',
+        background: dashed ? 'transparent' : 'var(--border)',
+        borderLeft: dashed ? '2px dashed var(--border)' : 'none',
       }} />
     </div>
   );
@@ -349,19 +353,19 @@ function AgentResponseBlock({ vendor }) {
   const v = AGENT_VENDORS[vendor];
   if (!v) return null;
   return (
-    <div style={{ borderTop: '1px solid #F3F4F6' }}>
+    <div style={{ borderTop: '1px solid var(--background-medium)' }}>
       <button
         type="button"
         onClick={() => setExpanded(o => !o)}
-        style={{ width: '100%', padding: '6px 16px 6px 58px', background: '#FAFAFA', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left' }}
+        style={{ width: '100%', padding: '6px 16px 6px 58px', background: 'var(--background-weak)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left' }}
       >
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
-        <span style={{ fontSize: 11, color: '#6B7280', flex: 1 }}>Response received from {v.shortName}</span>
-        <span style={{ fontSize: 10, color: '#9CA3AF' }}>{expanded ? '▲' : '▼ view payload'}</span>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success-text)', flexShrink: 0 }} />
+        <span style={{ fontSize: 11, color: 'var(--text-weak)', flex: 1 }}>Response received from {v.shortName}</span>
+        <span style={{ fontSize: 10, color: 'var(--text-disabled)' }}>{expanded ? '▲' : '▼ view payload'}</span>
       </button>
       {expanded && (
-        <div style={{ padding: '0 16px 10px 58px', background: '#FAFAFA' }}>
-          <pre style={{ margin: 0, fontSize: 11, color: '#374151', fontFamily: 'ui-monospace, monospace', background: '#F3F4F6', padding: '10px 12px', borderRadius: 6, overflow: 'auto', lineHeight: '16px' }}>
+        <div style={{ padding: '0 16px 10px 58px', background: 'var(--background-weak)' }}>
+          <pre style={{ margin: 0, fontSize: 11, color: 'var(--text)', fontFamily: 'ui-monospace, monospace', background: 'var(--background-medium)', padding: '10px 12px', borderRadius: 6, overflow: 'auto', lineHeight: '16px' }}>
             {JSON.stringify(v.mockResponse, null, 2)}
           </pre>
         </div>
@@ -379,10 +383,10 @@ function BranchPills({ branches }) {
         return (
           <div key={i} style={{
             height: 28, padding: '0 10px',
-            border: `1px solid ${active ? '#10B981' : '#D1D5DB'}`,
+            border: `1px solid ${active ? 'var(--success-background-strong)' : 'var(--border)'}`,
             borderRadius: 14,
-            background: active ? '#ECFDF5' : '#fff',
-            color: active ? '#059669' : '#6B7280',
+            background: active ? 'var(--success-background)' : 'var(--surface)',
+            color: active ? 'var(--success-text)' : 'var(--text-weak)',
             fontSize: 12, fontWeight: 500,
             display: 'flex', alignItems: 'center', gap: 5,
           }}>
@@ -428,9 +432,9 @@ function CanvasStepList({ steps }) {
       const isAgent = sid?.isAgent;
       elements.push(
         <div key={`card-${i}`} style={{
-          border: `1px solid ${isAgent ? sid.bg + '50' : '#E5E7EB'}`,
-          borderLeft: isAgent ? `3px solid ${sid.bg}` : '1px solid #E5E7EB',
-          borderRadius: 8, background: '#fff', overflow: 'hidden',
+          border: `1px solid ${isAgent ? sid.bg + '50' : 'var(--border)'}`,
+          borderLeft: isAgent ? `3px solid ${sid.bg}` : '1px solid var(--border)',
+          borderRadius: 8, background: 'var(--surface)', overflow: 'hidden',
         }}>
           <StepRow step={step} stepNumber={stepNum} />
           {isAgent && step.hasResponse && <AgentResponseBlock vendor={sid.vendor} />}
@@ -562,7 +566,7 @@ export function DetailModal({ template, onClose, onCustomize }) {
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           <div style={{ marginBottom: 22 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>What it does</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 10 }}>What it does</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {template.capabilities.map((cap, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -576,7 +580,7 @@ export function DetailModal({ template, onClose, onCustomize }) {
           </div>
 
           <div style={{ marginBottom: 22 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Steps</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 10 }}>Steps</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {template.steps.filter(s => s.type !== 'condition').map((step, i, arr) => {
                 const c = STEP_COLORS[step.type] || STEP_COLORS.task;
@@ -587,7 +591,7 @@ export function DetailModal({ template, onClose, onCustomize }) {
                       <div style={{ width: 24, height: 24, borderRadius: '50%', background: iconData.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {iconData.icon}
                       </div>
-                      {i < arr.length - 1 && <div style={{ width: 1, flex: 1, background: '#E5E7EB', minHeight: 10, margin: '2px 0' }} />}
+                      {i < arr.length - 1 && <div style={{ width: 1, flex: 1, background: 'var(--border)', minHeight: 10, margin: '2px 0' }} />}
                     </div>
                     <div style={{ flex: 1, paddingTop: 3, paddingBottom: i < arr.length - 1 ? 10 : 0 }}>
                       <span style={{ fontSize: 13, color: 'var(--text)' }}>{step.label}</span>
@@ -600,7 +604,7 @@ export function DetailModal({ template, onClose, onCustomize }) {
           </div>
 
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Integrations</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 8 }}>Integrations</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {template.integrations.map(i => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--background-medium)' }}>
@@ -710,7 +714,7 @@ function AgentLibraryPanel({ onAddStep, onClose }) {
 
         {/* Third-party agents */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Third-party agents</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 10 }}>Third-party agents</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {Object.entries(AGENT_VENDORS).map(([key, v]) => (
               <div key={key} style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
@@ -723,8 +727,8 @@ function AgentLibraryPanel({ onAddStep, onClose }) {
                     <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginTop: 1 }}>{v.desc}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#10B981' }} />
-                    <span style={{ fontSize: 10, color: '#10B981', fontWeight: 500 }}>Connected</span>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success-text)' }} />
+                    <span style={{ fontSize: 10, color: 'var(--success-text)', fontWeight: 500 }}>Connected</span>
                   </div>
                 </div>
                 <div style={{ padding: '6px 0' }}>
@@ -747,7 +751,7 @@ function AgentLibraryPanel({ onAddStep, onClose }) {
 
         {/* Asana native */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Asana native</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 10 }}>Asana native</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {NATIVE_STEP_ACTIONS.map(a => (
               <button key={a.label} onClick={() => onAddStep({ ...a, desc: 'Native action' })}
@@ -763,7 +767,7 @@ function AgentLibraryPanel({ onAddStep, onClose }) {
 
         {/* Custom agents */}
         <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>Custom agents</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', marginBottom: 10 }}>Custom agents</div>
           <div style={{ padding: '16px', border: '1px dashed var(--border)', borderRadius: 8, textAlign: 'center' }}>
             <div style={{ fontSize: 12, color: 'var(--text-disabled)', marginBottom: 8 }}>No custom agents yet</div>
             <button style={{ height: 28, padding: '0 12px', border: '1px solid var(--border)', borderRadius: 6, background: 'none', fontSize: 12, color: 'var(--text-weak)', cursor: 'pointer' }}>
@@ -883,9 +887,9 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
         </button>
         <button
           onClick={() => { setSaved(true); setTimeout(() => onSave(name, canvasSteps), 300); }}
-          style={{ height: 32, padding: '0 14px', border: 'none', borderRadius: 6, background: saved ? '#10B981' : 'var(--selected-background-strong)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', flexShrink: 0 }}
+          style={{ height: 32, padding: '0 14px', border: 'none', borderRadius: 6, background: saved ? 'var(--success-background-strong)' : 'var(--selected-background-strong)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', flexShrink: 0 }}
         >
-          {saved ? 'Saved ✓' : 'Save playbook'}
+          {saved ? 'Saved' : 'Save playbook'}
         </button>
       </div>
 
@@ -896,8 +900,10 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
         <div style={{ width: '35%', minWidth: 280, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 11, color: '#fff' }}>✦</span>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                  <path d="M6 1L7.1 4.9H11L7.9 7.3L9 11L6 8.7L3 11L4.1 7.3L1 4.9H4.9L6 1Z" fill="#fff"/>
+                </svg>
               </div>
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Playbook builder</span>
             </div>
@@ -964,7 +970,7 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
             ) : (
               <div>
                 {/* Trigger event label */}
-                <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 6, paddingLeft: 2 }}>Trigger event</div>
+                <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginBottom: 6, paddingLeft: 2 }}>Trigger event</div>
 
                 <CanvasStepList steps={canvasSteps} />
 
@@ -975,9 +981,9 @@ export function Builder({ template, initialMessage, onBack, onSave }) {
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <button style={{
                     width: 28, height: 28, borderRadius: '50%',
-                    border: '1px solid #D1D5DB', background: '#fff',
+                    border: '1px solid var(--border)', background: 'var(--surface)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: '#9CA3AF', fontSize: 16, lineHeight: 1,
+                    cursor: 'pointer', color: 'var(--text-disabled)', fontSize: 16, lineHeight: 1,
                   }}>+</button>
                 </div>
               </div>
@@ -1029,8 +1035,8 @@ export default function PlaybookGallery({ onClose, onSaved }) {
         </button>
       </div>
       <div style={{ textAlign: 'center', padding: '48px 32px 28px' }}>
-        <h1 style={{ fontFamily: '"SF Pro Display"', fontSize: 28, fontWeight: 500, color: 'var(--text)', margin: '0 0 8px' }}>What should this playbook do?</h1>
-        <p style={{ fontSize: 15, color: 'var(--text-weak)', margin: '0 0 28px' }}>Start from a template or describe what you need.</p>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text)', margin: '0 0 8px' }}>What should this playbook do?</h1>
+        <p style={{ fontSize: 14, color: 'var(--text-weak)', margin: '0 0 28px' }}>Start from a template or describe what you need.</p>
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '0 32px 28px', flexWrap: 'wrap' }}>
         {FILTERS.map(f => (

@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/AppStore';
-import TicketDetailHeader from './TicketDetailHeader';
+import TicketDetailHeader, { MoveTicketModal } from './TicketDetailHeader';
 import TicketChatPanel from './TicketChatPanel';
 import TicketInfoSidebar from './TicketInfoSidebar';
-import WorkflowStepsPanel from './WorkflowStepsPanel';
 import RightPanelOverlay from './RightPanelOverlay';
 import ApprovalTaskView from './ApprovalTaskView';
 import CreateHRTicketModal from './CreateHRTicketModal';
@@ -46,6 +45,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closedAndMoved, setClosedAndMoved] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const [projectLaunched, setProjectLaunched] = useState(() => session.launchedProjects.has(ticket.id));
 
   // Pills bar state
@@ -200,8 +200,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         ticket={ticket}
         onBack={onBack}
         onRequestApproval={handleRequestApproval}
-        onRouteToHR={() => setShowRouteModal(true)}
-        onCreateTicketHR={() => setHrCreateOpen(true)}
+        onMoveTicket={() => setMoveOpen(true)}
         onCloseAndMove={() => setShowCloseModal(true)}
         onConvertToProject={() => setConvertOpen(true)}
         readOnly={routedToHR}
@@ -232,20 +231,20 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
 
       {/* Banner: project launched from this ticket */}
       {projectLaunched && (
-        <div className="shrink-0 flex items-center gap-2" style={{ height: 40, padding: '0 24px', background: '#EDF7EE', borderBottom: '1px solid #C3E6C6', fontSize: 13 }}>
-          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#2E7D32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="shrink-0 flex items-center gap-2" style={{ height: 40, padding: '0 24px', background: 'var(--success-background)', borderBottom: '1px solid var(--success-background-strong)', fontSize: 13 }}>
+          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="var(--success-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 7l4 4 6-6"/>
           </svg>
-          <span style={{ color: '#2E7D32', fontWeight: 500 }}>Project created</span>
-          <span style={{ color: '#2E7D32' }}>—</span>
+          <span style={{ color: 'var(--success-text)', fontWeight: 500 }}>Project created</span>
+          <span style={{ color: 'var(--success-text)' }}>—</span>
           <button
             type="button"
             onClick={() => navigate('/projects/vendor-onboarding')}
-            style={{ background: 'none', border: 'none', padding: 0, color: '#1B5E20', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
+            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--success-text)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', fontSize: 13 }}
           >
-            Acme Corp — Vendor Onboarding →
+            Acme Corp — Vendor Onboarding
           </button>
-          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#4CAF50' }}>Ticket closed</span>
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--success-text)' }}>Ticket closed</span>
         </div>
       )}
 
@@ -285,7 +284,7 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
         </div>
       )}
 
-      {/* Body: chat (flex-1) + optional workflow col (TICKET-95) + info sidebar */}
+      {/* Body: chat (flex-1) + info sidebar */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 min-w-0 overflow-hidden">
           <TicketChatPanel
@@ -297,18 +296,13 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             initPublic={chatInitPublic}
             initInternal={chatInitInternal}
             initTranscript={chatInitTranscript}
+            workflowCallbacks={{
+              onLinkedTicketClick: handleWorkflowLinkedTicketClick,
+              onStepCreateTask: handleWorkflowStepCreateTask,
+              onStepComplete: handleWorkflowStepComplete,
+            }}
           />
         </div>
-        {ticket.id === 'TICKET-95' && (
-          <div style={{ width: 280, flexShrink: 0, borderLeft: '1px solid var(--border)', overflow: 'hidden' }}>
-            <WorkflowStepsPanel
-              initialSteps={ticket.steps}
-              onLinkedTicketClick={handleWorkflowLinkedTicketClick}
-              onStepCreateTask={handleWorkflowStepCreateTask}
-              onStepComplete={handleWorkflowStepComplete}
-            />
-          </div>
-        )}
         <div style={{ width: '30%', maxWidth: 600, minWidth: 300, flexShrink: 0 }}>
           <TicketInfoSidebar
             ticket={ticket}
@@ -404,6 +398,18 @@ export default function TicketDetailView({ ticket, onBack, onRouteComplete, onCr
             setConvertOpen(false);
             setProjectLaunched(true);
             setLocalStatus('Closed');
+          }}
+        />
+      )}
+
+      {moveOpen && (
+        <MoveTicketModal
+          ticket={ticket}
+          onClose={() => setMoveOpen(false)}
+          onMoved={q => {
+            setMoveOpen(false);
+            dispatch({ type: 'UPDATE_TICKET', id: ticket.id, patch: { status: 'Routed', movedToQueue: q.name } });
+            setTimeout(() => onBack?.(), 800);
           }}
         />
       )}

@@ -368,7 +368,7 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
                 onClick={() => { onClose(); onTicketClick?.(t.id); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 12px', borderRadius: 7,
+                  padding: '8px 12px', borderRadius: 8,
                   border: 'none', cursor: 'pointer',
                   background: 'var(--background-medium)', textAlign: 'left',
                   transition: 'box-shadow 0.1s',
@@ -421,7 +421,7 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
             onClick={handlePrimaryAction}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              height: 32, padding: '0 14px', borderRadius: 7,
+              height: 32, padding: '0 14px', borderRadius: 8,
               fontSize: 13, fontFamily: SFT, fontWeight: 500,
               background: 'var(--selected-background-strong)', color: 'var(--selected-text-strong)',
               border: 'none', cursor: 'pointer',
@@ -441,7 +441,7 @@ export function GapDetailPanel({ item, tabConfig, status, onStatusChange, onClos
             onClick={() => onStatusChange('in-review')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              height: 32, padding: '0 12px', borderRadius: 7,
+              height: 32, padding: '0 12px', borderRadius: 8,
               fontSize: 13, fontFamily: SFT, fontWeight: 500,
               background: 'var(--background-weak)', color: 'var(--text)',
               border: '1px solid var(--border)', cursor: 'pointer',

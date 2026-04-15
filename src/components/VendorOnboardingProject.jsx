@@ -19,6 +19,7 @@ const PHOTO = {
 const STATUS_STYLE = {
   'Not started': { bg: 'var(--background-strong)',   color: 'var(--text-disabled)' },
   'In progress':  { bg: 'var(--selected-background)', color: 'var(--selected-text)' },
+  'In Progress':  { bg: 'var(--selected-background)', color: 'var(--selected-text)' },
   'Blocked':      { bg: 'var(--danger-background)',   color: 'var(--danger-text)'   },
   'High':         { bg: 'var(--priority-high-bg)',    color: 'var(--priority-high-text)' },
   'Resolved':     { bg: 'var(--success-background)',  color: 'var(--success-text)'  },
@@ -181,10 +182,16 @@ function OaAvatar({ size = 20 }) {
   );
 }
 
-function Checkbox({ done, onToggle }) {
+function Checkbox({ done, onToggle, aiInProgress }) {
   return (
     <button type="button" onClick={onToggle} style={{ flexShrink: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16 }}>
-      {done ? (
+      {aiInProgress && !done ? (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="#c8dece" strokeWidth="1.5" fill="none" />
+          <path d="M8 1 A7 7 0 0 1 15 8" stroke="#5DA182" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          <circle cx="8" cy="8" r="2.5" fill="#5DA182" />
+        </svg>
+      ) : done ? (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <g clipPath="url(#tcc2)">
             <path d="M15.5 8C15.5 12.15 12.15 15.5 8 15.5C3.85 15.5 0.5 12.15 0.5 8C0.5 3.85 3.85 0.5 8 0.5C12.15 0.5 15.5 3.85 15.5 8Z" fill="#5DA182" stroke="white"/>
@@ -242,7 +249,7 @@ function TaskRow({ task, onClick, selected }) {
     >
       {/* Task name col */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8, paddingBottom: 8 }}>
-        <Checkbox done={done} onToggle={e => { if (e?.stopPropagation) e.stopPropagation(); setDone(d => !d); }} />
+        <Checkbox done={done} aiInProgress={!!task.aiAssignable} onToggle={e => { if (e?.stopPropagation) e.stopPropagation(); setDone(d => !d); }} />
         <span style={{ ...COL_TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: done ? 'var(--text-disabled)' : 'var(--text)', textDecoration: done ? 'line-through' : 'none' }}>
           {task.name}
         </span>

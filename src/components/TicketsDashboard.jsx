@@ -13,7 +13,7 @@ import TicketMoreMenu from './ui/TicketMoreMenu';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 const TICKET_FIELDS = [
-  { id: 'status',   label: 'Status',   type: 'select', options: ['Not started', 'In Progress', 'On hold', 'Resolved', 'Closed'] },
+  { id: 'status',   label: 'Status',   type: 'select', options: ['Not started', 'In Progress', 'On hold', 'Resolved', 'Closed', 'AI Deflected'] },
   { id: 'priority', label: 'Priority', type: 'select', options: ['Critical', 'High', 'Medium', 'Low'] },
   { id: 'category', label: 'Category', type: 'select', options: ['Access Management', 'Hardware', 'Software', 'Network', 'Other'] },
   { id: 'assignee', label: 'Assignee', type: 'text' },

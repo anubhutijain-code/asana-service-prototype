@@ -300,53 +300,315 @@ function Step2({ form, setForm }) {
   );
 }
 
+// ── Config section accordion ──────────────────────────────────────────────────
+function ConfigSection({ icon, title, count, description, footer, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ borderBottom: '1px solid var(--border)', marginBottom: 0 }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '20px 0 16px', textAlign: 'left' }}
+      >
+        {icon}
+        <span style={{ ...BASE, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{title}</span>
+        {count !== undefined && (
+          <span style={{ fontSize: 12, fontWeight: 500, padding: '1px 8px', borderRadius: 100, background: 'var(--background-medium)', color: 'var(--text-weak)', flexShrink: 0 }}>{count}</span>
+        )}
+        <div style={{ flex: 1 }} />
+        <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor"
+          style={{ flexShrink: 0, color: 'var(--text-disabled)', transition: 'transform 0.15s', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+          <path d="M9.09 3.93L6 6.52 2.91 3.93a.75.75 0 10-.97 1.15l3.57 3a.75.75 0 00.97 0l3.57-3a.75.75 0 10-.97-1.15z"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{ paddingBottom: 24 }}>
+          {description && <p style={{ ...BASE, fontSize: 13, color: 'var(--text-weak)', margin: '0 0 16px', lineHeight: '20px' }}>{description}</p>}
+          {children}
+          {footer && <p style={{ ...BASE, fontSize: 12, color: 'var(--text-disabled)', margin: '12px 0 0', lineHeight: '18px' }}>{footer}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const KB_OPTIONS = [
+  'IT Knowledge Base', 'HR Policies', 'Security Runbooks', 'Onboarding Guides', 'Product Docs',
+];
+
+const CHANNEL_TYPE_LABELS = { email: 'Email', slack: 'Slack', form: 'Form', web: 'Web form' };
+
 // ── Step 3: Configuration ─────────────────────────────────────────────────────
 function Step3({ form, setForm }) {
+  const [addingChannel, setAddingChannel] = useState(false);
+  const [channelType, setChannelType] = useState('email');
+  const [channelValue, setChannelValue] = useState('');
+  const [kbSearch, setKbSearch] = useState('');
+  const [kbOpen, setKbOpen] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+
+  const channelCount = 1 + (form.channels?.length ?? 0); // 1 = AI Portal always
+  const kbCount = (form.kbSources?.length ?? 0);
+
+  function addChannel() {
+    if (!channelValue.trim()) return;
+    setForm(f => ({ ...f, channels: [...(f.channels ?? []), { type: channelType, value: channelValue.trim() }] }));
+    setChannelValue('');
+    setAddingChannel(false);
+  }
+
+  function removeChannel(i) {
+    setForm(f => ({ ...f, channels: f.channels.filter((_, idx) => idx !== i) }));
+  }
+
+  function addKb(name) {
+    if ((form.kbSources ?? []).some(s => s.value === name)) return;
+    setForm(f => ({ ...f, kbSources: [...(f.kbSources ?? []), { type: 'kb', value: name }] }));
+    setKbSearch(''); setKbOpen(false);
+  }
+
+  function addUrl() {
+    const url = urlInput.trim();
+    if (!url) return;
+    setForm(f => ({ ...f, kbSources: [...(f.kbSources ?? []), { type: 'url', value: url }] }));
+    setUrlInput('');
+  }
+
+  function removeKbSource(i) {
+    setForm(f => ({ ...f, kbSources: f.kbSources.filter((_, idx) => idx !== i) }));
+  }
+
+  const filteredKbs = KB_OPTIONS.filter(k =>
+    !kbSearch || k.toLowerCase().includes(kbSearch.toLowerCase())
+  ).filter(k => !(form.kbSources ?? []).some(s => s.value === k));
+
   return (
     <>
       <StepHeader step={3} />
-      <div style={{ ...BASE, fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>Intake channels</div>
-      <Field label="Email channel" hint="Emails to this address automatically open a ticket.">
-        <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="e.g. it-help@acme.com" style={inputSt} autoFocus />
-      </Field>
-      <Field label="Slack channel" hint="Messages in this channel automatically open a ticket.">
-        <input value={form.slack} onChange={e => setForm(f => ({ ...f, slack: e.target.value }))} placeholder="#channel-name" style={inputSt} />
-      </Field>
 
-      <div style={{ ...BASE, fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '8px 0 16px' }}>Business hours</div>
-      <Field label="Active days">
-        <select value={form.dayRange} onChange={e => setForm(f => ({ ...f, dayRange: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
-          {DAY_OPTIONS.map(o => <option key={o}>{o}</option>)}
-        </select>
-      </Field>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-        <Field label="Start time" style={{ flex: 1 }}>
-          <select value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
-            {TIME_OPTIONS.map(o => <option key={o}>{o}</option>)}
-          </select>
-        </Field>
-        <Field label="End time" style={{ flex: 1 }}>
-          <select value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
-            {TIME_OPTIONS.map(o => <option key={o}>{o}</option>)}
-          </select>
-        </Field>
-      </div>
+      {/* ── Intake channels ── */}
+      <ConfigSection
+        icon={
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0, color: 'var(--success-text)' }}>
+            <path d="M8 2C5.24 2 3 4.24 3 7c0 1.5.63 2.86 1.64 3.83L3 14h4.5c.16.01.33.01.5.01 2.76 0 5-2.24 5-5S10.76 2 8 2z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            <path d="M6 7.5l1.5 1.5L10.5 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        }
+        title="Intake channels"
+        count={channelCount}
+        description="Configure how tickets enter this queue"
+        footer="The AI portal automatically routes tickets based on queue name and description."
+      >
+        {/* AI Portal — always connected */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface)', marginBottom: 8 }}>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0, color: 'var(--success-text)' }}>
+            <path d="M8 2C5.24 2 3 4.24 3 7c0 1.5.63 2.86 1.64 3.83L3 14h4.5c.16.01.33.01.5.01 2.76 0 5-2.24 5-5S10.76 2 8 2z" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+            <path d="M6 7.5l1.5 1.5L10.5 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ ...BASE, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>AI Portal</div>
+            <div style={{ ...BASE, fontSize: 12, color: 'var(--text-weak)', marginTop: 1 }}>Auto-routes from shared portal</div>
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--success-text)', padding: '3px 10px', borderRadius: 6, background: 'var(--success-background)', border: '1px solid var(--success-background-strong)', flexShrink: 0 }}>Connected</span>
+        </div>
 
-      <div style={{ ...BASE, fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '8px 0 16px' }}>SLA targets</div>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
-        {[
-          { key: 'slaFirst',      label: 'First response' },
-          { key: 'slaUpdate',     label: 'Update'         },
-          { key: 'slaResolution', label: 'Resolution'     },
-        ].map(({ key, label }) => (
-          <div key={key} style={{ flex: 1 }}>
-            <label style={{ ...labelSt, fontSize: 12, color: 'var(--text-weak)', marginBottom: 4 }}>{label}</label>
-            <select value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
-              {SLA_OPTIONS.map(o => <option key={o}>{o}</option>)}
-            </select>
+        {/* Added channels */}
+        {(form.channels ?? []).map((ch, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface)', marginBottom: 8 }}>
+            <span style={{ ...BASE, fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 4, background: 'var(--background-medium)', color: 'var(--text-weak)', flexShrink: 0 }}>{CHANNEL_TYPE_LABELS[ch.type]}</span>
+            <span style={{ ...BASE, fontSize: 13, color: 'var(--text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.value}</span>
+            <button type="button" onClick={() => removeChannel(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-disabled)', padding: '2px 4px', fontSize: 16, lineHeight: 1, borderRadius: 4 }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-disabled)'; e.currentTarget.style.background = 'none'; }}
+            >×</button>
           </div>
         ))}
-      </div>
+
+        {/* Add channel row */}
+        {addingChannel ? (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 16px', border: '1px dashed var(--border)', borderRadius: 8, background: 'var(--background-weak)', marginBottom: 8 }}>
+            <select value={channelType} onChange={e => setChannelType(e.target.value)}
+              style={{ ...inputSt, width: 100, height: 32, padding: '0 8px', flexShrink: 0, appearance: 'auto' }}>
+              <option value="email">Email</option>
+              <option value="slack">Slack</option>
+              <option value="form">Form</option>
+              <option value="web">Web form</option>
+            </select>
+            <input
+              value={channelValue}
+              onChange={e => setChannelValue(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') addChannel(); if (e.key === 'Escape') setAddingChannel(false); }}
+              placeholder={channelType === 'email' ? 'e.g. it-help@acme.com' : channelType === 'slack' ? '#channel-name' : 'https://...'}
+              autoFocus
+              style={{ ...inputSt, height: 32, flex: 1 }}
+            />
+            <button type="button" onClick={addChannel}
+              style={{ height: 32, padding: '0 14px', border: 'none', borderRadius: 6, background: 'var(--selected-background-strong)', color: '#fff', ...BASE, fontSize: 13, fontWeight: 500, cursor: 'pointer', flexShrink: 0 }}>
+              Add
+            </button>
+            <button type="button" onClick={() => { setAddingChannel(false); setChannelValue(''); }}
+              style={{ height: 32, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 6, background: 'none', ...BASE, fontSize: 13, color: 'var(--text-weak)', cursor: 'pointer', flexShrink: 0 }}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAddingChannel(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px 16px', border: '1px dashed var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', ...BASE, fontSize: 13, color: 'var(--text-weak)', marginBottom: 8 }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--background-weak)'; e.currentTarget.style.color = 'var(--text)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-weak)'; }}
+          >
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6 2v8M2 6h8"/></svg>
+            Add Slack, Email, or Form
+          </button>
+        )}
+      </ConfigSection>
+
+      {/* ── Knowledge Base ── */}
+      <ConfigSection
+        icon={
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0, color: 'var(--text-disabled)' }}>
+            <path d="M3 3h6l4 4v6H3V3z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+            <path d="M9 3v4h4" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+            <path d="M5 9h6M5 11h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+          </svg>
+        }
+        title="Knowledge base"
+        count={kbCount}
+        description="Link knowledge bases for AI deflection in this queue"
+        defaultOpen={false}
+      >
+        {/* Added KB sources */}
+        {(form.kbSources ?? []).map((src, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface)', marginBottom: 8 }}>
+            {src.type === 'url' ? (
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--text-disabled)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M2 7h10M7 2l5 5-5 5"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--text-disabled)" strokeWidth="1.3" style={{ flexShrink: 0 }}>
+                <path d="M2.5 2.5h5l3.5 3.5V12h-8.5V2.5z" strokeLinejoin="round"/>
+                <path d="M7.5 2.5V6H11" strokeLinejoin="round"/>
+              </svg>
+            )}
+            <span style={{ ...BASE, fontSize: 13, color: 'var(--text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{src.value}</span>
+            {src.type === 'url' && <span style={{ ...BASE, fontSize: 11, color: 'var(--text-disabled)', flexShrink: 0 }}>URL</span>}
+            <button type="button" onClick={() => removeKbSource(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-disabled)', padding: '2px 4px', fontSize: 16, lineHeight: 1, borderRadius: 4 }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.background = 'var(--background-medium)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-disabled)'; e.currentTarget.style.background = 'none'; }}
+            >×</button>
+          </div>
+        ))}
+
+        {/* Search KBs */}
+        <div style={{ position: 'relative', marginBottom: 8 }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--text-disabled)" strokeWidth="1.3" strokeLinecap="round" style={{ position: 'absolute', left: 12, flexShrink: 0 }}>
+              <circle cx="6" cy="6" r="4"/><path d="M10 10l2.5 2.5"/>
+            </svg>
+            <input
+              value={kbSearch}
+              onChange={e => { setKbSearch(e.target.value); setKbOpen(true); }}
+              onFocus={() => setKbOpen(true)}
+              onBlur={() => setTimeout(() => setKbOpen(false), 150)}
+              placeholder="Search knowledge bases..."
+              style={{ ...inputSt, paddingLeft: 34 }}
+            />
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor" style={{ position: 'absolute', right: 12, color: 'var(--text-disabled)', pointerEvents: 'none' }}>
+              <path d="M9.09 3.93L6 6.52 2.91 3.93a.75.75 0 10-.97 1.15l3.57 3a.75.75 0 00.97 0l3.57-3a.75.75 0 10-.97-1.15z"/>
+            </svg>
+          </div>
+          {kbOpen && filteredKbs.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, border: '1px solid var(--border)', borderRadius: 7, marginTop: 4, background: 'var(--surface)', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              {filteredKbs.map(kb => (
+                <button key={kb} type="button" onClick={() => addKb(kb)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', ...BASE, fontSize: 13, color: 'var(--text)', textAlign: 'left' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--background-weak)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >{kb}</button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Web URL input */}
+        <div style={{ marginTop: 12 }}>
+          <label style={{ ...labelSt, fontSize: 12, color: 'var(--text-weak)', marginBottom: 6 }}>Or add a web URL</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={urlInput}
+              onChange={e => setUrlInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') addUrl(); }}
+              placeholder="https://docs.example.com/it-guide"
+              style={{ ...inputSt, flex: 1 }}
+            />
+            <button type="button" onClick={addUrl} disabled={!urlInput.trim()}
+              style={{ height: 38, padding: '0 14px', border: 'none', borderRadius: 6, background: urlInput.trim() ? 'var(--selected-background-strong)' : 'var(--background-strong)', color: urlInput.trim() ? '#fff' : 'var(--text-disabled)', ...BASE, fontSize: 13, fontWeight: 500, cursor: urlInput.trim() ? 'pointer' : 'default', flexShrink: 0 }}>
+              Add
+            </button>
+          </div>
+        </div>
+      </ConfigSection>
+
+      {/* ── Business hours ── */}
+      <ConfigSection
+        icon={
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0, color: 'var(--text-disabled)' }}>
+            <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/>
+            <path d="M8 5v3.5l2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        }
+        title="Business hours"
+        description="Define when your team is available to handle tickets."
+        defaultOpen={false}
+      >
+        <Field label="Active days">
+          <select value={form.dayRange} onChange={e => setForm(f => ({ ...f, dayRange: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
+            {DAY_OPTIONS.map(o => <option key={o}>{o}</option>)}
+          </select>
+        </Field>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 0 }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelSt}>Start time</label>
+            <select value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
+              {TIME_OPTIONS.map(o => <option key={o}>{o}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelSt}>End time</label>
+            <select value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
+              {TIME_OPTIONS.map(o => <option key={o}>{o}</option>)}
+            </select>
+          </div>
+        </div>
+      </ConfigSection>
+
+      {/* ── SLA targets ── */}
+      <ConfigSection
+        icon={
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0, color: 'var(--text-disabled)' }}>
+            <path d="M2 12L6 8l3 3 5-6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        }
+        title="SLA targets"
+        description="Set response and resolution time expectations for this queue."
+      >
+        <div style={{ display: 'flex', gap: 12 }}>
+          {[
+            { key: 'slaFirst',      label: 'First response' },
+            { key: 'slaUpdate',     label: 'Update'         },
+            { key: 'slaResolution', label: 'Resolution'     },
+          ].map(({ key, label }) => (
+            <div key={key} style={{ flex: 1 }}>
+              <label style={{ ...labelSt, fontSize: 12, color: 'var(--text-weak)', marginBottom: 4 }}>{label}</label>
+              <select value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} style={{ ...inputSt, appearance: 'auto' }}>
+                {SLA_OPTIONS.map(o => <option key={o}>{o}</option>)}
+              </select>
+            </div>
+          ))}
+        </div>
+      </ConfigSection>
     </>
   );
 }
@@ -426,7 +688,8 @@ export default function CreateQueuePanel({ onClose, onCreated }) {
   const [form, setForm] = useState({
     name: '', desc: '', color: '#4573D2',
     admins: [], members: [],
-    email: '', slack: '', dayRange: 'Mon–Fri', startTime: '9:00 AM', endTime: '6:00 PM',
+    channels: [], kbSources: [],
+    dayRange: 'Mon–Fri', startTime: '9:00 AM', endTime: '6:00 PM',
     slaFirst: '4h', slaUpdate: '8h', slaResolution: '24h',
     playbooks: Object.fromEntries(PLAYBOOK_TEMPLATES.map(p => [p.id, p.defaultOn])),
   });

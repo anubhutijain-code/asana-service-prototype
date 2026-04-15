@@ -73,6 +73,204 @@ const S_GENERAL_DONE = [
   { id: 's4', type: 'agent', label: 'Notify & resolve',      team: 'IT Agent',  status: 'completed', completedAt: 'completed' },
 ];
 
+// ─── Rich workflow step sets ───────────────────────────────────────────────────
+// Used by tickets that have detailed per-step animation and outcome data.
+
+const S_FIGMA_ACCESS_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 19, 11:05am',
+    outcomeNote: 'Classified: Software Access — Figma viewer seat. User absent from Figma org. Entitlement confirmed via Okta group "Figma-Viewers". Routing to Provisioning Agent.' },
+  { id: 's2', type: 'agent', label: 'Verify entitlement', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 19, 11:06am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Entitlement confirmed. Figma-Viewers Okta group active. 4 viewer seats available. No manager approval required for viewer role.',
+    animSteps: ['Checking Okta group memberships...', 'Confirmed: Figma-Viewers group ✓', 'Seat inventory: 4 available', 'No approval required — viewer role'] },
+  { id: 's3', type: 'agent', label: 'Provision Figma seat', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 19, 11:08am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Viewer seat provisioned via Figma Admin API. Invite sent to anjelica.silva@acmecorp.com.',
+    animSteps: ['Connecting to Figma Admin API...', 'Creating viewer seat...', 'Seat assigned to anjelica.silva@acmecorp.com ✓', 'Invite email queued'] },
+  { id: 's4', type: 'agent', label: 'Confirm & auto-close', team: 'Communications Agent', status: 'completed', completedAt: 'Feb 19, 11:29am',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'User confirmed invite accepted and workspace visible. Ticket auto-closed — no agent involvement required.',
+    animSteps: ['Waiting for user confirmation...', 'User accepted invite ✓', 'Drafting closure message...', 'Ticket auto-closed'] },
+];
+
+const S_SOFTWARE_INSTALL_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 5, 3:20pm',
+    outcomeNote: 'Classified: Software install — Postman. Confirmed on approved software list. No manager approval required. Routing to Software Delivery Agent.' },
+  { id: 's2', type: 'agent', label: 'Verify software policy', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 5, 3:21pm',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Postman v10.x on approved list. Device MBP-2241 enrolled in Jamf MDM. Zero-touch install eligible.',
+    animSteps: ['Checking approved software registry...', 'Postman v10.x: ✓ Approved', 'Device MBP-2241: ✓ Jamf enrolled', 'Zero-touch install eligible'] },
+  { id: 's3', type: 'agent', label: 'Deploy via MDM', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 5, 3:38pm',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Postman deployed to MBP-2241 via Jamf MDM. Install confirmed at 3:38pm.',
+    animSteps: ['Queuing Jamf MDM deployment...', 'Policy pushed to MBP-2241...', 'Install in progress on device...', 'Installation confirmed ✓'] },
+  { id: 's4', type: 'agent', label: 'Notify & auto-close', team: 'Communications Agent', status: 'completed', completedAt: 'Feb 5, 3:45pm',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'User confirmed Postman installed and working. Ticket auto-closed.',
+    animSteps: ['Drafting install confirmation...', 'Sending to Martin Ludington...', 'Delivered ✓', 'Ticket auto-closed'] },
+];
+
+const S_MFA_BYPASS_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 3, 8:42am',
+    outcomeNote: 'Classified: MFA lockout — device swap. Bypass code required. Identity verification queued.' },
+  { id: 's2', type: 'agent', label: 'Verify identity & issue bypass', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 3, 8:51am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Identity verified via employee directory cross-check. One-time bypass code generated and sent. Valid 15 minutes.',
+    animSteps: ['Cross-checking employee directory...', 'Identity confirmed: Patrick Tuckey ✓', 'Generating one-time bypass code...', 'Code 847-291 sent securely', 'Timer: 15 minutes'] },
+  { id: 's3', type: 'linked', label: 'User re-enrolls MFA', team: 'User self-service', status: 'completed', completedAt: 'Feb 3, 9:04am',
+    outcomeNote: 'User enrolled Okta Verify on new iPhone using bypass code. New device registered.',
+    linkedTicket: { id: 'ACTION-001', name: 'Re-enroll Okta Verify on iPhone', status: 'Resolved' } },
+  { id: 's4', type: 'agent', label: 'Confirm & close', team: 'Communications Agent', status: 'completed', completedAt: 'Feb 3, 9:10am',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'User confirmed full access restored. Ticket closed. Flagged: IT should pre-enroll MFA before device handoffs.',
+    animSteps: ['Confirming user access restored...', 'All apps accessible ✓', 'Sending resolution message...', 'Ticket closed'] },
+];
+
+const S_DEVICE_REPL_MFA_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 25, 11:08am',
+    outcomeNote: 'Classified: MFA lockout — new device handoff. New MacBook received; Okta factors need reset. Routing to Provisioning Agent.' },
+  { id: 's2', type: 'agent', label: 'Reset Okta MFA factors', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 25, 11:17am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'All existing Okta factors reset for sarah.smith@acmecorp.com. Re-enrollment prompt will appear on next login.',
+    animSteps: ['Accessing Okta Admin console...', 'Locating sarah.smith@acmecorp.com...', 'Resetting all MFA factors...', 'Re-enrollment prompt activated ✓'] },
+  { id: 's3', type: 'linked', label: 'User re-enrolls MFA', team: 'User self-service', status: 'completed', completedAt: 'Feb 25, 11:28am',
+    outcomeNote: 'User set up Okta Verify on phone. All apps accessible.',
+    linkedTicket: { id: 'ACTION-002', name: 'Re-enroll Okta Verify on new device', status: 'Resolved' } },
+  { id: 's4', type: 'agent', label: 'Confirm & close', team: 'Communications Agent', status: 'completed', completedAt: 'Feb 25, 11:35am',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'Access confirmed. Ticket closed. Process note: IT should proactively reset MFA before device handoffs.',
+    animSteps: ['Verifying access restored...', 'All apps accessible ✓', 'Sending closure note...', 'Ticket closed'] },
+];
+
+const S_LOST_LAPTOP_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & critical alert', team: 'IT Bot', status: 'completed', completedAt: 'Feb 12, 8:55am',
+    outcomeNote: 'Device loss reported. Critical priority set. Remote lock initiated immediately via Jamf. FileVault encryption confirmed by user.' },
+  { id: 's2', type: 'agent', label: 'Remote lock & wipe timer', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 12, 9:08am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'MDM remote lock sent to MBP-4421 — confirmed received. Wipe scheduled for Feb 13, 9am (24h window). User notified of timeline.',
+    animSteps: ['Sending Jamf remote lock command...', 'Lock confirmed on MBP-4421 ✓', 'FileVault: encryption active ✓', 'Wipe timer set: Feb 13, 9:00am', 'Caltrain lost & found flagged'] },
+  { id: 's3', type: 'agent', label: 'Provision replacement device', team: 'Steve Smith', status: 'active',
+    body: 'Pull loaner MacBook from spare pool, enroll in MDM, and stage with corporate apps. Notify Patrick when ready for pickup.' },
+  { id: 's4', type: 'agent', label: 'Recovery decision window', team: 'IT Agent', status: 'pending',
+    body: 'If device recovered before Feb 13 9am: cancel wipe, verify device integrity, return to user. If not recovered: confirm remote wipe executed.' },
+  { id: 's5', type: 'agent', label: 'Notify & resolve', team: 'Communications Agent', status: 'pending',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    animSteps: ['Confirming final device status...', 'Sending resolution summary...', 'Ticket closed'] },
+];
+
+const S_M365_LICENSE_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 24, 7:15am',
+    outcomeNote: 'Classified: Software Access — M365 licence tier mismatch post department transfer. Marketing E1 vs Finance E3. Assigned to Steve Smith.' },
+  { id: 's2', type: 'agent', label: 'Investigate licence mismatch', team: 'Steve Smith', status: 'completed', completedAt: '1 hour ago',
+    outcomeNote: 'Confirmed: Jordan Park on M365 E1 (Marketing template). Finance role requires E3 (Power BI, advanced Excel). HR system still shows transfer as pending — sign-off required before licence upgrade.' },
+  { id: 's3', type: 'linked', label: 'HR: confirm department transfer', team: 'HR', status: 'active',
+    linkedTicket: { id: 'HR-118', name: 'Confirm department transfer: Jordan Park (Marketing → Finance)', status: 'Open' } },
+  { id: 's4', type: 'agent', label: 'Apply E3 licence upgrade', team: 'AI Provisioning Agent', status: 'pending',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    animSteps: ['Connecting to Microsoft 365 Admin...', 'Removing E1 licence from j.park@acmecorp.com...', 'Assigning E3 licence...', 'Provisioning Power BI & advanced features...', 'E3 licence active ✓'],
+    body: 'Once HR confirms transfer, apply E3 licence to Jordan Park automatically. Remove E1, add E3, verify Power BI and Excel add-in access.' },
+  { id: 's5', type: 'agent', label: 'Notify & resolve', team: 'Communications Agent', status: 'pending',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    animSteps: ['Sending licence upgrade confirmation...', 'Power BI access instructions included', 'Ticket resolved'] },
+];
+
+const S_SFDC_LICENSE_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & triage', team: 'IT Agent', status: 'completed', completedAt: 'Feb 22, 9:08am',
+    outcomeNote: 'Classified: Software Access — Salesforce Professional Edition. Deadline: 3pm today (board presentation). Assigned Critical. Steve Smith assigned.' },
+  { id: 's2', type: 'agent', label: 'Verify manager approval', team: 'IT Agent', status: 'completed', completedAt: 'Feb 22, 10:00am',
+    outcomeNote: 'Verbal approval confirmed from Jen Williams. Recorded in ticket. Proceeding to licence availability check.' },
+  { id: 's3', type: 'agent', label: 'Check licence inventory', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 22, 10:30am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: '2 unused Professional Edition licences available (reclaimed from inactive accounts). Cost centre: RevOps. Finance confirmed reassignment.',
+    animSteps: ['Querying Salesforce licence pool...', 'Checking inactive/reclaimed seats...', '2 Professional licences available ✓', 'Finance confirmation: RevOps budget ✓'] },
+  { id: 's4', type: 'agent', label: 'Provision Salesforce access', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 22, 12:45pm',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Professional Edition licence assigned to m.ludington@acmecorp.com. Full reporting suite, dashboards, and RevOps profile active. Access confirmed within 15 minutes.',
+    animSteps: ['Assigning Professional licence to m.ludington...', 'Configuring RevOps profile...', 'Enabling pipeline reports & dashboards...', 'Access live — confirmed ✓'] },
+  { id: 's5', type: 'agent', label: 'Notify & resolve', team: 'Communications Agent', status: 'active',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    animSteps: ['Drafting access confirmation...', 'Attaching Quick Start guide for Salesforce...', 'Sending to Martin Ludington...', 'Delivered ✓', 'Ticket resolved'] },
+];
+
+const S_SALESFORCE_TRANSFER_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & task distribution', team: 'IT Agent', status: 'completed', completedAt: '7 min ago',
+    outcomeNote: 'Classified: Access Management — Salesforce role update following department transfer. HR employment verification task created. Manager approval request sent.' },
+  { id: 's2', type: 'linked', label: 'HR employment verification', team: 'HR', status: 'active',
+    linkedTicket: { id: 'HR-112', name: 'Confirm department transfer: Sarah Lee (Marketing → Finance)', status: 'Open' } },
+  { id: 's3', type: 'agent', label: 'Provision updated access', team: 'AI Provisioning Agent', status: 'pending',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    animSteps: ['Connecting to Salesforce Admin...', 'Removing Marketing role template...', 'Applying Finance pipeline profile...', 'Enabling revenue reports & forecasting...', 'Role update complete ✓'],
+    body: 'Update Sarah Lee\'s Salesforce profile to Finance role template: pipeline reports, revenue forecasting, and deal stage access.' },
+  { id: 's4', type: 'agent', label: 'Notify & resolve', team: 'Communications Agent', status: 'pending',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    animSteps: ['Drafting access confirmation...', 'Sending to Sarah Lee...', 'Ticket resolved'] },
+];
+
+const S_PAYROLL_ACTIVE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'just now',
+    outcomeNote: 'Classified: Payroll discrepancy — overtime pay missing. Flagged urgent due to rent deadline. Routing to HR.' },
+  { id: 's2', type: 'linked', label: 'HR: review overtime records', team: 'HR', status: 'active',
+    linkedTicket: { id: 'HR-119', name: 'Payroll discrepancy — overtime pay: Anjelica Silva', status: 'Open' } },
+  { id: 's3', type: 'agent', label: 'Payroll correction', team: 'Payroll', status: 'pending',
+    body: 'Once HR confirms overtime hours in Workday, Payroll team to issue correction payment. Off-cycle payment may be required given urgency.' },
+  { id: 's4', type: 'agent', label: 'Confirm & close', team: 'Communications Agent', status: 'pending',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    animSteps: ['Confirming payment issued...', 'Sending confirmation to Anjelica...', 'Ticket resolved'] },
+];
+
+const S_JIRA_ACCESS_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 6, 9:50am',
+    outcomeNote: 'Classified: Software Access — Jira project permissions. Note: Jira project access is self-serve (in-app request), not IT-managed. Guiding user to self-service flow.' },
+  { id: 's2', type: 'agent', label: 'Guide to self-service', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 6, 10:05am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'User directed to in-app "Request access" button on PLAN-Q1-2026. Project admin (Jordan Park) approved within 2 minutes.',
+    animSteps: ['Checking Jira project type: PLAN-Q1-2026...', 'Access model: self-serve (project admin)', 'Composing guided response...', 'Instructions sent to user'] },
+  { id: 's3', type: 'agent', label: 'Confirm & auto-close', team: 'IT Bot', status: 'completed', completedAt: 'Feb 6, 10:12am',
+    outcomeNote: 'User confirmed access granted. Ticket closed. Note: Jira, Figma, and Notion are self-serve — IT doesn\'t manage individual project permissions.',
+    animSteps: ['User confirmed access ✓', 'Ticket auto-closed'] },
+];
+
+const S_FIGMA_INSTALL_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Jan 28, 2:10pm',
+    outcomeNote: 'Classified: Software install — Figma desktop app. User already has seat (provisioned via Okta). Install blocked because web .dmg used instead of Managed Software Center. Routing to Delivery Agent.' },
+  { id: 's2', type: 'agent', label: 'Push via Managed Software Center', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Jan 28, 2:22pm',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Figma located in Managed Software Center. User guided to install. No admin rights or MDM push needed — self-service install confirmed.',
+    animSteps: ['Checking Managed Software Center catalog...', 'Figma v116: ✓ Available', 'Seat pre-provisioned via Okta ✓', 'Guiding user to MSC install...', 'Install confirmed ✓'] },
+  { id: 's3', type: 'agent', label: 'Confirm & auto-close', team: 'Communications Agent', status: 'completed', completedAt: 'Jan 28, 2:30pm',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'User confirmed Figma installed and team workspace visible. Ticket auto-closed.',
+    animSteps: ['User confirmed install ✓', 'Workspace accessible ✓', 'Ticket auto-closed'] },
+];
+
+const S_NODE_INSTALL_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Jan 25, 10:20am',
+    outcomeNote: 'Classified: Software install — Node.js + nvm. Install blocked (standard security policy). Approved software, no admin rights needed via Managed Software Center.' },
+  { id: 's2', type: 'agent', label: 'Verify & deploy', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Jan 25, 10:35am',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Node.js v20 LTS and nvm confirmed in Managed Software Center. User guided to self-install. Alternatively, Homebrew install verified as compatible (user directory, no admin needed).',
+    animSteps: ['Checking MSC catalog for Node.js...', 'Node.js v20 LTS: ✓ Available', 'nvm: ✓ Available', 'Homebrew path: ✓ Compatible', 'Sending install guide to user'] },
+  { id: 's3', type: 'agent', label: 'Confirm & auto-close', team: 'Communications Agent', status: 'completed', completedAt: 'Jan 25, 10:44am',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'User confirmed Node.js installed via MSC. Noted they had no idea MSC existed — using personal laptop for dev. Flagged for KB.',
+    animSteps: ['User confirmed install ✓', 'Ticket auto-closed'] },
+];
+
+const S_VPN_DONE = [
+  { id: 's1', type: 'agent', label: 'Intake & classify', team: 'IT Bot', status: 'completed', completedAt: 'Feb 2, 2:05pm',
+    outcomeNote: 'Classified: Network — VPN dropping on AWS resource access. Full-tunnel config issue causing NAT timeout on AWS us-east-1. Split-tunnel required.' },
+  { id: 's2', type: 'agent', label: 'Diagnose VPN config', team: 'Martin Lud…', status: 'completed', completedAt: 'Feb 2, 2:41pm',
+    outcomeNote: 'Confirmed: AnyConnect 4.10 full-tunnel routing all traffic through corporate gateway, causing AWS NAT timeouts. Split-tunnel profile (aws-split-v2) is the fix.' },
+  { id: 's3', type: 'agent', label: 'Push split-tunnel profile', team: 'AI Provisioning Agent', status: 'completed', completedAt: 'Feb 2, 2:55pm',
+    assignee: { type: 'ai', name: 'AI Provisioning Agent' },
+    outcomeNote: 'Split-tunnel profile aws-split-v2 pushed via Cisco ISE. AWS subnets and *.amazonaws.com now bypass VPN. User confirmed stable.',
+    animSteps: ['Connecting to Cisco ISE...', 'Preparing aws-split-v2 profile...', 'Pushing profile to a.lee@acmecorp.com...', 'Profile active: AWS traffic bypasses VPN ✓', 'Verifying connectivity...'] },
+  { id: 's4', type: 'agent', label: 'Confirm & close', team: 'Communications Agent', status: 'completed', completedAt: 'Feb 2, 3:05pm',
+    assignee: { type: 'ai', name: 'Communications Agent' },
+    outcomeNote: 'User confirmed AWS connections stable. Ticket closed. KB article flagged for split-tunnel documentation.',
+    animSteps: ['Confirming AWS stability ✓', 'Sending resolution + docs...', 'Ticket closed'] },
+];
+
 export const TICKETS = [
   { id: 'TICKET-101', date: 'Mar 1, 2026', name: 'New vendor onboarding: Acme Corp', hasImage: false, priority: 'Medium', status: 'Open', updated: 'today', sla: '2d', slaType: 'normal', assignee: null, requester: { name: 'Jordan Kim', initials: 'JK', bg: '5a8f6b', fg: 'ffffff' }, team: 'IT Ops', category: 'Vendor Management', aiTag: 'AI Classified · 97%', steps: S_ACCESS_ACTIVE,
     initPublic: [
@@ -85,8 +283,36 @@ export const TICKETS = [
     initTranscript: [],
   },
   {
+    // ── AI DEFLECTION EXAMPLE ─────────────────────────────────────────────────
+    // TICKET-55 (Feb 9): same question reached an agent → manually resolved → KB article created
+    // TICKET-96 (Mar 2): identical question → bot matches KB article at 96% → deflects automatically
+    id: 'TICKET-96', date: 'Mar 2, 2026', name: 'How do I record my screen on Mac?', hasImage: false,
+    priority: 'Low', status: 'AI Deflected', updated: 'yesterday', sla: '—', slaType: 'normal',
+    assignee: null, requester: { name: 'Marco Rivera', initials: 'MR', bg: '3d7abf', fg: 'ffffff' },
+    team: 'Service Desk', category: 'How-to', aiTag: 'AI Deflected · KB match 96%',
+    aiDeflected: true, deflectionArticleId: 'KB-SCR-001',
+    steps: [
+      { id: 's1', type: 'agent', label: 'Intake & triage', team: 'IT Bot', status: 'completed', completedAt: 'Mar 2, 10:14am', outcomeNote: 'Matched KB article "Screen Recording on Mac — Quick Guide" (KB-SCR-001). Deflection confidence: 96%.' },
+      { id: 's2', type: 'agent', label: 'KB deflection', team: 'IT Bot', status: 'completed', completedAt: 'Mar 2, 10:17am', outcomeNote: 'User confirmed issue resolved via KB article. Ticket auto-closed. No agent intervention.' },
+    ],
+    initTranscript: [
+      { type: 'outbound', isAi: true, text: "Hi! I'm the Asana IT Bot. How can I help you today?", senderLabel: 'IT Bot', time: 'Mar 2, 10:14am' },
+      { type: 'inbound', text: "Hi — I need to record my screen on a Mac so I can share a demo with my team. Can't figure out where the option is.", name: 'Marco Rivera', time: 'Mar 2, 10:15am', bg: '3d7abf', fg: 'ffffff', initials: 'MR' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Bot', time: 'Mar 2, 10:15am', text: "Happy to help! Here's how to record your screen on Mac:\n\n1. Press **Command-Shift-5** — a toolbar appears at the bottom of your screen\n2. Choose **'Record Entire Screen'** or **'Record Selected Portion'**\n3. Click **Record** to start — a ■ stop button appears in the menu bar\n4. Click the ■ to stop — the recording saves to your Desktop as a .mov file\n\n**Tip**: Under Options in the toolbar, you can include or exclude your microphone audio — handy if you want to narrate as you go.\n\nAlternatively: QuickTime Player → File → New Screen Recording gives you extra controls.\n\nDoes that help?" },
+      { type: 'inbound', text: "Perfect — Command-Shift-5 worked immediately. Thanks, that was quick!", name: 'Marco Rivera', time: 'Mar 2, 10:17am', bg: '3d7abf', fg: 'ffffff', initials: 'MR' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Bot', time: 'Mar 2, 10:17am', text: "Great! I'll go ahead and close this. If you need anything else, just open a new request." },
+      { type: 'system', text: 'Ticket auto-closed by IT Bot — resolved via KB article "Screen Recording on Mac"' },
+    ],
+    initPublic: [],
+    initInternal: [
+      { type: 'system', text: 'Auto-closed — AI deflected via KB article "Screen Recording on Mac" (KB-SCR-001). Deflection confidence: 96%. No agent intervention required. Resolution time: 3 minutes.' },
+      { type: 'inbound', name: 'Steve Smith', time: 'Mar 2, 10:30am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "This is exactly the deflection we were waiting for. TICKET-55 (Feb 9) was the same question — I answered it manually and flagged it for KB. Once the article went live, the next identical request deflected automatically with zero agent time. The learning loop worked." },
+    ],
+  },
+  {
     id: 'TICKET-95',
     name: 'Salesforce Access Update — Department Transfer (Sarah Lee)',
+
     status: 'In Progress',
     priority: 'Critical',
     category: 'Access Management',
@@ -109,34 +335,7 @@ export const TICKETS = [
     ],
     initInternal: [],
     initTranscript: [],
-    steps: [
-      {
-        id: 's1', type: 'agent',
-        label: 'Intake & Task Distribution', team: 'IT Agent',
-        status: 'completed',
-        completedAt: '7 min ago',
-        outcomeNote: 'Classified as Access Management → Salesforce role update following department transfer. HR employment verification task created.',
-      },
-      {
-        id: 's2', type: 'linked',
-        label: 'HR Employment Verification', team: 'HR',
-        status: 'active',
-        linkedTicket: { id: 'HR-112', name: 'Confirm department transfer: Sarah Lee (Marketing → Finance)', status: 'Open' },
-      },
-      {
-        id: 's4', type: 'agent',
-        label: 'Provision Updated Access', team: 'AI Provisioning Agent',
-        status: 'pending',
-        assignee: { type: 'ai', name: 'AI Provisioning Agent' },
-        body: "AI agent updating Sarah's Salesforce profile to Finance role template with pipeline and revenue report permissions.",
-      },
-      {
-        id: 's5', type: 'agent',
-        label: 'Notify & Resolve', team: 'Communications Agent',
-        status: 'pending',
-        assignee: { type: 'ai', name: 'Communications Agent' },
-      },
-    ],
+    steps: S_SALESFORCE_TRANSFER_ACTIVE,
   },
   {
     id: 'TICKET-69', date: 'Feb 24, 2026', name: 'Wrong Microsoft 365 License After Department Transfer',
@@ -144,13 +343,7 @@ export const TICKETS = [
     sla: '1d', slaType: 'normal', assignee: PEOPLE.steve, requester: PEOPLE.jordan,
     submitter: { name: 'Jordan Park', email: 'j.park@acme.com', location: 'Austin', org: 'Finance', deviceId: 'MBP-7821' },
     category: 'Software Access',
-    steps: [
-      { id: 's1', type: 'agent',  label: 'Intake & triage',              team: 'IT Bot',    status: 'completed', completedAt: 'Feb 24, 7:15am', outcomeNote: 'Classified as Software Access — M365 licence tier mismatch post-department transfer. Assigned to Steve Smith.' },
-      { id: 's2', type: 'agent',  label: 'Investigate licence mismatch', team: 'Steve Smith', status: 'completed', completedAt: '1 hour ago', outcomeNote: 'Confirmed E1 vs E3 mismatch. Root cause: identity sync applied Marketing template. HR confirmation required before upgrade.' },
-      { id: 's3', type: 'linked', label: 'HR: confirm department transfer', team: 'HR',       status: 'active',    linkedTicket: { id: 'HR-118', name: 'Confirm department transfer: Jordan Park (Marketing → Finance)', status: 'Open' } },
-      { id: 's4', type: 'agent',  label: 'Apply E3 licence upgrade',     team: 'AI Provisioning Agent', status: 'pending', assignee: { type: 'ai', name: 'AI Provisioning Agent' } },
-      { id: 's5', type: 'agent',  label: 'Notify & resolve',             team: 'Communications Agent',  status: 'pending', assignee: { type: 'ai', name: 'Communications Agent' } },
-    ],
+    steps: S_M365_LICENSE_ACTIVE,
     aiSummary: 'Jordan Park recently transferred from Marketing to Finance but their Microsoft 365 license was auto-downgraded from E3 to E1 by the identity management sync. They are blocked from Power BI and advanced Excel features required for Finance reporting. IT can apply the license correction but needs HR to formally confirm the department transfer before authorising the E3 tier upgrade.',
     initTranscript: [
       { type: 'outbound', isAi: true, text: "Hi Jordan! I'm the Asana IT Bot. How can I help you today?", senderLabel: 'IT Bot', time: 'Feb 24, 7:12am' },
@@ -177,13 +370,20 @@ export const TICKETS = [
     sla: '2d', slaType: 'normal', assignee: null, requester: PEOPLE.anj,
     submitter: { name: 'Anjelica Silva', email: 'a.silva@acme.com', location: 'San Francisco', org: 'Operations', deviceId: null },
     category: 'Payroll',
-    steps: [
-      { id: 's1', type: 'agent',  label: 'Intake & triage',         team: 'IT Bot',   status: 'completed', completedAt: 'just now', outcomeNote: 'Classified as Payroll discrepancy. Routing to HR team.' },
-      { id: 's2', type: 'linked', label: 'HR: review overtime hours', team: 'HR',       status: 'active',    linkedTicket: { id: 'HR-119', name: 'Payroll discrepancy — overtime pay missing: Anjelica Silva', status: 'Open' } },
-      { id: 's3', type: 'agent',  label: 'Payroll correction',       team: 'Payroll',  status: 'pending' },
-      { id: 's4', type: 'agent',  label: 'Confirm & close',          team: 'IT Agent', status: 'pending' },
-    ],
+    steps: S_PAYROLL_ACTIVE,
     aiSummary: 'Anjelica Silva from Operations has reported a payroll discrepancy — approximately $340 in overtime pay is missing from last week\'s paycheck. She has flagged this as urgent due to an upcoming rent payment and followed up once already without a response.',
+    initTranscript: [
+      { type: 'outbound', isAi: true, text: "Hi! I'm the Asana IT Bot. How can I help you today?", senderLabel: 'IT Bot', time: 'just now' },
+      { type: 'inbound', text: "Hi — I got paid today and I'm missing about $340 in overtime. I worked 12 extra hours over the last 2 weeks and the payout is way off. I have rent coming out tomorrow.", name: 'Anjelica Silva', time: 'just now', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+      { type: 'outbound', isAi: true, text: "I'm sorry to hear that — a payroll discrepancy with a bill due is stressful. I've logged this as TICKET-68 and flagged it as urgent for the HR team. They'll investigate the overtime records and get back to you within 24 hours. Is there anything else I can note for them — such as which dates the overtime was worked?", senderLabel: 'IT Bot', time: 'just now' },
+      { type: 'inbound', text: "It was Feb 10-14 and Feb 17-18 — 7 hours one week and 5 the next. My manager (Jordan Park) approved both. I emailed HR about this 2 days ago and didn't hear back.", name: 'Anjelica Silva', time: 'just now', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+      { type: 'outbound', isAi: true, text: "Got it — I've added the dates and manager name to the ticket and flagged that you've already reached out without a response. That escalates the priority. The HR team will have this in their queue as urgent.", senderLabel: 'IT Bot', time: 'just now' },
+    ],
+    initPublic: [
+      { type: 'inbound', text: "Hi — I'm missing about $340 in overtime from this week's paycheck. I worked 12 hours of OT over Feb 10-14 and Feb 17-18 — my manager Jordan Park approved both. The payout doesn't match. I have rent due tomorrow and I already emailed HR 2 days ago with no response.", name: 'Anjelica Silva', time: 'just now', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+      { type: 'outbound', isAi: true, senderLabel: 'HR Agent', time: 'just now', text: "Hi Anjelica, I've flagged this as urgent and the HR team is looking into it now. Can you confirm your overtime was entered in Workday by your manager? Sometimes approved OT doesn't get logged in the payroll system if the manager approved verbally but didn't update the timekeeping entry." },
+    ],
+    initInternal: [],
   },
   { id: 'TICKET-67', date: 'Feb 23, 2026', name: 'Help Updating MacBook to Latest macOS',            hasImage: false, priority: 'Low',      status: 'Not started',   updated: '5 mins ago',  sla: '4d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.pat,    steps: S_GENERAL_NOTSTARTED,
     initPublic: [
@@ -202,44 +402,7 @@ export const TICKETS = [
     sla: '15m', slaType: 'warning', assignee: PEOPLE.steve, requester: PEOPLE.martin,
     submitter: { name: 'Martin Ludington', email: 'm.ludington@acme.com', location: 'New York', org: 'RevOps', deviceId: 'SFX-3302' },
     category: 'Software Access',
-    steps: [
-      {
-        id: 's1', type: 'agent',
-        label: 'Intake & Triage', team: 'IT Agent',
-        status: 'completed',
-        completedAt: 'Feb 22, 9:08am',
-        outcomeNote: 'Classified as Software Access — Salesforce Professional Edition request. Escalated Critical, assigned to Steve Smith.',
-      },
-      {
-        id: 's2', type: 'agent',
-        label: 'Verify Manager Approval', team: 'IT Agent',
-        status: 'completed',
-        completedAt: 'Feb 22, 10:00am',
-        outcomeNote: "Martin confirmed Jen Williams approved the license last week. Verbal approval recorded.",
-      },
-      {
-        id: 's3', type: 'agent',
-        label: 'Check License Availability', team: 'Finance Agent',
-        status: 'completed',
-        completedAt: 'Feb 22, 10:30am',
-        outcomeNote: 'Finance confirmed 2 unused Professional Edition licenses available for reassignment.',
-      },
-      {
-        id: 's4', type: 'agent',
-        label: 'Provision Salesforce Access', team: 'AI Provisioning Agent',
-        status: 'completed',
-        completedAt: 'Feb 22, 12:45pm',
-        assignee: { type: 'ai', name: 'AI Provisioning Agent' },
-        outcomeNote: "Professional Edition license assigned to Martin Ludington's account. Access active within 15 minutes.",
-      },
-      {
-        id: 's5', type: 'agent',
-        label: 'Notify & Resolve', team: 'Communications Agent',
-        status: 'active',
-        assignee: { type: 'ai', name: 'Communications Agent' },
-        body: "Send Martin access confirmation and close TICKET-66.",
-      },
-    ],
+    steps: S_SFDC_LICENSE_ACTIVE,
     aiSummary: 'Martin Ludington from RevOps has submitted an urgent request for Salesforce Professional Edition access. He requires full reporting capabilities to prepare Q1 pipeline analysis for a board presentation scheduled for today at 3pm.',
     initTranscript: [
       { type: 'outbound', isAi: true,  text: "Hi Martin! I'm the Asana IT Bot. How can I help you today?", senderLabel: 'IT Bot', time: 'Feb 22, 9:04am' },
@@ -279,7 +442,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Ang Lee', time: 'Feb 20, 10:15am', bg: 'a08060', fg: 'ffffff', initials: 'AL', text: "This is the 2nd WiFi ticket this week with the same client/network auth pattern (TICKET-63 was macOS, this is iOS). We have no troubleshooting guide for WiFi connectivity — agents are diagnosing from scratch each time. Need a KB article with: basic checks, device vs network diagnosis, certificate/VPN profile issues by OS version, escalation path. Flagging for KB draft alongside TICKET-63." },
     ],
   },
-  { id: 'TICKET-64', date: 'Feb 19, 2026', name: 'Request View Access to Figma and FigJam',           hasImage: false, priority: 'Low',      status: 'Not started',   updated: '4 days ago',  sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_ACCESS_ACTIVE,
+  { id: 'TICKET-64', date: 'Feb 19, 2026', name: 'Request View Access to Figma and FigJam',           hasImage: false, priority: 'Low',      status: 'Not started',   updated: '4 days ago',  sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_FIGMA_ACCESS_DONE,
     initPublic: [
       { type: 'inbound', text: "Hi — the design team shared a Figma file with me but when I click the link it says I need to request access. I'm a PM and just need view-only access to review mockups, not edit. I tried logging in with my work Google account but it won't let me in.", name: 'Anjelica Silva', time: 'Feb 19, 11:05am', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 19, 11:22am', text: "Hi Anjelica, Figma access is provisioned through Okta — you should have been added when you joined, but viewer seats occasionally fall through during onboarding.\n\nI can see your account isn't in our Figma org yet. I'm adding you now as a viewer. You should get an email invite within 5 minutes to join the Acme Corp Figma workspace — accept it with your work Google account and you'll have view access to all shared files." },
@@ -303,7 +466,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Martin Lud…', time: 'Feb 18, 11:10am', bg: '7a9abf', fg: 'ffffff', initials: 'ML', text: "Flagging for KB: we have no documented troubleshooting guide for WiFi connectivity issues. Every time this comes up agents are re-diagnosing from scratch. Need a systematic guide: check device vs network, common causes by OS version, Zscaler conflict patterns, escalation path. This is the 4th WiFi ticket in 2 weeks." },
     ],
   },
-  { id: 'TICKET-62', date: 'Feb 12, 2026', name: 'Report Lost Laptop for Patrick Tuckey',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '11 days ago', sla: '−5d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.pat,    steps: S_HARDWARE_ACTIVE,
+  { id: 'TICKET-62', date: 'Feb 12, 2026', name: 'Report Lost Laptop for Patrick Tuckey',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '11 days ago', sla: '−5d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.pat,    steps: S_LOST_LAPTOP_ACTIVE,
     initPublic: [
       { type: 'inbound', text: "Hi — I left my MacBook Pro on the train this morning (Feb 12, Caltrain 7:42am San Francisco → San Jose). It has the company MDM profile installed. I need to report it lost and get a replacement as soon as possible.", name: 'Patrick Tuckey', time: 'Feb 12, 8:55am', bg: '8b7ab5', fg: 'ffffff', initials: 'PT' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 12, 9:08am', text: "Hi Patrick, I've flagged this as urgent. Here's what we're doing right now:\n\n1. Remote lock initiated — your device is now locked via MDM. Any user will see a lock screen with your IT contact number.\n2. Remote wipe scheduled — will trigger automatically in 24 hours if the device isn't recovered. We can cancel this if you find it.\n3. Replacement laptop — I've submitted a request from our spare pool. You'll have a loaner by end of day.\n\nCan you confirm: was FileVault disk encryption enabled? (You'd have set this up during onboarding.)" },
@@ -315,8 +478,28 @@ export const TICKETS = [
       { type: 'inbound', name: 'Steve Smith', time: 'Feb 12, 11:30am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Loaner ready for pickup. This is the 3rd lost/stolen device this quarter. Our KB has nothing on the lost device procedure — users don't know about the 24h wipe window, FileVault, or how to handle Caltrain/transit lost and found. We should document the full process: reporting steps, what IT does, the wipe timeline, and what the user needs to do to get back up and running. Flagging for KB draft." },
     ],
   },
-  { id: 'TICKET-61', date: 'Feb 12, 2026', name: 'Help Migrating Files From Dropbox to Google Drive', hasImage: false, priority: 'Medium',   status: 'Not started',   updated: '11 days ago', sla: '1d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.ang,    steps: S_GENERAL_NOTSTARTED  },
-  { id: 'TICKET-60', date: 'Feb 12, 2026', name: 'Phone Unable to Connect to Office WiFi',            hasImage: false, priority: 'Medium',   status: 'On hold',       updated: '11 days ago', sla: '6h',   slaType: 'warning', assignee: PEOPLE.ang,    requester: PEOPLE.sarah,  steps: S_GENERAL_ONHOLD      },
+  { id: 'TICKET-61', date: 'Feb 12, 2026', name: 'Help migrating files from Dropbox to Google Drive', hasImage: false, priority: 'Medium', status: 'Not started', updated: '11 days ago', sla: '1d', slaType: 'normal', assignee: null, requester: PEOPLE.ang, category: 'Software Access', steps: S_GENERAL_NOTSTARTED,
+    initPublic: [
+      { type: 'inbound', text: "Hi — I know the company is migrating from Dropbox to Google Drive this month. I have about 18GB of files in Dropbox that I need to bring over. Is there a bulk migration tool, or do I need to do this manually? My manager mentioned IT has a process.", name: 'Ang Lee', time: 'Feb 12, 11:30am', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 12, 11:52am', text: "Hi Ang — yes, we have a managed migration process. Here's how it works:\n\n**Option 1 — IT-managed bulk transfer (recommended for >5GB):**\n1. Reply with your Dropbox email and your Google Workspace email\n2. IT connects your Dropbox account to the Google Drive Migration tool\n3. We kick off a bulk copy — all your files land in a 'Dropbox Migration' folder in your Google Drive\n4. You review and reorganise from there. Originals stay in Dropbox until you confirm and IT decommissions your account.\n\n**Option 2 — Self-service (small folders):**\nDownload from Dropbox, upload to Google Drive manually. Fine for <2GB.\n\nFor 18GB I'd recommend Option 1. Can you reply with your Dropbox email and I'll set it up?" },
+      { type: 'inbound', text: "Great — Dropbox email is ang.lee@acmecorp.com, Google is ang.lee@acmecorp.com (same!). Go ahead with the bulk migration. Is there anything I need to do on my end to prepare?", name: 'Ang Lee', time: 'Feb 12, 12:05pm', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 12, 12:15pm', text: "Nothing needed from you — I'll initiate the transfer. It typically takes 2–4 hours for 18GB. You'll get a Google Drive notification once it's complete. One heads-up: shared Dropbox folders will transfer as copies (not shared), so you'll need to re-share with colleagues from Google Drive if needed. I'll flag the ticket when the transfer finishes." },
+    ],
+    initInternal: [],
+    initTranscript: [],
+  },
+  { id: 'TICKET-60', date: 'Feb 12, 2026', name: 'Phone Unable to Connect to Office WiFi', hasImage: false, priority: 'Medium', status: 'On hold', updated: '11 days ago', sla: '6h', slaType: 'warning', assignee: PEOPLE.ang, requester: PEOPLE.sarah, category: 'Network', steps: S_GENERAL_ONHOLD,
+    initPublic: [
+      { type: 'inbound', text: "My iPhone won't connect to the Vancouver office WiFi. The network shows up, I enter the password, it spins for a few seconds and says 'Unable to join the network'. My laptop connects fine from the same seat.", name: 'Sarah Smith', time: 'Feb 12, 8:45am', bg: 'd4938a', fg: 'ffffff', initials: 'SS' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 12, 9:02am', text: "Hi Sarah — a few quick steps to try first:\n1. Settings → WiFi → tap (i) next to the network → Forget This Network, then try joining again\n2. Toggle Airplane mode on for 10 seconds, then off\n3. Settings → WiFi → tap (i) next to the network → turn off Private WiFi Address\n\nAlso — are you trying the AcmeCorp-Employee network or the Guest network? They use different credentials." },
+      { type: 'inbound', text: "Tried all three, still failing. It's the AcmeCorp-Employee network. My laptop connects to it right now.", name: 'Sarah Smith', time: 'Feb 12, 9:15am', bg: 'd4938a', fg: 'ffffff', initials: 'SS' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 12, 9:55am', text: "Thanks — the laptop/phone split tells us this is device-level, not the network. Our AcmeCorp-Employee network uses 802.1X certificate auth and iOS needs the correct MDM profile for it. I'm putting this on hold while the network team investigates an issue that may be affecting multiple devices in Vancouver. I'll update you as soon as we have a fix." },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Ang Lee', time: 'Feb 12, 9:45am', bg: 'a08060', fg: 'ffffff', initials: 'AL', text: "802.1X cert issue on iOS — looks related to TICKET-63 (macOS/Zscaler). Both Vancouver office, both certificate/auth layer. Investigating whether the Zscaler profile push is interfering with the WiFi cert on iOS too. Putting both tickets on hold while we sort out the root cause." },
+    ],
+    initTranscript: [],
+  },
   { id: 'TICKET-58', date: 'Feb 10, 2026', name: 'Will My Parental Leave Affect My Bonus Calculation?', hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '13 days ago', sla: '−1d',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.martin, steps: S_GENERAL_DONE,
     initPublic: [
       { type: 'inbound',  text: "Hi — I'm planning to take 3 months of parental leave starting in May and I'm worried about how it affects my annual bonus. Our bonuses are based on performance ratings and I don't know if leave months count against me or are excluded from the calculation.", name: 'Martin Ludington', time: 'Feb 10, 11:15am', bg: '7a9abf', fg: 'ffffff', initials: 'ML' },
@@ -328,11 +511,54 @@ export const TICKETS = [
       { type: 'inbound', name: 'Steve Smith', time: 'Feb 10, 11:55am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Resolved. 2nd parental leave + performance/bonus question this month (TICKET-68 was the other). HR KB has no article covering the leave → performance impact. Every time it comes up we're answering from scratch. Flagging for KB draft alongside TICKET-68." },
     ],
   },
-  { id: 'TICKET-57', date: 'Feb 10, 2026', name: 'Request for Tool to Test Tickets',                  hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '13 days ago', sla: '−1d',  slaType: 'overdue', assignee: PEOPLE.sarah,  requester: PEOPLE.ang,    steps: S_GENERAL_DONE        },
-  { id: 'TICKET-56', date: 'Feb 9, 2026',  name: 'Zoom Not Working for Anjelica Silva',               hasImage: false, priority: 'Medium',   status: 'Closed',        updated: '14 days ago', sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_HARDWARE_DONE       },
-  { id: 'TICKET-55', date: 'Feb 9, 2026',  name: 'How to record screen on Mac',                       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '14 days ago', sla: '3d',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.ang,    steps: S_GENERAL_DONE        },
-  { id: 'TICKET-54', date: 'Feb 7, 2026',  name: 'Printer offline after Windows update',              hasImage: true,  priority: 'Medium',   status: 'Resolved',      updated: '16 days ago', sla: '−3d',  slaType: 'overdue', assignee: PEOPLE.martin, requester: PEOPLE.pat,    steps: S_HARDWARE_DONE       },
-  { id: 'TICKET-53', date: 'Feb 6, 2026',  name: 'Need access to Jira project for Q1 planning',       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '17 days ago', sla: '1d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.martin, steps: S_ACCESS_DONE,
+  { id: 'TICKET-57', date: 'Feb 10, 2026', name: 'How to set up out-of-office in Outlook', hasImage: false, priority: 'Low', status: 'Resolved', updated: '13 days ago', sla: '−1d', slaType: 'overdue', assignee: PEOPLE.sarah, requester: PEOPLE.ang, category: 'How-to', steps: S_GENERAL_DONE,
+    initPublic: [
+      { type: 'inbound', text: "Hi — I'm going on PTO next week and need to set up an out-of-office auto-reply in Outlook. I found the setting but the options are confusing — I'm not sure how to set different messages for internal vs external senders, or whether it affects my calendar as well.", name: 'Ang Lee', time: 'Feb 10, 1:05pm', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 10, 1:22pm', text: "Hi Ang, happy to walk you through it.\n\n**In Outlook on Mac:**\n1. Outlook menu → Preferences → Out of Office\n2. Toggle 'Send automatic replies' on\n3. Set your date range\n4. Check 'Send replies only to senders in my Contacts' if you only want internal replies — uncheck for external too\n5. You can set a separate message for people outside your organisation using the second text box\n\n**Calendar out-of-office:**\nOutlook's auto-reply doesn't automatically block your calendar. Create an all-day event across your PTO dates, set status to 'Out of Office', and check 'Block calendar' — this shows you as unavailable in meeting scheduling.\n\nThe two are independent so do both." },
+      { type: 'inbound', text: "Set both up — the separate internal/external messages is exactly what I needed. Also didn't realise I had to do the calendar separately, so glad you mentioned it. Thanks!", name: 'Ang Lee', time: 'Feb 10, 1:30pm', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Sarah Smith', time: 'Feb 10, 1:15pm', bg: 'd4938a', fg: 'ffffff', initials: 'SS', text: "Answered manually. Standard how-to — user needed the internal vs external message distinction and didn't know calendar blocking is separate. 3rd out-of-office question this month. Should be a KB article — very L1. Flagging." },
+    ],
+    initTranscript: [],
+  },
+  { id: 'TICKET-56', date: 'Feb 9, 2026', name: 'Zoom audio not working in meetings', hasImage: false, priority: 'Medium', status: 'Closed', updated: '14 days ago', sla: '2d', slaType: 'normal', assignee: null, requester: PEOPLE.anj, category: 'Software Access', steps: S_HARDWARE_DONE,
+    initPublic: [
+      { type: 'inbound', text: "Hi — Zoom isn't working for me. When I join a meeting everyone can see my video but I can't hear anything and nobody can hear me. I'm on my Mac. Audio works fine in all other apps.", name: 'Anjelica Silva', time: 'Feb 9, 10:30am', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 9, 10:46am', text: "Hi Anjelica — this is almost always a permissions issue, especially after a macOS or Zoom update. Try these in order:\n\n1. In the Zoom meeting, click the ^ arrow next to the microphone icon → make sure the right input/output is selected (not 'ZoomAudioDevice')\n2. System Settings → Privacy & Security → Microphone → confirm Zoom is toggled on\n3. While you're there, check Camera too\n4. If Zoom recently auto-updated, macOS sometimes silently revokes the permissions — quitting and relaunching fully fixes it" },
+      { type: 'inbound', text: "Found it — under Privacy, Zoom's microphone access had been toggled off. Turned it back on, re-joined the meeting, and audio is working now. Thank you!", name: 'Anjelica Silva', time: 'Feb 9, 10:52am', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Ang Lee', time: 'Feb 9, 10:40am', bg: 'a08060', fg: 'ffffff', initials: 'AL', text: "Zoom microphone permission silently revoked after the auto-update last night — common when Zoom updates while macOS privacy settings are locked. Guided user to fix in Privacy settings. Resolved in under 25 minutes." },
+    ],
+    initTranscript: [],
+  },
+  { id: 'TICKET-55', date: 'Feb 9, 2026', name: 'How to record screen on Mac', hasImage: false, priority: 'Low', status: 'Closed', updated: '14 days ago', sla: '3d', slaType: 'normal', assignee: PEOPLE.steve, requester: PEOPLE.ang, category: 'How-to', steps: S_GENERAL_DONE,
+    initPublic: [
+      { type: 'inbound', text: "Hi — I need to record my screen for a short demo video. I know Macs have a built-in tool but I can't get it working. When I press Command-Shift-5 nothing happens.", name: 'Ang Lee', time: 'Feb 9, 2:15pm', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
+      { type: 'outbound', isAi: false, senderLabel: 'You', time: 'Feb 9, 2:28pm', text: "Hi Ang! You're on the right track — Command-Shift-5 opens the screenshot/recording toolbar. Here's how to record:\n\n1. Press Command-Shift-5 (a toolbar appears at the bottom of the screen)\n2. Choose 'Record Entire Screen' or 'Record Selected Portion'\n3. Click Record to start\n4. To stop: click the ■ stop button in the menu bar\n5. Recording saves to your Desktop as a .mov file\n\nAlternatively: QuickTime Player → File → New Screen Recording.\n\nFor demos with cursor highlights: check 'Show Mouse Clicks in Recording' in the toolbar's Options menu before you start.\n\nIf Command-Shift-5 still isn't responding, another app may have grabbed that shortcut — try System Settings → Keyboard → Keyboard Shortcuts to check." },
+      { type: 'inbound', text: "Got it — the keyboard shortcut was conflicting with another app. Using the toolbar directly works perfectly. Thank you!", name: 'Ang Lee', time: 'Feb 9, 2:35pm', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
+      { type: 'system', text: 'Ticket closed by Steve Smith' },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Steve Smith', time: 'Feb 9, 2:22pm', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Answered manually. This is the 4th screen recording question in the last 3 weeks — TICKET-43, TICKET-47, and TICKET-50 were all the same thing. Completely L1 — should be in the KB so the bot can deflect it automatically. No article exists on this yet. Flagging for KB draft." },
+      { type: 'inbound', name: 'Steve Smith', time: 'Feb 9, 2:42pm', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Resolved. Pure L1 — every time we answer this manually we're spending 10 minutes on something the bot could handle in seconds. Once a KB article exists, requests like this should deflect before they reach the queue. Flagging again to make sure the KB draft gets created." },
+    ],
+    initTranscript: [],
+  },
+  { id: 'TICKET-54', date: 'Feb 7, 2026', name: 'Printer offline after Windows update', hasImage: true, priority: 'Medium', status: 'Resolved', updated: '16 days ago', sla: '−3d', slaType: 'overdue', assignee: PEOPLE.martin, requester: PEOPLE.pat, category: 'Hardware', steps: S_HARDWARE_DONE,
+    initPublic: [
+      { type: 'inbound', text: "Our shared HP LaserJet in the SF office went offline after Windows pushed an update last night. It shows as offline on all 3 Windows machines in the room. The Mac nearby can still print fine.", name: 'Patrick Tuckey', time: 'Feb 7, 9:12am', bg: '8b7ab5', fg: 'ffffff', initials: 'PT' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 7, 9:28am', text: "Hi Patrick — Windows updates frequently cause printer driver conflicts. Since the Mac is still working this is Windows-side.\n\nTry on one affected machine first:\n1. Settings → Devices → Printers & Scanners → click the HP LaserJet → Remove device\n2. Click 'Add a printer or scanner' — Windows will re-detect it automatically\n3. If it doesn't auto-detect, use 'The printer I want isn't listed' and add by IP address (print a config page from the printer's control panel to find the IP)\n\nThis reinstalls a clean driver and usually fixes post-update disconnects." },
+      { type: 'inbound', text: "Removed and re-added it on my machine — that fixed it straight away! Walking the other two colleagues through the same steps. Thanks.", name: 'Patrick Tuckey', time: 'Feb 7, 9:41am', bg: '8b7ab5', fg: 'ffffff', initials: 'PT' },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Martin Lud…', time: 'Feb 7, 9:22am', bg: '7a9abf', fg: 'ffffff', initials: 'ML', text: "Windows Feb patch KB5034441 has a known conflict with HP LaserJet network drivers — drops the WSD print queue. Remove + re-add is the fix. Mac unaffected (uses IPP directly, not WSD). Advising user now." },
+      { type: 'inbound', name: 'Martin Lud…', time: 'Feb 7, 9:48am', bg: '7a9abf', fg: 'ffffff', initials: 'ML', text: "Resolved. 2nd Windows update + printer ticket this year. Should document the remove-and-re-add fix and note which Windows patches trigger it — saves this being a ticket every time a major patch rolls out. Flagging for KB." },
+    ],
+    initTranscript: [],
+  },
+  { id: 'TICKET-53', date: 'Feb 6, 2026',  name: 'Need access to Jira project for Q1 planning',       hasImage: false, priority: 'Low',      status: 'Closed',        updated: '17 days ago', sla: '1d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.martin, steps: S_JIRA_ACCESS_DONE,
     initPublic: [
       { type: 'inbound', text: "I need access to the Q1 planning Jira project — my manager added me to the planning meetings but when I open the Jira link it says I don't have permission to view the project. The project is called PLAN-Q1-2026.", name: 'Martin Ludington', time: 'Feb 6, 9:50am', bg: '7a9abf', fg: 'ffffff', initials: 'ML' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 6, 10:05am', text: "Hi Martin, Jira project access is managed by the project owner, not IT — I can't add you directly. Here's the quickest path:\n\n1. In Jira, open the PLAN-Q1-2026 project\n2. Click 'Request access' on the permission denied screen — this sends a notification to the project admin\n3. Alternatively, ask your manager or whoever runs the project to add you directly via Project Settings → People\n\nDo you know who owns the project? If you're not sure, I can look it up in our Jira admin panel." },
@@ -343,8 +569,29 @@ export const TICKETS = [
       { type: 'inbound', name: 'Sarah Smith', time: 'Feb 6, 10:18am', bg: 'd4938a', fg: 'ffffff', initials: 'SS', text: "Resolved. User didn't know the in-app request flow existed. We see this every week — employees don't know which tools are self-serve vs IT-managed. Jira, Figma, Notion are all self-serve; Salesforce, GitHub, AWS need IT. No KB article explains this distinction. Flagging alongside TICKET-64 and TICKET-66 for a consolidated access request KB article." },
     ],
   },
-  { id: 'TICKET-52', date: 'Feb 5, 2026',  name: 'Outlook calendar not syncing with mobile',          hasImage: false, priority: 'Medium',   status: 'Not started',   updated: '18 days ago', sla: '2d',   slaType: 'normal',  assignee: null,          requester: PEOPLE.anj,    steps: S_GENERAL_NOTSTARTED  },
-  { id: 'TICKET-51', date: 'Feb 4, 2026',  name: 'Screen flickering on external monitor',             hasImage: true,  priority: 'Critical', status: 'Investigating', updated: '19 days ago', sla: '−6h',  slaType: 'overdue', assignee: PEOPLE.steve,  requester: PEOPLE.sarah,  steps: S_HARDWARE_ACTIVE     },
+  { id: 'TICKET-52', date: 'Feb 5, 2026', name: 'Outlook calendar not syncing with mobile', hasImage: false, priority: 'Medium', status: 'Not started', updated: '18 days ago', sla: '2d', slaType: 'normal', assignee: null, requester: PEOPLE.anj, category: 'Software Access', steps: S_GENERAL_NOTSTARTED,
+    initPublic: [
+      { type: 'inbound', text: "My Outlook calendar on iPhone stopped syncing 2 days ago. New meetings colleagues add me to show up in the web version but not on my phone. I've tried force-closing the app but nothing changes.", name: 'Anjelica Silva', time: 'Feb 5, 3:45pm', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 5, 4:02pm', text: "Hi Anjelica — this is usually an Exchange sync token issue in Outlook for iOS. Try this first:\n\n1. Open Outlook → tap your profile photo → Settings → your email account → tap it\n2. Find 'Sync Calendars' — toggle it off, wait 10 seconds, toggle it back on\n3. Pull down on the calendar to force a refresh\n\nIf that doesn't work, the next step is to remove and re-add your Exchange account, which forces a full re-sync. Let me know what happens." },
+      { type: 'inbound', text: "Tried the sync toggle — calendar still isn't updating. I'll try waiting a bit and see if it kicks in on its own. Will reply back if not.", name: 'Anjelica Silva', time: 'Feb 5, 4:10pm', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
+    ],
+    initInternal: [],
+    initTranscript: [],
+  },
+  { id: 'TICKET-51', date: 'Feb 4, 2026', name: 'Screen flickering on external monitor', hasImage: true, priority: 'Critical', status: 'Investigating', updated: '19 days ago', sla: '−6h', slaType: 'overdue', assignee: PEOPLE.steve, requester: PEOPLE.sarah, category: 'Hardware', steps: S_HARDWARE_ACTIVE,
+    aiSummary: 'Sarah Smith is experiencing constant flickering on her Dell 27" external monitor connected via HDMI. The MacBook display is unaffected. Root cause is a known GPU driver bug in macOS 14.2.1 during high-load tasks such as video calls. The fix is a macOS 14.3.1 update which IT is currently testing for rollout approval.',
+    initPublic: [
+      { type: 'inbound', text: "My external monitor has been flickering constantly since yesterday. The MacBook screen is fine but the Dell 27\" connected via HDMI keeps flickering every few seconds. It was working perfectly last week.", name: 'Sarah Smith', time: 'Feb 4, 9:40am', bg: 'd4938a', fg: 'ffffff', initials: 'SS' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 4, 10:05am', text: "Hi Sarah — a few quick things to check:\n\n1. Try swapping the HDMI cable — a lot of flickering is just a cable going bad\n2. Check Settings → Displays — make sure refresh rate is 60Hz not 30Hz\n3. Try USB-C to HDMI if you have a dongle — rules out the HDMI port itself\n4. What macOS version are you on? Some 14.x builds have a display driver issue that causes exactly this." },
+      { type: 'inbound', text: "Swapped the cable — no change. Refresh rate is already at 60Hz. I'm on macOS 14.2.1. The flickering is noticeably worse when I'm on a video call.", name: 'Sarah Smith', time: 'Feb 4, 10:18am', bg: 'd4938a', fg: 'ffffff', initials: 'SS' },
+      { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 4, 10:45am', text: "That narrows it down — macOS 14.2.1 has a known GPU driver bug that causes display flickering during high-GPU tasks like video calls. The fix is in 14.3.1, which IT is currently testing before we push it out.\n\nIn the meantime: try reducing your Zoom/Meet video to 720p in the app settings. That reduces the GPU load and should cut the flickering significantly. I'll keep this ticket open and notify you as soon as the update is cleared for rollout." },
+    ],
+    initInternal: [
+      { type: 'inbound', name: 'Steve Smith', time: 'Feb 4, 10:35am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Confirmed macOS 14.2.1 display flicker bug — Apple KB article HT213848 covers it. Fix requires 14.3.1. Martin is checking the update approval timeline. Intermediate mitigation: reduce video resolution in Zoom/Meet to cut GPU load." },
+      { type: 'inbound', name: 'Steve Smith', time: 'Feb 4, 11:00am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "macOS 14.3.1 in testing queue — expected approval in ~1 week. Keeping open. Will push update and verify resolution when ready." },
+    ],
+    initTranscript: [],
+  },
 
   // ── Tickets referenced in KB learning gaps ───────────────────────────────────
   { id: 'TICKET-11', date: 'Jan 15, 2026', name: 'Zoom Room Won\'t Connect in Conference Room B',        hasImage: false, priority: 'Medium',   status: 'Resolved',      updated: '2 months ago', sla: '1d',   slaType: 'normal',  assignee: PEOPLE.ang,    requester: PEOPLE.anj,    steps: S_HARDWARE_DONE,
@@ -373,7 +620,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Martin Lud…', time: 'Jan 20, 9:50am', bg: '7a9abf', fg: 'ffffff', initials: 'ML', text: "Resolved — IP was wrong in my first reply (old address). Corrected to 192.168.10.52. This is the 3rd ticket this month about the London Ricoh. The KB article on printer setup is Mac-agnostic — it only covers Windows. We need a Mac-specific section with the correct IP and driver steps. Also should note the WiFi subnet requirement. Flagging for KB update." },
     ],
   },
-  { id: 'TICKET-29', date: 'Jan 25, 2026', name: 'Need Admin Access to Install Dev Tools',               hasImage: false, priority: 'Medium',   status: 'Resolved',      updated: '1 month ago',  sla: '1d',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.ang,    steps: S_ACCESS_DONE,
+  { id: 'TICKET-29', date: 'Jan 25, 2026', name: 'Need Admin Access to Install Dev Tools',               hasImage: false, priority: 'Medium',   status: 'Resolved',      updated: '1 month ago',  sla: '1d',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.ang,    steps: S_NODE_INSTALL_DONE,
     initPublic: [
       { type: 'inbound',  text: "I'm trying to install Node.js and nvm on my Mac for a new project but getting blocked: 'You do not have admin rights to install software on this device.' I'm a developer and need these tools. Can you grant me admin access?", name: 'Ang Lee', time: 'Jan 25, 10:20am', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Jan 25, 10:35am', text: "Hi Ang, thanks for reaching out. We can't grant full admin access to individual devices under our security policy — but you don't need it here. Node.js and nvm are on our approved software list and are available through two routes:\n\n1. **Managed Software Center** (quickest): Open the app in your Applications folder, search for 'Node.js' or 'nvm' — you can install without admin rights\n2. **Self-service via Homebrew**: If you have Homebrew already, `brew install node` works because Homebrew installs to your user directory\n\nIf neither of these work, I can push the package directly to your device. Give the Managed Software Center a try first and let me know." },
@@ -384,7 +631,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Steve Smith', time: 'Jan 25, 10:50am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Resolved. User using personal laptop because they thought work machine was locked down. This is a real problem — developers especially don't know the self-serve install path. Same root cause as TICKET-33 and TICKET-44 (all three this month). We need a KB article explaining the policy: why installs are blocked, what Managed Software Center is, what's on the approved list, what to do if your tool isn't there. Flagging." },
     ],
   },
-  { id: 'TICKET-33', date: 'Jan 28, 2026', name: 'Can\'t Install Figma Without Admin Rights',            hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '1 month ago',  sla: '2d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.anj,    steps: S_ACCESS_DONE,
+  { id: 'TICKET-33', date: 'Jan 28, 2026', name: 'Can\'t Install Figma Without Admin Rights',            hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '1 month ago',  sla: '2d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.anj,    steps: S_FIGMA_INSTALL_DONE,
     initPublic: [
       { type: 'inbound',  text: "I need to install Figma for design work but when I try to run the installer it says 'This action requires administrator privileges'. My manager approved me for a Figma seat last week — can someone help me get it installed?", name: 'Anjelica Silva', time: 'Jan 28, 2:10pm', bg: 'b58a7a', fg: 'ffffff', initials: 'AS' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Jan 28, 2:22pm', text: "Hi Anjelica, great news — you don't actually need admin rights to install Figma. The block happens when you try to install via the web download (the .dmg file). Instead:\n\n1. Open **Managed Software Center** on your Mac (search in Spotlight)\n2. Search for 'Figma'\n3. Click Install — it should take about 2 minutes\n\nThe Figma seat your manager approved is already provisioned, so once it's installed you should be able to log in with your Acme email address and access your team's workspace immediately." },
@@ -395,7 +642,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Sarah Smith', time: 'Jan 28, 2:35pm', bg: 'd4938a', fg: 'ffffff', initials: 'SS', text: "Resolved. This is the second 'can't install approved software' ticket in 3 days after TICKET-29. Same root cause: employees don't know Managed Software Center exists. Coming back as TICKET-44 too — pattern is clear. Documenting for KB gap." },
     ],
   },
-  { id: 'TICKET-38', date: 'Feb 2, 2026',  name: 'VPN Drops When Connecting to AWS Resources',           hasImage: false, priority: 'High',     status: 'Resolved',      updated: '3 weeks ago',  sla: '4h',   slaType: 'normal',  assignee: PEOPLE.martin, requester: PEOPLE.ang,    steps: S_GENERAL_DONE,
+  { id: 'TICKET-38', date: 'Feb 2, 2026',  name: 'VPN Drops When Connecting to AWS Resources',           hasImage: false, priority: 'High',     status: 'Resolved',      updated: '3 weeks ago',  sla: '4h',   slaType: 'normal',  assignee: PEOPLE.martin, requester: PEOPLE.ang,    steps: S_VPN_DONE,
     initPublic: [
       { type: 'inbound',  text: "My VPN keeps dropping every time I try to connect to our AWS resources (us-east-1). Regular internet works fine but as soon as I hit anything in AWS — RDS, S3, the internal tooling — the connection drops within 30 seconds. This has been happening all week and I have a release tonight.", name: 'Ang Lee', time: 'Feb 2, 2:05pm', bg: 'a08060', fg: 'ffffff', initials: 'AL' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 2, 2:18pm', text: "Hi Ang, I can see why this is urgent. A few quick questions:\n1. Which VPN client version are you on? (Cisco AnyConnect → Help → About)\n2. Does it disconnect only when accessing AWS, or also other internal resources like the dev servers?\n3. Are you on home WiFi or a wired connection?" },
@@ -408,7 +655,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Martin Lud…', time: 'Feb 2, 3:05pm', bg: '7a9abf', fg: 'ffffff', initials: 'ML', text: "Resolution: pushed split-tunnel profile (aws-split-v2) via Cisco ISE. AWS subnets (10.0.0.0/8, 172.16.0.0/12 and all *.amazonaws.com) now bypass VPN. Verified with Ang — stable.\n\nThe VPN knowledge base article has nothing on split-tunnel configuration or when to use it. This is the fix for any AWS connectivity issue. Need to add a section explaining when to request the split-tunnel profile. Flagging for KB." },
     ],
   },
-  { id: 'TICKET-42', date: 'Feb 3, 2026',  name: 'MFA Not Working After Laptop Swap',                   hasImage: false, priority: 'Critical', status: 'Resolved',      updated: '3 weeks ago',  sla: '2h',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.pat,    steps: S_GENERAL_DONE,
+  { id: 'TICKET-42', date: 'Feb 3, 2026',  name: 'MFA Not Working After Laptop Swap',                   hasImage: false, priority: 'Critical', status: 'Resolved',      updated: '3 weeks ago',  sla: '2h',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.pat,    steps: S_MFA_BYPASS_DONE,
     initPublic: [
       { type: 'inbound', text: "I just got my replacement laptop from IT and now I can't log in to anything. Okta is asking me to verify with MFA but my old phone is gone — it was stolen with the old laptop. I have a new phone but I never set up Okta on it. I'm completely locked out.", name: 'Patrick Tuckey', time: 'Feb 3, 8:42am', bg: '8b7ab5', fg: 'ffffff', initials: 'PT' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 3, 8:51am', text: "Hi Patrick — I can get you unblocked quickly. Since you've lost access to your enrolled MFA device I'll issue a temporary bypass code right now.\n\nBypass code: 847-291 (valid for 15 minutes)\n\nSteps:\n1. Go to accounts.acmecorp.com\n2. Enter your username and password\n3. When prompted for MFA, click 'Use a bypass code' and enter the code above\n4. Once you're in, immediately go to Settings → Security → Set up Okta Verify on your new phone before the code expires\n\nStand by — I'll stay on this ticket until you confirm you're in." },
@@ -419,7 +666,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Steve Smith', time: 'Feb 3, 9:10am', bg: '6d8aad', fg: 'ffffff', initials: 'SS', text: "Resolved. This is becoming a pattern — TICKET-70 and TICKET-67 both involved MFA failing after a device change. Agents keep solving it ad hoc with bypass codes but there's no documented process. Need KB article: what happens to MFA on device replacement, how IT should handle proactively, what employees should do if locked out. Flagging." },
     ],
   },
-  { id: 'TICKET-44', date: 'Feb 5, 2026',  name: 'Software Install Blocked by Company Policy',          hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '3 weeks ago',  sla: '2d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.martin, steps: S_ACCESS_DONE,
+  { id: 'TICKET-44', date: 'Feb 5, 2026',  name: 'Software Install Blocked by Company Policy',          hasImage: false, priority: 'Low',      status: 'Resolved',      updated: '3 weeks ago',  sla: '2d',   slaType: 'normal',  assignee: PEOPLE.sarah,  requester: PEOPLE.martin, steps: S_SOFTWARE_INSTALL_DONE,
     initPublic: [
       { type: 'inbound', text: "Trying to install Postman for API testing but getting a message: 'Installation blocked by company security policy'. I need this for my work — my whole team uses it. Why is it blocked and how do I get it?", name: 'Martin Ludington', time: 'Feb 5, 3:20pm', bg: '7a9abf', fg: 'ffffff', initials: 'ML' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 5, 3:38pm', text: "Hi Martin, Postman is on our approved software list so this is straightforward to sort out. The block message appears because our Jamf policy requires installs to go through the IT-managed channel rather than directly from the web.\n\nHere's how to get it:\n1. Open the Managed Software Center app on your Mac (search in Spotlight)\n2. Search for 'Postman' — it should appear with an Install button\n3. Click Install — no admin rights needed, no approval required for approved software\n\nIf it doesn't appear in Managed Software Center, let me know and I can push it directly to your device." },
@@ -442,7 +689,7 @@ export const TICKETS = [
       { type: 'inbound', name: 'Ang Lee', time: 'Feb 8, 11:50am', bg: 'a08060', fg: 'ffffff', initials: 'AL', text: "Resolved. This is the 2nd ticket this week about the April dental transition. The HR knowledge base article on dental benefits is outdated — it still references Delta Dental and has no mention of the Cigna switch or which providers are affected. Need to update with: new provider network, transition date, cost-sharing for out-of-network, and link to Cigna provider finder. Flagging for KB update." },
     ],
   },
-  { id: 'TICKET-70', date: 'Feb 25, 2026', name: 'Can\'t Log In After Device Replacement',               hasImage: false, priority: 'Critical', status: 'Resolved',      updated: '1 week ago',   sla: '2h',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.sarah,  steps: S_GENERAL_DONE,
+  { id: 'TICKET-70', date: 'Feb 25, 2026', name: 'Can\'t Log In After Device Replacement',               hasImage: false, priority: 'Critical', status: 'Resolved',      updated: '1 week ago',   sla: '2h',   slaType: 'normal',  assignee: PEOPLE.steve,  requester: PEOPLE.sarah,  steps: S_DEVICE_REPL_MFA_DONE,
     initPublic: [
       { type: 'inbound', text: "I received my new MacBook today from IT. I can log in to the Mac itself but when I try to open any company app — Google Workspace, Slack, even the IT portal — I get redirected to Okta and then it just says 'authentication failed'. I've been unable to work for 2 hours.", name: 'Sarah Smith', time: 'Feb 25, 11:08am', bg: 'd4938a', fg: 'ffffff', initials: 'SS' },
       { type: 'outbound', isAi: true, senderLabel: 'IT Agent', time: 'Feb 25, 11:17am', text: "Hi Sarah, this is an MFA re-enrollment issue — your new device isn't registered with Okta yet so it can't complete the authentication flow. I'm resetting your MFA factors in the Okta console right now.\n\nOnce I've done that (30 seconds), go to accounts.acmecorp.com in Safari, log in with your password — you'll be prompted to set up a new MFA factor. Use your phone to scan the Okta Verify QR code. After that's done, all your apps should work normally." },

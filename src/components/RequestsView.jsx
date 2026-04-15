@@ -320,7 +320,7 @@ function ChatPanel({ chat }) {
         <InitialsAvatar initials={chat.user.initials} color={chat.user.color} size={36} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, ...LIGA }}>{chat.user.name}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, ...LIGA }}>{chat.user.name}</span>
             <span style={{ fontSize: 11, fontWeight: 500, padding: '2px 7px', borderRadius: 4, background: ss.bg, color: ss.color, fontFamily: SFT }}>{chat.status}</span>
             <span style={{ fontSize: 11, fontWeight: 500, padding: '2px 7px', borderRadius: 4, background: cs.bg, color: cs.color, fontFamily: SFT }}>{chat.channel}</span>
           </div>
