@@ -1161,19 +1161,20 @@ export default function Admin2HomeView({ hideGreeting = false }) {
           ))}
         </div>
 
-        {/* ── AI activity + feed ───────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 24, padding: '0 32px', marginBottom: 24 }}>
-          <AiActivityChart />
-          <AiAgentFeed />
+        {/* ── Team workload ─────────────────────────────────────────────── */}
+        <div style={{ padding: '0 32px', marginBottom: 24 }}>
+          <TeamWorkloadCard agents={agents} todayIndex={todayIndex} />
         </div>
 
-        {/* ── Bottom cards ─────────────────────────────────────────────── */}
+        {/* ── AI activity today + CSAT ──────────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 24, padding: '0 32px', marginBottom: 24 }}>
+          <AiActivityChart />
+          <CsatCard />
+        </div>
+
+        {/* ── Bottom row ───────────────────────────────────────────────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '0 32px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-            <OptimizationsCard />
-            <CsatCard />
-          </div>
-          <TeamWorkloadCard agents={agents} todayIndex={todayIndex} />
+          <OptimizationsCard />
           <RecommendationsTeaser />
         </div>
 
