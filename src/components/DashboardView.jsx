@@ -5,9 +5,10 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   BarChart, Bar, Legend,
   AreaChart, Area,
-  Treemap,
 } from 'recharts';
-import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA, TICKET_TOPICS } from '../data/dashboard';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA, TICKET_TOPICS, AI_HANDLING_30D, RESOLUTION_BY_CATEGORY } from '../data/dashboard';
 import { SFT } from '../constants/typography';
 
 const TICK = { fontSize: 11, fill: 'var(--text-disabled)', fontFamily: SFT };
@@ -95,13 +96,34 @@ function CustomTooltip({ active, payload, label }) {
 function KpiCard({ label, value, trend, trendGood, spark = [] }) {
   const [hov, setHov] = useState(false);
   const trendColor  = trendGood ? 'var(--success-text)' : 'var(--danger-text)';
-  const strokeColor = 'var(--selected-background-strong)';
   const trendPrefix = trendGood ? '↑' : '↓';
-  const data = spark.map((v, i) => ({ i, v }));
-  const minV = Math.min(...spark);
-  const maxV = Math.max(...spark);
-  const pad  = (maxV - minV) * 0.25 || 1;
-  const domain = [minV - pad, maxV + pad];
+  const lineColor   = trendGood ? '#5DA182' : '#D43D5D';
+
+  const sparkOpts = spark.length ? {
+    chart: { type: 'area', width: null, height: 44, margin: [2, 0, 2, 0], backgroundColor: 'transparent', animation: { duration: 600 }, style: { fontFamily: SFT } },
+    title: { text: '' }, credits: { enabled: false }, legend: { enabled: false },
+    xAxis: { visible: false },
+    yAxis: { visible: false, min: Math.min(...spark) * 0.9, max: Math.max(...spark) * 1.1 },
+    tooltip: {
+      outside: true, shadow: false, borderWidth: 0, padding: 6,
+      backgroundColor: 'rgba(30,31,33,0.88)', style: { color: '#fff', fontSize: '11px', fontFamily: SFT },
+      formatter() { return `<b>${this.y}</b>`; },
+    },
+    plotOptions: {
+      area: {
+        marker: { enabled: false, states: { hover: { enabled: true, radius: 3, fillColor: lineColor } } },
+        lineWidth: 1.5,
+        fillColor: {
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [
+            [0, Highcharts.color(lineColor).setOpacity(0.22).get()],
+            [1, Highcharts.color(lineColor).setOpacity(0).get()],
+          ],
+        },
+      },
+    },
+    series: [{ data: spark, color: lineColor }],
+  } : null;
 
   return (
     <div
@@ -110,16 +132,22 @@ function KpiCard({ label, value, trend, trendGood, spark = [] }) {
       style={{
         background: 'var(--background-weak)',
         borderRadius: 10,
-        padding: '18px 20px',
+        padding: '18px 20px 14px',
         border: '1px solid var(--border)',
         boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
+        display: 'flex', flexDirection: 'column',
       }}>
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
-      <p style={{ fontSize: 12, color: trendColor, fontFamily: SFT, margin: 0, lineHeight: '18px' }}>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 4px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontSize: 12, color: trendColor, fontFamily: SFT, margin: '0 0 6px', lineHeight: '18px' }}>
         {trendPrefix} {trend}
       </p>
+      {sparkOpts && (
+        <div style={{ marginLeft: -4, marginRight: -4 }}>
+          <HighchartsReact highcharts={Highcharts} options={sparkOpts} immutable />
+        </div>
+      )}
     </div>
   );
 }
@@ -166,71 +194,178 @@ function TreemapContent(props) {
   );
 }
 
+// ─── Topic Volume — Highcharts horizontal bar ──────────────────────────────────
 function TopicVolumeCard() {
-  const treemapData = TICKET_TOPICS.map((t, i) => ({
-    name: t.name, count: t.count, sla: t.sla, colorIdx: i, value: t.count,
-  }));
+  const slaColors = TICKET_TOPICS.map(t =>
+    t.sla >= 80 ? '#5DA182' : t.sla >= 70 ? '#ECBD85' : '#D43D5D'
+  );
+
+  const opts = {
+    chart: { type: 'bar', backgroundColor: 'transparent', height: 280, style: { fontFamily: SFT }, animation: { duration: 600 }, spacing: [4, 8, 8, 4] },
+    title: { text: '' }, credits: { enabled: false }, legend: { enabled: false },
+    xAxis: {
+      categories: TICKET_TOPICS.map(t => t.name),
+      labels: { style: { fontSize: '11px', color: '#6b7280', fontFamily: SFT } },
+      lineWidth: 0, tickWidth: 0,
+    },
+    yAxis: {
+      title: { text: '' },
+      gridLineColor: 'var(--border)', gridLineDashStyle: 'dot',
+      labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
+    },
+    tooltip: {
+      outside: true, backgroundColor: 'rgba(30,31,33,0.9)', borderWidth: 0, shadow: false,
+      style: { color: '#fff', fontSize: '12px', fontFamily: SFT },
+      formatter() {
+        const t = TICKET_TOPICS[this.point.index];
+        return `<b>${t.name}</b><br/>${t.count} tickets · SLA ${t.sla}%`;
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 3,
+        dataLabels: {
+          enabled: true,
+          format: '{y}',
+          style: { fontSize: '11px', fontWeight: '600', fontFamily: SFT, textOutline: 'none', color: '#6b7280' },
+        },
+        colorByPoint: true,
+        colors: slaColors.map(c => ({
+          linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
+          stops: [[0, Highcharts.color(c).setOpacity(0.7).get()], [1, Highcharts.color(c).setOpacity(0.4).get()]],
+        })),
+      },
+    },
+    series: [{ data: TICKET_TOPICS.map(t => t.count) }],
+  };
 
   return (
-    <div style={{ ...CARD, display: 'flex', height: 480, overflow: 'hidden' }}>
-
-      {/* ── Left: treemap ──────────────────────────────────────────────── */}
-      <div style={{ flex: '0 0 60%', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px 8px', flexShrink: 0 }}>
-          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>Ticket topics</p>
-          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Volume by category · this month</p>
+    <div style={{ ...CARD, padding: '20px 24px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', margin: '0 0 1px' }}>Ticket topics</p>
+          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Volume by category · this month · color = SLA health</p>
         </div>
-        <div style={{ flex: 1, minHeight: 0, padding: '0 16px 16px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <Treemap
-              data={treemapData}
-              dataKey="value"
-              aspectRatio={1.4}
-              content={<TreemapContent />}
-              isAnimationActive={false}
-            />
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* ── Right: sparkline rows ──────────────────────────────────────── */}
-      <div style={{ flex: '0 0 40%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px 8px', flexShrink: 0 }}>
-          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', fontFeatureSettings: "'liga' off, 'clig' off", margin: '0 0 1px' }}>7-day trend</p>
-          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Daily ticket volume per topic</p>
-        </div>
-        <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
-          {TICKET_TOPICS.map((topic, i) => (
-            <div key={topic.name} style={{
-              flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-              borderBottom: i < TICKET_TOPICS.length - 1 ? '1px solid var(--border)' : 'none',
-              minHeight: 0,
-            }}>
-              <span style={{ width: 86, fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {topic.name}
-              </span>
-              <div style={{ flex: 1, minWidth: 0, height: 26 }}>
-                <ResponsiveContainer width="100%" height={26}>
-                  <AreaChart data={topic.spark.map((v, idx) => ({ i: idx, v }))} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
-                    <YAxis domain={['dataMin - 2', 'dataMax + 2']} hide />
-                    <Area
-                      type="monotone" dataKey="v"
-                      stroke={TOPIC_BLUES[i]} fill={TOPIC_BLUES[i]}
-                      fillOpacity={0.18} strokeWidth={1.5}
-                      dot={false} isAnimationActive={false}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              <span style={{ width: 28, fontSize: 11, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, textAlign: 'right', flexShrink: 0 }}>
-                {topic.count}
-              </span>
-            </div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          {[['#5DA182','≥80%'],['#ECBD85','70–79%'],['#D43D5D','<70%']].map(([c,l]) => (
+            <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-weak)', fontFamily: SFT }}>
+              <span style={{ width: 8, height: 8, borderRadius: 2, background: c, display: 'inline-block' }}/>
+              {l}
+            </span>
           ))}
         </div>
       </div>
-
+      <HighchartsReact highcharts={Highcharts} options={opts} immutable />
     </div>
+  );
+}
+
+// ─── AI Handling Over Time — Highcharts stacked area ──────────────────────────
+function AiHandlingTrendCard() {
+  const opts = {
+    chart: {
+      type: 'area', backgroundColor: 'transparent', height: 280,
+      style: { fontFamily: SFT }, animation: { duration: 800 }, spacing: [10, 10, 10, 10],
+    },
+    title: { text: '' }, credits: { enabled: false },
+    legend: {
+      enabled: true, align: 'right', verticalAlign: 'top', y: -4,
+      itemStyle: { fontSize: '11px', fontWeight: '500', color: '#6b7280', fontFamily: SFT },
+      symbolWidth: 10, symbolHeight: 10, symbolRadius: 2,
+    },
+    xAxis: {
+      categories: AI_HANDLING_30D.dates,
+      tickInterval: 5,
+      labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
+      lineColor: 'var(--border)', tickColor: 'var(--border)',
+    },
+    yAxis: {
+      title: { text: '' }, min: 0,
+      gridLineColor: 'var(--border)', gridLineDashStyle: 'dot',
+      labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
+      stackLabels: { enabled: false },
+    },
+    tooltip: {
+      shared: true, outside: true,
+      backgroundColor: 'rgba(30,31,33,0.9)', borderWidth: 0, shadow: false,
+      style: { color: '#fff', fontSize: '12px', fontFamily: SFT },
+      headerFormat: '<span style="font-size:10px;opacity:0.7">{point.key}</span><br/>',
+      pointFormat: '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}</b><br/>',
+    },
+    plotOptions: {
+      area: {
+        stacking: 'normal', lineWidth: 1.5,
+        marker: { enabled: false, states: { hover: { enabled: true, radius: 3 } } },
+      },
+    },
+    series: [
+      {
+        name: 'Agent handled', data: AI_HANDLING_30D.agentHandled, color: '#9CA3AF',
+        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0,'rgba(156,163,175,0.35)'],[1,'rgba(156,163,175,0.05)']] },
+      },
+      {
+        name: 'Rule-based', data: AI_HANDLING_30D.ruleBased, color: '#4273D1',
+        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0,'rgba(66,115,209,0.4)'],[1,'rgba(66,115,209,0.05)']] },
+      },
+      {
+        name: 'AI deflected', data: AI_HANDLING_30D.aiDeflected, color: '#5DA182',
+        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0,'rgba(93,161,130,0.5)'],[1,'rgba(93,161,130,0.05)']] },
+      },
+    ],
+  };
+
+  return (
+    <ChartCard title="AI handling over time" subtitle="30-day view — stacked by resolution type">
+      <HighchartsReact highcharts={Highcharts} options={opts} immutable />
+    </ChartCard>
+  );
+}
+
+// ─── Resolution time by category — Highcharts grouped bar ─────────────────────
+function ResolutionTimeCard() {
+  const cats = RESOLUTION_BY_CATEGORY.map(r => r.name);
+  const aiData   = RESOLUTION_BY_CATEGORY.map(r => r.ai ?? null);
+  const agentData = RESOLUTION_BY_CATEGORY.map(r => r.agent);
+
+  const opts = {
+    chart: { type: 'bar', backgroundColor: 'transparent', height: 280, style: { fontFamily: SFT }, animation: { duration: 600 }, spacing: [4, 8, 8, 4] },
+    title: { text: '' }, credits: { enabled: false },
+    legend: {
+      enabled: true, align: 'right', verticalAlign: 'top', y: -4,
+      itemStyle: { fontSize: '11px', fontWeight: '500', color: '#6b7280', fontFamily: SFT },
+      symbolWidth: 10, symbolHeight: 10, symbolRadius: 2,
+    },
+    xAxis: {
+      categories: cats,
+      labels: { style: { fontSize: '11px', color: '#6b7280', fontFamily: SFT } },
+      lineWidth: 0, tickWidth: 0,
+    },
+    yAxis: {
+      title: { text: 'Minutes', style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
+      gridLineColor: 'var(--border)', gridLineDashStyle: 'dot',
+      labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
+    },
+    tooltip: {
+      outside: true, backgroundColor: 'rgba(30,31,33,0.9)', borderWidth: 0, shadow: false,
+      style: { color: '#fff', fontSize: '12px', fontFamily: SFT },
+      shared: true,
+      headerFormat: '<span style="font-size:10px;opacity:0.7">{point.key}</span><br/>',
+      pointFormat: '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y} min</b><br/>',
+      nullFormatter() { return ''; },
+    },
+    plotOptions: {
+      bar: { borderRadius: 3, grouping: true, dataLabels: { enabled: false } },
+    },
+    series: [
+      { name: 'Agent avg', data: agentData, color: '#9CA3AF' },
+      { name: 'AI avg', data: aiData, color: '#5DA182' },
+    ],
+  };
+
+  return (
+    <ChartCard title="Resolution time by category" subtitle="Average minutes — AI vs agent · null = AI not handling">
+      <HighchartsReact highcharts={Highcharts} options={opts} immutable />
+    </ChartCard>
   );
 }
 
@@ -1485,14 +1620,18 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
               {data.kpis.map((kpi, i) => <KpiCard key={i} {...kpi} />)}
             </div>
 
-            {/* Row 1 — Topic volume */}
-            {chartVisibility.topicVolume && (
-              <div style={{ marginBottom: 24 }}>
-                <TopicVolumeCard />
-              </div>
-            )}
+            {/* Row 1 — AI handling trend (Highcharts stacked area) */}
+            <div style={{ marginBottom: 24 }}>
+              <AiHandlingTrendCard />
+            </div>
 
-            {/* Row 2 — Channel distribution + Deflection */}
+            {/* Row 2 — Topic volume + Resolution time (Highcharts) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+              <TopicVolumeCard />
+              <ResolutionTimeCard />
+            </div>
+
+            {/* Row 3 — Channel distribution + Deflection */}
             {chartVisibility.channelBreakdown && (
               <div style={{ marginBottom: 24 }}>
                 <ChannelDeflectionRow data={data} />

@@ -4,7 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { TEAM_DATA } from '../data/dashboard';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import { TEAM_DATA, TODAY_HOURLY } from '../data/dashboard';
+import { RECOMMENDATIONS_SUMMARY } from '../data/recommendations';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -912,10 +915,38 @@ function MyTicketsCard() {
   );
 }
 
-// ── KPI stat card (matches DashboardView KpiCard design) ─────────────────────
+// ── KPI stat card — with Highcharts sparkline ─────────────────────────────────
 
-function KpiStatCard({ label, value, sub, color }) {
+function KpiStatCard({ label, value, sub, color, spark, trendGood }) {
   const [hov, setHov] = useState(false);
+
+  const sparkOpts = spark ? {
+    chart: { type: 'area', width: null, height: 40, margin: [2, 0, 2, 0], backgroundColor: 'transparent', animation: false, style: { fontFamily: SFT } },
+    title: { text: '' }, credits: { enabled: false }, legend: { enabled: false },
+    xAxis: { visible: false },
+    yAxis: { visible: false, min: Math.min(...spark) * 0.9, max: Math.max(...spark) * 1.1 },
+    tooltip: {
+      outside: true, shadow: false, borderWidth: 0, padding: 6,
+      backgroundColor: 'rgba(30,31,33,0.88)', style: { color: '#fff', fontSize: '11px' },
+      formatter() { return `<b>${this.y}</b>`; },
+    },
+    plotOptions: {
+      area: {
+        marker: { enabled: false, states: { hover: { enabled: true, radius: 3 } } },
+        lineWidth: 1.5,
+        states: { hover: { lineWidth: 1.5 } },
+        fillColor: {
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [
+            [0, Highcharts.color(color ?? '#4273D1').setOpacity(0.22).get()],
+            [1, Highcharts.color(color ?? '#4273D1').setOpacity(0).get()],
+          ],
+        },
+      },
+    },
+    series: [{ data: spark, color: color ?? '#4273D1' }],
+  } : null;
+
   return (
     <div
       onMouseEnter={() => setHov(true)}
@@ -923,15 +954,168 @@ function KpiStatCard({ label, value, sub, color }) {
       style={{
         background: 'var(--background-weak)',
         borderRadius: 10,
-        padding: '18px 20px',
+        padding: '18px 20px 14px',
         border: '1px solid var(--border)',
         boxShadow: hov ? 'var(--shadow-md)' : 'var(--shadow-sm)',
         transition: 'box-shadow 0.15s',
+        display: 'flex', flexDirection: 'column',
       }}
     >
       <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '16px' }}>{label}</p>
-      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: color ?? 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 6px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
-      <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0, lineHeight: '18px' }}>{sub}</p>
+      <p style={{ fontFamily: '"SF Pro Display"', fontSize: 48, fontWeight: 400, color: color ?? 'var(--text)', lineHeight: '56px', letterSpacing: '0.35px', margin: '0 0 4px', fontFeatureSettings: "'liga' off, 'clig' off" }}>{value}</p>
+      <p style={{ fontSize: 12, color: trendGood ? 'var(--success-text)' : 'var(--text-weak)', fontFamily: SFT, margin: '0 0 8px', lineHeight: '18px' }}>{sub}</p>
+      {sparkOpts && (
+        <div style={{ marginLeft: -4, marginRight: -4 }}>
+          <HighchartsReact highcharts={Highcharts} options={sparkOpts} immutable />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── AI activity today chart ────────────────────────────────────────────────────
+
+function AiActivityChart() {
+  const opts = {
+    chart: {
+      type: 'area',
+      backgroundColor: 'transparent',
+      height: 210,
+      style: { fontFamily: SFT },
+      animation: { duration: 800 },
+      spacing: [10, 10, 10, 10],
+    },
+    title: { text: '' },
+    credits: { enabled: false },
+    legend: {
+      enabled: true,
+      align: 'right', verticalAlign: 'top',
+      itemStyle: { fontSize: '11px', fontWeight: '500', color: '#6b7280', fontFamily: SFT },
+      symbolWidth: 10, symbolHeight: 10, symbolRadius: 2,
+    },
+    xAxis: {
+      categories: TODAY_HOURLY.hours,
+      labels: { style: { fontSize: '11px', color: '#9ea0a2', fontFamily: SFT } },
+      lineColor: 'var(--border)', tickColor: 'transparent',
+    },
+    yAxis: {
+      title: { text: '' },
+      min: 0,
+      gridLineColor: 'var(--border)',
+      gridLineDashStyle: 'dot',
+      labels: { style: { fontSize: '11px', color: '#9ea0a2', fontFamily: SFT } },
+    },
+    tooltip: {
+      shared: true, outside: true,
+      backgroundColor: 'rgba(30,31,33,0.9)', borderWidth: 0, shadow: false,
+      style: { color: '#fff', fontSize: '12px', fontFamily: SFT },
+      headerFormat: '<span style="font-size:11px;opacity:0.7">{point.key}</span><br/>',
+      pointFormat: '<span style="color:{point.color}">●</span> {series.name}: <b>{point.y}</b><br/>',
+    },
+    plotOptions: {
+      area: {
+        stacking: 'normal',
+        lineWidth: 1.5,
+        marker: { enabled: false, states: { hover: { enabled: true, radius: 3 } } },
+      },
+    },
+    series: [
+      {
+        name: 'Agent handled',
+        data: TODAY_HOURLY.agentHandled,
+        color: '#4273D1',
+        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(66,115,209,0.4)'], [1, 'rgba(66,115,209,0.05)']] },
+      },
+      {
+        name: 'AI deflected',
+        data: TODAY_HOURLY.aiDeflected,
+        color: '#5DA182',
+        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(93,161,130,0.5)'], [1, 'rgba(93,161,130,0.05)']] },
+      },
+    ],
+  };
+
+  return (
+    <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 10, padding: '20px 24px 16px', boxShadow: 'var(--shadow-sm)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '20px', letterSpacing: '-0.32px' }}>AI activity today</p>
+          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '2px 0 0' }}>Hourly — AI deflections vs agent-handled tickets</p>
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT }}>Updated now</span>
+      </div>
+      <HighchartsReact highcharts={Highcharts} options={opts} immutable />
+    </div>
+  );
+}
+
+// ── AI agent activity feed ─────────────────────────────────────────────────────
+
+const AI_FEED = [
+  { type: 'deflect',  icon: '✦', color: '#5DA182', bg: 'rgba(93,161,130,0.1)',  time: '3 min ago',  text: 'Deflected "How do I record my screen?" via KB-SCR-001', meta: '96% confidence · TICKET-96' },
+  { type: 'provision',icon: '⚡', color: '#4273D1', bg: 'rgba(66,115,209,0.1)',  time: '14 min ago', text: 'Provisioned Figma viewer seat for Anjelica Silva', meta: 'Figma API · TICKET-64' },
+  { type: 'link',     icon: '↗', color: '#7C5EA8', bg: 'rgba(124,94,168,0.1)',  time: '28 min ago', text: 'Created HR ticket HR-119 — payroll discrepancy routing', meta: 'TICKET-68' },
+  { type: 'deflect',  icon: '✦', color: '#5DA182', bg: 'rgba(93,161,130,0.1)',  time: '41 min ago', text: 'Deflected "How to set up out-of-office in Outlook"', meta: '91% confidence · TICKET-57' },
+  { type: 'provision',icon: '⚡', color: '#4273D1', bg: 'rgba(66,115,209,0.1)',  time: '1h ago',     text: 'Assigned M365 E3 licence to Jordan Park (Finance)', meta: 'Microsoft 365 API · TICKET-69' },
+  { type: 'escalate', icon: '!', color: '#D43D5D', bg: 'rgba(212,61,93,0.1)',   time: '1h 12m ago', text: 'Escalated TICKET-62 — lost device, wipe decision required', meta: 'Steve Smith notified' },
+  { type: 'deflect',  icon: '✦', color: '#5DA182', bg: 'rgba(93,161,130,0.1)',  time: '2h ago',     text: 'Deflected "VPN not connecting to AWS" — KB-VPN-003', meta: '88% confidence' },
+];
+
+function AiAgentFeed() {
+  return (
+    <div style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '20px 20px 14px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '20px', letterSpacing: '-0.32px' }}>AI agent activity</p>
+        <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: '2px 0 0' }}>Last 2 hours</p>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {AI_FEED.map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 20px', borderBottom: i < AI_FEED.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            <span style={{ width: 22, height: 22, borderRadius: 6, background: item.bg, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
+              {item.icon}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 12.5, color: 'var(--text)', fontFamily: SFT, margin: 0, lineHeight: '17px' }}>{item.text}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, margin: '2px 0 0' }}>{item.meta}</p>
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: SFT, flexShrink: 0, paddingTop: 1 }}>{item.time}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Recommendations teaser ────────────────────────────────────────────────────
+
+function RecommendationsTeaser() {
+  const nav = useNavigate();
+  const s = RECOMMENDATIONS_SUMMARY;
+  return (
+    <div
+      onClick={() => nav('/recommendations')}
+      style={{ background: 'var(--background-weak)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px', cursor: 'pointer', boxShadow: 'var(--shadow-sm)', display: 'flex', alignItems: 'center', gap: 16, transition: 'box-shadow 0.15s' }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}
+    >
+      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(93,161,130,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg viewBox="0 0 14 14" width="16" height="16" fill="none">
+          <circle cx="7" cy="5.5" r="3" stroke="#5DA182" strokeWidth="1.3"/>
+          <path d="M7 9v1.5" stroke="#5DA182" strokeWidth="1.3" strokeLinecap="round"/>
+          <path d="M5 12h4" stroke="#5DA182" strokeWidth="1.3" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: SFT, margin: '0 0 2px' }}>
+          {s.totalOpportunities} AI recommendations ready
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>
+          {s.ticketsEliminatedPerMonth} tickets/mo eliminatable · {s.hoursSavedPerMonth}h agent time · est. ${(s.hoursSavedPerMonth * 80).toLocaleString()}/mo savings
+        </p>
+      </div>
+      <svg viewBox="0 0 8 12" width="7" height="11" fill="none" stroke="var(--text-disabled)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 1l6 5-6 5"/>
+      </svg>
     </div>
   );
 }
@@ -942,11 +1126,11 @@ export default function Admin2HomeView({ hideGreeting = false }) {
   const { agents, todayIndex, summary } = TEAM_DATA;
 
   const kpis = [
-    { label: 'My tickets',    value: '4',                              sub: '2 at SLA risk',                                      color: 'var(--text)'                       },
-    { label: 'Escalations',   value: '3',                              sub: 'need attention',                                     color: 'var(--danger-text)'                },
-    { label: 'SLA breaches',  value: String(summary.slaBreaches),      sub: 'this week',                                          color: 'var(--text)'                       },
-    { label: 'Resolved',      value: String(summary.resolvedThisWeek), sub: 'this week',                                          color: 'var(--text)'                       },
-    { label: 'AI deflection', value: `${AI_DATA.pct}%`,               sub: `↑ ${AI_DATA.pct - AI_DATA.prevPct}pp vs last week`,  color: 'var(--selected-background-strong)' },
+    { label: 'My tickets',    value: '4',                              sub: '2 at SLA risk',                                      color: undefined,    trendGood: null,  spark: [3,4,5,4,5,5,4]   },
+    { label: 'Escalations',   value: '3',                              sub: 'need attention',                                     color: '#D43D5D',    trendGood: false, spark: [1,2,2,3,2,3,3]   },
+    { label: 'SLA breaches',  value: String(summary.slaBreaches),      sub: 'this week',                                          color: undefined,    trendGood: null,  spark: [5,6,8,7,6,8,7]   },
+    { label: 'Resolved',      value: String(summary.resolvedThisWeek), sub: '↑ 18 vs last week',                                  color: undefined,    trendGood: true,  spark: [110,118,124,130,136,138,141] },
+    { label: 'AI deflection', value: `${AI_DATA.pct}%`,               sub: `↑ ${AI_DATA.pct - AI_DATA.prevPct}pp vs last week`,  color: '#4273D1',    trendGood: true,  spark: [58,59,61,62,62,64,65] },
   ];
 
   return (
@@ -973,8 +1157,14 @@ export default function Admin2HomeView({ hideGreeting = false }) {
         {/* ── KPI cards ────────────────────────────────────────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 24, padding: '0 32px', marginBottom: 24 }}>
           {kpis.map(k => (
-            <KpiStatCard key={k.label} label={k.label} value={k.value} sub={k.sub} color={k.color} />
+            <KpiStatCard key={k.label} label={k.label} value={k.value} sub={k.sub} color={k.color} spark={k.spark} trendGood={k.trendGood} />
           ))}
+        </div>
+
+        {/* ── AI activity + feed ───────────────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 24, padding: '0 32px', marginBottom: 24 }}>
+          <AiActivityChart />
+          <AiAgentFeed />
         </div>
 
         {/* ── Bottom cards ─────────────────────────────────────────────── */}
@@ -984,6 +1174,7 @@ export default function Admin2HomeView({ hideGreeting = false }) {
             <CsatCard />
           </div>
           <TeamWorkloadCard agents={agents} todayIndex={todayIndex} />
+          <RecommendationsTeaser />
         </div>
 
       </div>

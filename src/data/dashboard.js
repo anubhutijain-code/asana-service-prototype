@@ -324,3 +324,39 @@ export const TICKET_TOPICS = [
   { name: 'Printing',       count:  87, sla: 73, spark: [8, 10,12, 9,11,10, 7] },
   { name: 'Other',          count:  64, sla: 78, spark: [6,  8, 7, 9, 8,10, 6] },
 ];
+
+// ─── AI handling over time — 30 working days (stacked area) ───────────────────
+// Each day: AI deflected, rule-based auto-resolved, agent-handled
+const AI_DAYS = [
+  'Jan 27','Jan 28','Jan 29','Jan 30','Jan 31',
+  'Feb 3','Feb 4','Feb 5','Feb 6','Feb 7',
+  'Feb 10','Feb 11','Feb 12','Feb 13','Feb 14',
+  'Feb 17','Feb 18','Feb 19','Feb 20','Feb 21',
+  'Feb 24','Feb 25','Feb 26','Feb 27','Feb 28',
+  'Mar 3','Mar 4','Mar 5','Mar 6','Mar 7',
+];
+export const AI_HANDLING_30D = {
+  dates: AI_DAYS,
+  aiDeflected:   [18,20,22,19,17, 22,24,25,23,21, 26,28,30,27,25, 29,31,33,30,28, 32,34,36,33,31, 35,37,39,36,34],
+  ruleBased:     [12,13,14,13,12, 14,15,16,15,14, 16,17,18,17,16, 18,19,20,19,18, 20,21,22,21,20, 22,23,24,23,22],
+  agentHandled:  [28,26,25,27,29, 25,23,22,24,26, 22,20,19,21,23, 20,18,17,19,21, 18,16,15,17,19, 16,14,13,15,17],
+};
+
+// ─── Today's hourly AI activity (for Admin Home) ──────────────────────────────
+export const TODAY_HOURLY = {
+  hours:       ['6am','7am','8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','Now'],
+  aiDeflected: [2,    4,    7,    14,   12,    10,    8,     13,   9,    7,    5,    3   ],
+  agentHandled:[1,    2,    3,    5,    6,     5,     4,     4,    3,    3,    2,    2   ],
+};
+
+// ─── Resolution time by category — AI vs agent (minutes) ─────────────────────
+export const RESOLUTION_BY_CATEGORY = [
+  { name: 'How-to / FAQ',     ai:  3, agent: 28  },
+  { name: 'Password / MFA',   ai:  4, agent: 35  },
+  { name: 'Software access',  ai: 12, agent: 142 },
+  { name: 'License mgmt',     ai: 18, agent: 187 },
+  { name: 'Network / VPN',    ai: 22, agent: 95  },
+  { name: 'Hardware',         ai: null, agent: 312 },
+  { name: 'HR policy',        ai:  6, agent: 54  },
+  { name: 'Payroll',          ai: null, agent: 480 },
+];
