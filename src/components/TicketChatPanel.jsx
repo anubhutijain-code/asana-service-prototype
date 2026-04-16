@@ -164,7 +164,6 @@ function MentionToken({ agent, onRemove }) {
 
 const CHAT_TABS_BASE = [
   { id: 'chat', label: 'Chat' },
-  { id: 'ai',   label: 'AI Agent' },
 ];
 
 function ChatTabBarMoreIcon() {
@@ -1100,10 +1099,7 @@ export default function TicketChatPanel({
     );
   }
 
-  const hasWorkflow = ticket?.steps?.length > 0;
-  const chatTabs = hasWorkflow
-    ? [...CHAT_TABS_BASE, { id: 'workflow', label: 'Workflow' }]
-    : CHAT_TABS_BASE;
+  const chatTabs = CHAT_TABS_BASE;
 
   const learningId = ticket?.id ? TICKET_LEARNING_MAP[ticket.id] : null;
   const ticketLearning = learningId ? KB_LEARNINGS.find(l => l.id === learningId) : null;
@@ -1200,18 +1196,6 @@ export default function TicketChatPanel({
         </>
       )}
 
-      {activeTab === 'ai' && (
-        <AIAgentPanel ticket={ticket} />
-      )}
-
-      {activeTab === 'workflow' && hasWorkflow && (
-        <WorkflowStepsPanel
-          initialSteps={ticket.steps}
-          onLinkedTicketClick={workflowCallbacks?.onLinkedTicketClick}
-          onStepCreateTask={workflowCallbacks?.onStepCreateTask}
-          onStepComplete={workflowCallbacks?.onStepComplete}
-        />
-      )}
     </div>
   );
 }

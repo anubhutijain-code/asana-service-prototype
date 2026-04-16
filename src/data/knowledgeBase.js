@@ -354,6 +354,28 @@ export const KB_ARTICLES = [
     ],
   },
 
+  // ── Okta MFA Reset — employee article (INCOMPLETE: missing contractor path) ──
+  {
+    id: 'it-006', projectId: 'it-kb',
+    title: 'Resetting Your Okta MFA',
+    status: 'Published', category: 'Account Access', author: 'James Carter', team: 'IT Team',
+    updatedAt: '2025-09-12', source: 'internal',
+    articleType: 'standard', parentArticleId: null,
+    content: [
+      { type: 'h2', text: 'Overview' },
+      { type: 'p', text: 'If you get a new phone or lose access to your authenticator app, you can reset your Okta MFA factors and re-enroll on your new device. This process takes about 5 minutes.' },
+      { type: 'callout', variant: 'info', text: 'You\'ll need to know your Acme SSO password. If you\'ve also forgotten your password, reset it first at accounts.acmecorp.com/reset.' },
+      { type: 'h2', text: 'Self-service MFA reset' },
+      { type: 'li', text: 'Go to accounts.acmecorp.com and click "I don\'t have access to my authenticator".' },
+      { type: 'li', text: 'Verify your identity with your password and answer your security question.' },
+      { type: 'li', text: 'Under Security → Multifactor Authentication, click Remove next to your old device.' },
+      { type: 'li', text: 'Follow the prompts to enroll Okta Verify on your new phone: scan the QR code and enter the 6-digit code to confirm.' },
+      { type: 'h2', text: 'Still stuck?' },
+      { type: 'p', text: 'If the self-service flow doesn\'t work, submit a ticket to IT and an agent will reset your factors manually. Typical response time is under 30 minutes.' },
+      { type: 'link', text: 'Submit an IT ticket' },
+    ],
+  },
+
   // ── Addenda — local supplements to synced articles ───────────────────────
   {
     id: 'it-005', projectId: 'it-kb',
@@ -525,6 +547,32 @@ export const KB_LEARNINGS = [
     detectedAt: '2026-02-15T09:00:00Z',
   },
 
+  {
+    id: 'learn-it-006', projectId: 'it-kb', status: 'new',
+    type: 'update-article',
+    linkedArticleId: 'it-006',
+    gap: 'MFA reset article only covers employees on the main Okta tenant — contractors on acmecorp-contractors.okta.com cannot self-serve reset MFA but are being sent this article anyway, causing repeated failed deflections',
+    suggestion: 'Add a contractor-specific section to "Resetting Your Okta MFA" covering the admin-only reset path',
+    category: 'Account Access',
+    sourceTickets: [
+      { id: 'TICKET-88', title: 'Can\'t reset Okta MFA — getting "contact your administrator" error' },
+      { id: 'TICKET-77', title: 'Okta MFA locked out — new phone not recognised (contractor)' },
+      { id: 'TICKET-71', title: 'MFA reset not working — contractor account' },
+      { id: 'TICKET-60', title: 'Can\'t log in after phone replacement' },
+    ],
+    detectedAt: '2026-04-10T10:00:00Z',
+    suggestedBlocks: [
+      { type: 'h2', text: 'Contractors: MFA reset process is different' },
+      { type: 'callout', variant: 'warning', text: 'If your email ends in @contractor.acmecorp.com, self-service MFA reset is not available for your account type. Skip to the IT-assisted section below — the steps above will not work.' },
+      { type: 'p', text: 'Contractor accounts use a separate Okta environment (acmecorp-contractors.okta.com) which has self-service factor management disabled by policy. MFA resets must be performed by an IT admin.' },
+      { type: 'h2', text: 'IT-assisted MFA reset (contractors)' },
+      { type: 'li', text: 'Submit an IT ticket with subject "MFA reset — contractor account" and include your @contractor.acmecorp.com email address.' },
+      { type: 'li', text: 'IT will verify your identity using your contractor onboarding record and reset all factors within 30 minutes.' },
+      { type: 'li', text: 'Once reset, open a private browser window and go to acmecorp-contractors.okta.com — you will be prompted to enroll a new MFA factor immediately.' },
+      { type: 'link', text: 'Submit MFA reset ticket (contractors)' },
+    ],
+  },
+
   // HR KB
   {
     id: 'learn-hr-001', projectId: 'hr-kb', status: 'new',
@@ -648,6 +696,39 @@ export const KB_DRAFTS = [
     ],
   },
   {
+    id: 'draft-it-004', projectId: 'it-kb',
+    title: 'Resetting Your Okta MFA — Updated (Contractor Path Added)',
+    category: 'Account Access', status: 'draft', confidence: 'high',
+    generatedAt: '2026-04-10T10:30:00Z',
+    targetArticleId: 'it-006',
+    triggerReason: 'AI failed to deflect 4 contractor MFA tickets using article it-006 — the self-reset flow doesn\'t exist on the contractor Okta tenant but the article doesn\'t mention this. Every failure required manual admin intervention.',
+    sourceTickets: [
+      { id: 'TICKET-88', title: 'Can\'t reset Okta MFA — getting "contact your administrator" error' },
+      { id: 'TICKET-77', title: 'Okta MFA locked out — new phone not recognised (contractor)' },
+      { id: 'TICKET-71', title: 'MFA reset not working — contractor account' },
+      { id: 'TICKET-60', title: 'Can\'t log in after phone replacement' },
+    ],
+    content: [
+      { type: 'h2', text: 'Overview' },
+      { type: 'p', text: 'If you get a new phone or lose access to your authenticator app, you can reset your Okta MFA factors and re-enroll on your new device. The steps depend on whether you are a full-time employee or a contractor — the two account types use different Okta environments with different policies.' },
+      { type: 'callout', variant: 'info', text: 'Not sure which account type you have? Check your email address. Employees use @acmecorp.com. Contractors use @contractor.acmecorp.com. The reset process is different for each.' },
+      { type: 'h2', text: 'Employees (@acmecorp.com): Self-service MFA reset' },
+      { type: 'li', text: 'Go to accounts.acmecorp.com and click "I don\'t have access to my authenticator".' },
+      { type: 'li', text: 'Verify your identity with your password and answer your security question.' },
+      { type: 'li', text: 'Under Security → Multifactor Authentication, click Remove next to your old device.' },
+      { type: 'li', text: 'Follow the prompts to enroll Okta Verify on your new phone: scan the QR code and enter the 6-digit code to confirm.' },
+      { type: 'h2', text: 'Contractors (@contractor.acmecorp.com): IT-assisted reset required' },
+      { type: 'callout', variant: 'warning', text: 'Self-service MFA reset is not available on the contractor Okta tenant (acmecorp-contractors.okta.com). The "I don\'t have access" flow will show "contact your administrator" — this is expected. Do not follow the employee steps above.' },
+      { type: 'p', text: 'Contractor accounts have factor self-management disabled by policy. All MFA resets require an IT admin action.' },
+      { type: 'li', text: 'Submit an IT ticket with subject "MFA reset — contractor account" and include your @contractor.acmecorp.com email address.' },
+      { type: 'li', text: 'IT will verify your identity against your contractor onboarding record and reset all factors. Typical turnaround: under 30 minutes during business hours.' },
+      { type: 'li', text: 'Once IT confirms the reset, open a private browser window and go to acmecorp-contractors.okta.com — you will be prompted to enroll a new factor immediately.' },
+      { type: 'h2', text: 'Still stuck?' },
+      { type: 'p', text: 'If you\'ve submitted a ticket and haven\'t heard back within 30 minutes, reply to your ticket and mark it High priority. For urgent access issues outside business hours, contact the on-call IT engineer via the emergency line at it.acmecorp.com/oncall.' },
+      { type: 'link', text: 'Submit MFA reset ticket' },
+    ],
+  },
+  {
     id: 'draft-hr-001', projectId: 'hr-kb',
     title: 'Parental Leave and the Performance Review Cycle',
     category: 'Leave', status: 'draft', confidence: 'medium',
@@ -673,6 +754,7 @@ export const KB_DRAFTS = [
 // ─── Ticket → Draft mapping (which tickets contributed to a draft) ────────────
 // Maps ticket ID → learning ID (for tickets that are KB learning sources)
 export const TICKET_LEARNING_MAP = {
+  'TICKET-88': 'learn-it-006',
   'TICKET-38': 'learn-it-002',
   'TICKET-42': 'learn-it-001',
   'TICKET-70': 'learn-it-001',
@@ -690,6 +772,7 @@ export const TICKET_LEARNING_MAP = {
 
 // Maps learning ID → draft ID (for learnings that have a generated draft)
 export const LEARNING_DRAFT_MAP = {
+  'learn-it-006': 'draft-it-004',
   'learn-it-001': 'draft-it-001',  // MFA re-enrollment learning → MFA draft
   'learn-it-003': 'draft-it-002',  // Admin access learning → admin access draft
   'learn-hr-001': 'draft-hr-001',  // Parental leave learning → parental leave draft

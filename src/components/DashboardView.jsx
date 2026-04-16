@@ -5,7 +5,16 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   BarChart, Bar, Legend,
   AreaChart, Area,
+  Treemap,
 } from 'recharts';
+
+// Design-token hex values (match tokens.css exactly)
+const C_BLUE   = '#4273D1'; // --selected-background-strong
+const C_GREEN  = '#5DA182'; // --success-background-strong
+const C_AMBER  = '#ECBD85'; // --warning-background-strong
+const C_ROSE   = '#D43D5D'; // --danger-background-strong
+const C_PURPLE = '#7C5EA8'; // muted purple
+const C_GRAY   = '#9CA3AF'; // neutral / agent
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { DASHBOARD_DATA, QUEUE_OPTIONS, TICKET_RESOLUTION_BY_TYPE, KB_PERFORMANCE, TEAM_DATA, TICKET_TOPICS, AI_HANDLING_30D, RESOLUTION_BY_CATEGORY } from '../data/dashboard';
@@ -194,74 +203,51 @@ function TreemapContent(props) {
   );
 }
 
-// ─── Topic Volume — Highcharts horizontal bar ──────────────────────────────────
-function TopicVolumeCard() {
-  const slaColors = TICKET_TOPICS.map(t =>
-    t.sla >= 80 ? '#5DA182' : t.sla >= 70 ? '#ECBD85' : '#D43D5D'
+// ─── Topic Volume Card — Recharts Treemap + sparkline rows ────────────────────
+function SparkLine({ data, color = '#4273D1' }) {
+  if (!data || data.length < 2) return null;
+  const w = 52, h = 22;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width={w} height={h} style={{ flexShrink: 0 }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
+}
 
-  const opts = {
-    chart: { type: 'bar', backgroundColor: 'transparent', height: 280, style: { fontFamily: SFT }, animation: { duration: 600 }, spacing: [4, 8, 8, 4] },
-    title: { text: '' }, credits: { enabled: false }, legend: { enabled: false },
-    xAxis: {
-      categories: TICKET_TOPICS.map(t => t.name),
-      labels: { style: { fontSize: '11px', color: '#6b7280', fontFamily: SFT } },
-      lineWidth: 0, tickWidth: 0,
-    },
-    yAxis: {
-      title: { text: '' },
-      gridLineColor: 'var(--border)', gridLineDashStyle: 'dot',
-      labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
-    },
-    tooltip: {
-      outside: true, backgroundColor: 'rgba(30,31,33,0.9)', borderWidth: 0, shadow: false,
-      style: { color: '#fff', fontSize: '12px', fontFamily: SFT },
-      formatter() {
-        const t = TICKET_TOPICS[this.point.index];
-        return `<b>${t.name}</b><br/>${t.count} tickets · SLA ${t.sla}%`;
-      },
-    },
-    plotOptions: {
-      bar: {
-        borderRadius: 3,
-        dataLabels: {
-          enabled: true,
-          format: '{y}',
-          style: { fontSize: '11px', fontWeight: '600', fontFamily: SFT, textOutline: 'none', color: '#6b7280' },
-        },
-        colorByPoint: true,
-        colors: slaColors.map(c => ({
-          linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
-          stops: [[0, Highcharts.color(c).setOpacity(0.7).get()], [1, Highcharts.color(c).setOpacity(0.4).get()]],
-        })),
-      },
-    },
-    series: [{ data: TICKET_TOPICS.map(t => t.count) }],
-  };
+function TopicVolumeCard() {
+  const treemapData = TICKET_TOPICS.map((t, i) => ({ ...t, size: t.count, colorIdx: i }));
+  const slaColor = sla => sla >= 80 ? C_GREEN : sla >= 70 ? C_AMBER : C_ROSE;
 
   return (
     <div style={{ ...CARD, padding: '20px 24px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
-        <div>
-          <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', margin: '0 0 1px' }}>Ticket topics</p>
-          <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Volume by category · this month · color = SLA health</p>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          {[['#5DA182','≥80%'],['#ECBD85','70–79%'],['#D43D5D','<70%']].map(([c,l]) => (
-            <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-weak)', fontFamily: SFT }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: c, display: 'inline-block' }}/>
-              {l}
-            </span>
-          ))}
-        </div>
+      <div style={{ marginBottom: 12 }}>
+        <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, lineHeight: '20px', letterSpacing: '-0.32px', margin: '0 0 2px' }}>Ticket topics</p>
+        <p style={{ fontSize: 11, color: 'var(--text-weak)', fontFamily: SFT, margin: 0 }}>Volume by category · this month</p>
       </div>
-      <HighchartsReact highcharts={Highcharts} options={opts} immutable />
+      <ResponsiveContainer width="100%" height={280}>
+        <Treemap
+          data={treemapData}
+          dataKey="size"
+          content={<TreemapContent />}
+          aspectRatio={4 / 3}
+          isAnimationActive={false}
+        />
+      </ResponsiveContainer>
     </div>
   );
 }
 
-// ─── AI Handling Over Time — Highcharts stacked area ──────────────────────────
+// ─── AI vs Agent over time — Highcharts two-line area ─────────────────────────
 function AiHandlingTrendCard() {
+  const aiActioned = AI_HANDLING_30D.aiDeflected.map((v, i) => v + AI_HANDLING_30D.ruleBased[i]);
+
   const opts = {
     chart: {
       type: 'area', backgroundColor: 'transparent', height: 280,
@@ -277,13 +263,12 @@ function AiHandlingTrendCard() {
       categories: AI_HANDLING_30D.dates,
       tickInterval: 5,
       labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
-      lineColor: 'var(--border)', tickColor: 'var(--border)',
+      lineColor: '#e5e7eb', tickColor: '#e5e7eb',
     },
     yAxis: {
       title: { text: '' }, min: 0,
-      gridLineColor: 'var(--border)', gridLineDashStyle: 'dot',
+      gridLineColor: '#f3f4f6', gridLineDashStyle: 'dot',
       labels: { style: { fontSize: '10px', color: '#9ea0a2', fontFamily: SFT } },
-      stackLabels: { enabled: false },
     },
     tooltip: {
       shared: true, outside: true,
@@ -294,28 +279,24 @@ function AiHandlingTrendCard() {
     },
     plotOptions: {
       area: {
-        stacking: 'normal', lineWidth: 1.5,
+        lineWidth: 2,
         marker: { enabled: false, states: { hover: { enabled: true, radius: 3 } } },
       },
     },
     series: [
       {
-        name: 'Agent handled', data: AI_HANDLING_30D.agentHandled, color: '#9CA3AF',
-        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0,'rgba(156,163,175,0.35)'],[1,'rgba(156,163,175,0.05)']] },
+        name: 'Agent actioned', data: AI_HANDLING_30D.agentHandled, color: C_GRAY,
+        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0, Highcharts.color(C_GRAY).setOpacity(0.18).get()],[1, Highcharts.color(C_GRAY).setOpacity(0).get()]] },
       },
       {
-        name: 'Rule-based', data: AI_HANDLING_30D.ruleBased, color: '#4273D1',
-        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0,'rgba(66,115,209,0.4)'],[1,'rgba(66,115,209,0.05)']] },
-      },
-      {
-        name: 'AI deflected', data: AI_HANDLING_30D.aiDeflected, color: '#5DA182',
-        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0,'rgba(93,161,130,0.5)'],[1,'rgba(93,161,130,0.05)']] },
+        name: 'AI actioned', data: aiActioned, color: C_GREEN,
+        fillColor: { linearGradient: { x1:0,y1:0,x2:0,y2:1 }, stops: [[0, Highcharts.color(C_GREEN).setOpacity(0.3).get()],[1, Highcharts.color(C_GREEN).setOpacity(0).get()]] },
       },
     ],
   };
 
   return (
-    <ChartCard title="AI handling over time" subtitle="30-day view — stacked by resolution type">
+    <ChartCard title="AI vs agent over time" subtitle="30 days — AI actioned (deflected + automated) vs agent handled">
       <HighchartsReact highcharts={Highcharts} options={opts} immutable />
     </ChartCard>
   );
@@ -458,26 +439,44 @@ function AutomationCoverageCard({ data }) {
 
 // ─── Channel Distribution + Deflection Row ────────────────────────────────────
 
-function ChannelDeflectionRow({ data }) {
+function ChannelDeflectionRow({ data, stack = false }) {
   const { channelDist, deflection, weeklyVolume } = data;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: stack ? '1fr' : '1fr 1fr', gap: 24 }}>
 
-      {/* Left: intake by channel */}
+      {/* Left: intake by channel — pie chart */}
       <ChartCard title="Intake by channel" subtitle="Tickets received by source this month">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 6 }}>
-          {channelDist.map(c => (
-            <div key={c.channel} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-weak)', fontFamily: SFT, width: 46, flexShrink: 0 }}>{c.channel}</span>
-              <div style={{ flex: 1, height: 8, background: 'var(--background-strong)', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${c.pct}%`, background: c.color, borderRadius: 4, transition: 'width 0.3s' }} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: SFT, width: 72, textAlign: 'right', flexShrink: 0 }}>
-                {c.count} <span style={{ fontWeight: 400, color: 'var(--text-weak)' }}>({c.pct}%)</span>
-              </span>
-            </div>
-          ))}
-        </div>
+        {(() => {
+          const PIE_COLORS = [C_PURPLE, C_BLUE, C_GREEN, C_AMBER];
+          const pieOpts = {
+            chart: { type: 'pie', backgroundColor: 'transparent', height: 200, style: { fontFamily: SFT }, animation: { duration: 600 }, spacing: [0, 0, 0, 0] },
+            title: { text: '' }, credits: { enabled: false },
+            legend: {
+              enabled: true, align: 'right', verticalAlign: 'middle', layout: 'vertical',
+              itemStyle: { fontSize: '12px', fontWeight: '400', color: '#6b7280', fontFamily: SFT },
+              symbolRadius: 3, symbolWidth: 10, symbolHeight: 10,
+              formatter() { return `${this.name}: <b>${this.y}</b>`; },
+            },
+            tooltip: {
+              outside: true, backgroundColor: 'rgba(30,31,33,0.9)', borderWidth: 0, shadow: false,
+              style: { color: '#fff', fontSize: '12px', fontFamily: SFT },
+              pointFormat: '<b>{point.y}</b> tickets ({point.percentage:.0f}%)',
+            },
+            plotOptions: {
+              pie: {
+                innerSize: '55%', borderWidth: 0,
+                dataLabels: { enabled: false },
+                showInLegend: true,
+                size: '85%',
+              },
+            },
+            series: [{
+              name: 'Tickets',
+              data: channelDist.map((c, i) => ({ name: c.channel, y: c.count, color: PIE_COLORS[i % PIE_COLORS.length] })),
+            }],
+          };
+          return <HighchartsReact highcharts={Highcharts} options={pieOpts} immutable />;
+        })()}
       </ChartCard>
 
       {/* Right: deflections vs escalations + weekly bar */}
@@ -1502,6 +1501,16 @@ function LbRow({ agent, rank, rankStyle, last }) {
 
 const DASH_TABS = ['Overview', 'Team', 'Leaderboard'];
 
+function useWindowWidth() {
+  const [w, setW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1440);
+  useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return w;
+}
+
 export default function DashboardView({ initialTab = 'Overview', hideTabs = false }) {
   const [queueId, setQueueId] = useState('all');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -1516,6 +1525,11 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
     kbOptimizations:  true,
   });
   const filterBtnRef = useRef(null);
+  const vw = useWindowWidth();
+  // Content area = viewport minus sidebars (~198px). Breakpoints on content width.
+  const contentW = vw - 198;
+  const isMd = contentW < 900;  // stack 2-col chart grids
+  const isSm = contentW < 600;  // stack KPI cards 2-up, reduce padding
 
   const data = DASHBOARD_DATA[queueId];
   const total = data.ticketsByCategory.reduce((s, d) => s + d.value, 0);
@@ -1528,7 +1542,7 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: 'var(--background-weak)' }}>
-      <div style={{ padding: '32px 32px 64px' }}>
+      <div style={{ padding: isSm ? '16px 16px 48px' : '32px 32px 64px' }}>
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: 16 }}>
@@ -1616,54 +1630,36 @@ export default function DashboardView({ initialTab = 'Overview', hideTabs = fals
         {!hideTabs && activeTab === 'Overview' && (
           <>
             {/* KPI strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 24, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isSm ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: isSm ? 12 : 24, marginBottom: 24 }}>
               {data.kpis.map((kpi, i) => <KpiCard key={i} {...kpi} />)}
             </div>
 
-            {/* Row 1 — AI handling trend (Highcharts stacked area) */}
-            <div style={{ marginBottom: 24 }}>
-              <AiHandlingTrendCard />
-            </div>
-
-            {/* Row 2 — Topic volume + Resolution time (Highcharts) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+            {/* Row 1 — Topic volume + Resolution time */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMd ? '1fr' : '1fr 1fr', gap: 24, marginBottom: 24 }}>
               <TopicVolumeCard />
               <ResolutionTimeCard />
+            </div>
+
+            {/* Row 2 — AI vs Agent handling trend */}
+            <div style={{ marginBottom: 24 }}>
+              <AiHandlingTrendCard />
             </div>
 
             {/* Row 3 — Channel distribution + Deflection */}
             {chartVisibility.channelBreakdown && (
               <div style={{ marginBottom: 24 }}>
-                <ChannelDeflectionRow data={data} />
+                <ChannelDeflectionRow data={data} stack={isMd} />
               </div>
             )}
 
-            {/* Row 3 — Backlog trend */}
-            {chartVisibility.backlogTrend && (
-              <div style={{ marginBottom: 24 }}>
-                <ChartCard title="Ticket backlog trend" subtitle="6-month rolling backlog">
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={data.backlogTrend} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                      <XAxis dataKey="month" tick={TICK} axisLine={false} tickLine={false} />
-                      <YAxis tick={TICK} axisLine={false} tickLine={false} width={38} />
-                      <RechartsTooltip content={<CustomTooltip />} />
-                      <Line type="monotone" dataKey="count" name="Backlog" stroke="var(--selected-background-strong)"
-                        strokeWidth={2} dot={{ r: 3, fill: 'var(--selected-background-strong)', strokeWidth: 0 }} activeDot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartCard>
-              </div>
-            )}
-
-            {/* Row 4 — Ticket Resolution by Type */}
+            {/* Row 3 — Ticket Resolution by Type */}
             {chartVisibility.ticketResolution && (
               <div style={{ marginBottom: 24 }}><TicketResolutionTable /></div>
             )}
 
             {/* Row 5 — KB Performance + KB Optimizations */}
             {(chartVisibility.kbPerformance || chartVisibility.kbOptimizations) && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMd ? '1fr' : '1fr 1fr', gap: 24 }}>
                 {chartVisibility.kbPerformance && <KBPerformanceCard />}
                 {chartVisibility.kbOptimizations && <KBOptimizationsCard />}
               </div>

@@ -2,6 +2,13 @@
 
 // Per-ticket intent signals
 export const AI_INTENT = {
+  'TICKET-88': {
+    intent: 'Okta MFA locked — contractor account, self-reset unavailable',
+    confidence: 81,
+    sentiment: 'Frustrated',
+    urgency: 'Access blocked',
+    tags: ['Okta MFA', 'Contractor', 'Deflection failed'],
+  },
   'TICKET-95': {
     intent: 'Role access update after department transfer',
     confidence: 94,
