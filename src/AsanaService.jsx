@@ -17,6 +17,7 @@ import DashboardView from './components/DashboardView';
 import SettingsView, { SettingsLandingPage } from './components/SettingsView';
 import OptimizeView from './components/OptimizeView';
 import OptimizeV2View from './components/OptimizeV2View';
+import RecommendationsView from './components/RecommendationsView';
 import UnifiedHomeView from './components/UnifiedHomeView';
 import Admin2HomeView from './components/Admin2HomeView';
 import RequestsView from './components/RequestsView';
@@ -78,6 +79,7 @@ function getRouteState(pathname) {
   if (pathname === '/dashboard')    return { mode: 'service',  serviceNav: 'Dashboard',    workItem: null    };
   if (pathname === '/optimize')     return { mode: 'service',  serviceNav: 'Optimize',     workItem: null    };
   if (pathname === '/optimize-v2')  return { mode: 'service',  serviceNav: 'Optimize V2',  workItem: null    };
+  if (pathname === '/recommendations') return { mode: 'service', serviceNav: 'Recommendations', workItem: null };
   if (pathname === '/create-queue') return { mode: 'service',  serviceNav: 'Create Queue', workItem: null    };
   if (pathname === '/knowledge-base' || pathname.startsWith('/knowledge-base/'))
     return { mode: 'service', serviceNav: 'Knowledge base', workItem: null };
@@ -171,6 +173,7 @@ const SERVICE_NAV_URL = {
   'Dashboard':       '/dashboard',
   'Optimize':        '/optimize',
   'Optimize V2':     '/optimize-v2',
+  'Recommendations': '/recommendations',
   'Settings':        '/settings',
   'My Queue':        '/my-queue',
   'Following':       '/following',
@@ -453,6 +456,7 @@ export default function AsanaService() {
           <Route path="/dashboard" element={<DashboardView />} />
           <Route path="/optimize" element={<OptimizeView onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
           <Route path="/optimize-v2" element={<OptimizeV2View onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
+          <Route path="/recommendations" element={<RecommendationsView onNavigateToTicket={id => navigate(`/tickets/${id}`)} />} />
           <Route path="/settings/:queueId" element={<SettingsRouteWrapper />} />
           <Route path="/settings" element={<SettingsLandingPage />} />
           <Route path="/my-queue" element={

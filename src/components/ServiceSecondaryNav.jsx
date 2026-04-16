@@ -65,6 +65,18 @@ function AgentsIcon({ className }) {
   );
 }
 
+function RecommendationsIcon({ className }) {
+  return (
+    <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
+      <circle cx="6" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.1"/>
+      <path d="M6 7.5v1.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      <path d="M4 10.5h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      <path d="M2 4.5h-.8M10.8 4.5H10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      <path d="M3.05 2.05L2.52 1.52M9.48 1.52l-.53.53" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function OptimizeIcon({ className }) {
   return (
     <svg viewBox="0 0 12 12" className={className} fill="none" aria-hidden="true">
@@ -329,6 +341,7 @@ function AdminNavContent({ activeItem, onSelect }) {
       <SectionLabel label="Insights" />
       <NavItem label="Dashboard" Icon={DashboardIcon} active={activeItem === 'Dashboard'} onClick={() => onSelect('Dashboard')} />
       <NavItem label="Optimize" Icon={OptimizeIcon} active={activeItem === 'Optimize V2' || activeItem === 'Optimize'} onClick={() => onSelect('Optimize V2')} />
+      <NavItem label="Recommendations" Icon={RecommendationsIcon} badge={7} active={activeItem === 'Recommendations'} onClick={() => onSelect('Recommendations')} />
 
       <SectionLabel label="Resources" />
       <NavItem label="Knowledge" Icon={LightBulbIcon}
@@ -412,6 +425,7 @@ function Admin2NavContent({ activeItem, onSelect, createdQueues = [] }) {
       <NavItem label="Performance"    Icon={DashboardIcon}  active={activeItem === 'Dashboard'}                              onClick={() => onSelect('Dashboard')} />
       <NavItem label="AI Deflections" Icon={InboxIcon} badge={24} active={activeItem === 'Requests'}                        onClick={() => onSelect('Requests')} />
       <NavItem label="Optimize"       Icon={OptimizeIcon}   active={activeItem === 'Optimize V2' || activeItem === 'Optimize'} onClick={() => onSelect('Optimize V2')} />
+      <NavItem label="Recommendations" Icon={RecommendationsIcon} badge={7} active={activeItem === 'Recommendations'} onClick={() => onSelect('Recommendations')} />
 
       <SectionLabel label="Toolkit" />
       <NavItem label="Playbooks"     Icon={AutomationIcon} active={activeItem === 'Automations'}  onClick={() => onSelect('Automations')} />
